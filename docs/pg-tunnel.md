@@ -14,10 +14,14 @@ Nothing here writes to BloodyCase data (restricted mode = read-only transactions
    `.\scripts\pg-mcp-register.ps1`
 
 ## Every session
+Shortcut: in Claude Code type `/mcpb <question>` — it runs the preflight below itself
+(`scripts/pg-tunnel-ensure.ps1` starts the tunnel in a minimized window if needed) and
+then queries the DB through the MCP. Manual form:
 1. Terminal A, leave it open: `.\scripts\pg-tunnel.ps1`
    (reconnects automatically when the SSH session drops; Ctrl+C stops it).
 2. Start Claude Code in `D:\claude\blc`. `claude mcp list` should show `postgres` connected.
-   MCP servers connect at launch, so the tunnel must be up BEFORE Claude Code starts.
+   MCP servers connect at launch; if the tunnel came up later, run `/mcp` and
+   reconnect `postgres`.
 
 ## Verify
 - Tunnel: `Test-NetConnection 127.0.0.1 -Port 5432` → `TcpTestSucceeded : True`

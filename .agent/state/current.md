@@ -3,7 +3,7 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-02 00:24
+Last updated: 2026-09-02 00:36
 
 ## Goal
 - Remote BloodyCase Postgres reachable read-only from Claude Code via SSH tunnel + Postgres MCP (restricted) - DONE, in daily use
@@ -23,6 +23,7 @@ Last updated: 2026-09-02 00:24
 - template_newest_release: v8.3.19 (2026-09-01) - not security-relevant; TEMPLATE_VERSION still v8.3.16
 - pg_tunnel_scripts: scripts/pg-tunnel.ps1 + pg-mcp-register.ps1 + Read-DotEnv.ps1 parse clean (PS 5.1), fail loudly without .env keys; claude mcp add/remove dry-run OK with dummy URI; uvx --with mcp<2 postgres-mcp --help exit 0 [2026-09-01]
 - pg_tunnel_e2e: ssh key auth sparrow@168.119.74.101 OK; host bloodyanalytics02 runs Postgres 18 on 5432, db bloody; tunnel up -> localhost:5432 TcpTestSucceeded; claude mcp get postgres = Connected (restricted mode) [2026-09-02 via scripts/pg-tunnel.ps1 + pg-mcp-register.ps1]
+- mcpb_command: .claude/commands/mcpb.md registered as /mcpb; scripts/pg-tunnel-ensure.ps1 starts the tunnel in a minimized window when 5432 is closed and reports UP when it is [2026-09-02]
 
 ## Working set
 - Framework only. No product task active - next real BLC task starts fresh under the v8.3.16 kernel.
@@ -52,9 +53,10 @@ Last updated: 2026-09-02 00:24
 - Sheriff prompt divergence (no severity floor, sentinel No findings.) owed upstream at the next template build
 - Context Guard: config.json is the opt-in switch, shared runtime 4.2.4 - POINTER, re-pull before relying on it
 - Postgres MCP: ask dev team for a read-only DB role (claude_ro) instead of the app user - SQL in docs/pg-tunnel.md
+- /mcpb first live run owed: MCP tools were not loaded in the session that built it (server registered after launch); schema capsule not yet written
 
 ## Latest evidence
 - _reports/runs/template-upgrade-v8.3.19_2026-09-01.md (gate GREEN on merge commit 27b43e7)
 
 ## Next (exactly one action)
-- Owner: keep scripts/pg-tunnel.ps1 running in its own terminal, restart Claude Code, then ask the postgres MCP for a first analytics query
+- Owner: restart Claude Code (or /mcp -> reconnect postgres), then run /mcpb schema to build .agent/capsules/blc-db-schema.md
