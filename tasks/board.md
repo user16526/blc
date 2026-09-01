@@ -3,10 +3,11 @@ Current work only. Clear done items periodically. Status: todo / doing / review 
 Format: `- [status] Task — owner — due`  ("review" = waiting on verifier or me)
 
 ## Active
-- [todo] Report D3 (state-patch --self-test on Windows) + the stray .env upstream — me
-- [todo] Run the overdue devops audit (35d cadence) — Claude
+- [todo] Take template v8.3.17 on the normal cadence — Claude — near-trivial merge
+- [todo] Run the overdue devops audit BEFORE the next long job (owner: past cadence) — Claude
 
 ## Done
+- [done] Report D3/D4 upstream — SHIPPED UPSTREAM in v8.3.17 — 2026-09-01
 - [done] Upgrade template v8.3.13 → v8.3.16 (merge route) — Claude — 2026-09-01
 - [done] Report template defects D1/D2 upstream — closed by the maintainer in v8.3.14 — 2026-09-01
 - [done] Set both gaming agents to opus + trim their dead memory blocks — Claude — 2026-09-01

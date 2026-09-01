@@ -127,3 +127,33 @@ FROM and TO — so **no CORE change, no Kernel Change Rationale, no re-baseline*
 **New upstream findings** (D3: `state-patch.py --self-test` dies on a Windows cp1252
 console; plus a stray `.env` in the shipped folder, absent from the canonical zip) —
 see `_reports/runs/template-upgrade-v8.3.16_2026-09-01.md`.
+
+## 2026-09-01 — D3/D4 shipped upstream in v8.3.17; upgrade queued, not taken
+Owner reply to the field report: both findings reproduced, fixed at the canonical
+source, released as **v8.3.17**. D3 = utf-8 stdout/stderr reconfigure in
+`scripts/state-patch.py` (proven at release under default env AND
+`PYTHONIOENCODING=cp1252`, 9/9 each). D4 = fixed as a CLASS, not an instance: the
+wrapper folder is now unpacked FROM the canonical artifact and packaging asserts
+folder == artifact before zipping.
+
+**Verified here rather than accepted on trust** (external state decays; a report
+that comes back "fixed" is still a claim until the artifact says so):
+canonical `release/v8_3_17.zip` sha256 `415594db…` matches the owner's; the D3
+header is present in the shipped `state-patch.py`; the wrapper folder diffs EMPTY
+against the canonical artifact — 108 == 108, no stray `.env`, no `.claude/handoffs/`.
+
+**Decision: do NOT upgrade now.** Owner set normal cadence and this tree is
+functionally unaffected by both fixes. Queued in `open-loops.md` with the merge
+scope MEASURED, not estimated — the only template-owned deltas against our tree are
+`scripts/state-patch.py` (10-line header), `CHANGELOG.md`, `TEMPLATE_VERSION`; the
+other 11 differing files are our established keep-ours bucket.
+
+**The v8.3.16 D3 workaround note stays.** It is still true for THIS tree: the fix
+ships in a version we have not taken, so deleting the note would leave a command
+that crashes for the next person who runs it here. It goes when the upgrade lands.
+
+Owner also approved, as made, the three judgment calls from the v8.3.16 run
+(keep-ours bucket read, §5 survival-test waiver, devops audit kept as its own task)
+and endorsed seeding `current.json` from the old `current.md` before the first
+render as standing practice — already in `tasks/lessons.md`. The devops audit is
+past cadence: run it before the next long job.

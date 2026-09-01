@@ -3,7 +3,7 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-01 20:26
+Last updated: 2026-09-01 20:38
 
 ## Goal
 - BLC framework is on template v8.3.16; no product task active
@@ -31,18 +31,20 @@ Last updated: 2026-09-01 20:26
 - Kept ours where the template part was unchanged and only BLC lines were added: .gitignore, docs/ROLES.md, .claude/settings.json
 - D1/D2 are CLOSED upstream in v8.3.14; risk R1 dissolves - no BLC-local template patching
 - Merged to main as 659e4fe; gate GREEN on the merged tree
+- D3/D4 SHIPPED UPSTREAM in v8.3.17 (canonical zip sha256 415594db, verified here against the artifact); upgrade queued not taken - owner set normal cadence
 
 ## Failed / rejected (do NOT retry)
 - Local one-line pre-commit exclusion for test-hooks.sh - superseded by the shipped, suite-asserted v8.3.14 fix; do not reintroduce
 - Reporting D1/D2 upstream from inside BLC - releases are build products of the maintainer canonical tree; fixed there in v8.3.14 instead
 
 ## Open loops
-- Whether mockups/main002/index4.html matches what the client last saw is unrecorded - confirm before iterating
-- Context Guard: config.json is the opt-in switch (schema 1, min_runtime 4.2.0), shared runtime 4.2.4 - POINTER, re-verify before relying on it
-- D3 owed upstream: state-patch.py --self-test crashes on a default Windows cp1252 console (UnicodeEncodeError on the check-mark)
+- Take template v8.3.17 on the normal cadence - near-trivial merge, scope measured: state-patch.py header + CHANGELOG.md + TEMPLATE_VERSION
+- devops audit is PAST cadence - owner asked for it before the next long job (.agent/state/model-audit.md)
+- Confirm whether mockups/main002/index4.html matches what the client last saw before iterating
+- Context Guard: config.json is the opt-in switch, shared runtime 4.2.4 - POINTER, re-pull before relying on it
 
 ## Latest evidence
 - _reports/runs/template-upgrade-v8.3.16_2026-09-01.md (gate GREEN on merge commit 659e4fe)
 
 ## Next (exactly one action)
-- Start the next BLC product/UX task, or run the overdue devops audit
+- Run the overdue devops audit before the next long job (owner: past cadence)

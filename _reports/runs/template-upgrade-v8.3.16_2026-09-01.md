@@ -36,14 +36,14 @@
    shipped versions. **Risk R1 dissolves** and the only open loop from the previous
    upgrade closes. Proved live: this branch's first commit staged
    `scripts/test-hooks.sh` with its synthetic secrets and was **allowed**.
-2. 🟡 **D3, new, owed upstream — `scripts/state-patch.py --self-test` crashes on a
+2. 🟢 **D3 — SHIPPED UPSTREAM in v8.3.17 (2026-09-01).** Originally reported here as — `scripts/state-patch.py --self-test` crashes on a
    default Windows console.** `print("✓ …")` raises `UnicodeEncodeError` under
    cp1252; the run dies at the first assertion. Suggested upstream fix: wrap
    `sys.stdout` with `errors="replace"` (or use ASCII `[ok]`/`[FAIL]` markers) at
    the top of `self_test()`. Workaround here: `PYTHONIOENCODING=utf-8`, under which
    the suite is 9/9 GREEN. Cosmetic in effect, but it makes the release's own
    stated verification step unusable out of the box on this platform.
-3. 🟡 **Shipped folder ≠ canonical build (minor hygiene, upstream).**
+3. 🟢 **D4 — SHIPPED UPSTREAM in v8.3.17 (2026-09-01).** Shipped folder ≠ canonical build.
    `template-v8.3.16/` in the all-in-one zip contains a stray `.env` that the
    canonical `release/v8_3_16.zip` does not (109 vs 108 files). It is a byte-copy of
    `.env.example` left behind by a `setup.sh` run in the staging tree — no real
@@ -107,3 +107,24 @@ bash scripts/test-hooks.sh              PASS 146  FAIL 0             GREEN
 first commit staging test-hooks.sh (D1 live proof)                   ALLOWED
 ./scripts/quality-gate.sh                                            GREEN
 ```
+
+## Status update — 2026-09-01, after the owner's field-report reply
+
+Findings 2 (D3) and 3 (D4) are **fixed at the canonical source and shipped in
+v8.3.17**; this report's own verdict and evidence are unchanged and still bind to
+the v8.3.16 tree. Verified against the artifact rather than accepted on trust:
+canonical `release/v8_3_17.zip` sha256 `415594db3d4db4090cd48166590977957ad1ff2cba06b7c41ddc63b2f28588e9`
+matches the owner's, the D3 fix is the utf-8 stdout/stderr reconfigure in
+`scripts/state-patch.py`, and the D4 class-fix holds — the wrapper folder now diffs
+EMPTY against the canonical artifact (108 == 108, no stray `.env`, no empty
+`.claude/handoffs/`).
+
+The three judgment calls in this run (keep-ours bucket, the §5 waiver, devops audit
+kept as its own task) were reviewed and approved as made. Seeding `current.json`
+from the old `current.md` before the first render was endorsed as practice and is
+already recorded in `tasks/lessons.md`.
+
+Not upgraded to v8.3.17 in this run: the owner set normal cadence, and this tree is
+functionally unaffected. Queued in `.agent/state/open-loops.md` with the merge scope
+measured (`state-patch.py` header + `CHANGELOG.md` + `TEMPLATE_VERSION`). **Until
+that upgrade lands, `--self-test` on THIS tree still needs `PYTHONIOENCODING=utf-8`.**
