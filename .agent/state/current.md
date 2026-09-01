@@ -3,10 +3,10 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-01 23:28
+Last updated: 2026-09-01 23:53
 
 ## Goal
-- BLC framework is on template v8.3.19; no product task active - owner is about to give a BLC-oriented task
+- Remote BloodyCase Postgres reachable read-only from Claude Code: SSH tunnel script + Postgres MCP (restricted) - scripts built, waiting for owner to fill .env
 
 ## Constraints
 - SCOPE LIMIT: product/marketing/UI-UX only - never edit BloodyCase application code
@@ -21,6 +21,7 @@ Last updated: 2026-09-01 23:28
 - release_zip_sha256: de4e823e... matches shipped release/v8_3_19.sha256
 - devops_audit: 2026-09-01 vs Fable 5.1 guide - RESOLVED: F9-F14 applied (owner), suite 146/0; sheriff prompt is now a BLC-local canonical divergence (decisions.md)
 - template_newest_release: v8.3.19 (2026-09-01) - not security-relevant; TEMPLATE_VERSION still v8.3.16
+- pg_tunnel_scripts: scripts/pg-tunnel.ps1 + pg-mcp-register.ps1 + Read-DotEnv.ps1 parse clean (PS 5.1), fail loudly without .env keys; claude mcp add/remove dry-run OK with dummy URI; uvx --with mcp<2 postgres-mcp --help exit 0 [2026-09-01]
 
 ## Working set
 - Framework only. No product task active - next real BLC task starts fresh under the v8.3.16 kernel.
@@ -40,6 +41,7 @@ Last updated: 2026-09-01 23:28
 ## Failed / rejected (do NOT retry)
 - Local one-line pre-commit exclusion for test-hooks.sh - superseded by the shipped, suite-asserted v8.3.14 fix; do not reintroduce
 - Reporting D1/D2 upstream from inside BLC - releases are build products of the maintainer canonical tree; fixed there in v8.3.14 instead
+- npm @modelcontextprotocol/server-postgres - deprecated on npm, do not use; plain uvx postgres-mcp - crashes on mcp 2.x import, must pin --with mcp<2; non-ASCII (em-dash) inside .ps1 strings - PS 5.1 parse error
 
 ## Open loops
 - Survival test for v8.3.19 + the F9-F14 edits = the next BLC task end-to-end
@@ -47,9 +49,10 @@ Last updated: 2026-09-01 23:28
 - Confirm whether mockups/main002/index4.html matches what the client last saw - not derivable from the repo (only in baseline commit 863ef05, no call note names it); owner must say
 - Sheriff prompt divergence (no severity floor, sentinel No findings.) owed upstream at the next template build
 - Context Guard: config.json is the opt-in switch, shared runtime 4.2.4 - POINTER, re-pull before relying on it
+- Postgres MCP: ask dev team for a read-only DB role (claude_ro) instead of the app user - SQL in docs/pg-tunnel.md
 
 ## Latest evidence
 - _reports/runs/template-upgrade-v8.3.19_2026-09-01.md (gate GREEN on merge commit 27b43e7)
 
 ## Next (exactly one action)
-- Take the BLC-oriented task the owner gives next; it doubles as the survival test for v8.3.19 and the audit edits
+- Owner fills PG_SSH_HOST/PG_SSH_USER/PGUSER/PGPASSWORD/PGDATABASE in .env, then runs scripts/pg-tunnel.ps1 and scripts/pg-mcp-register.ps1 (docs/pg-tunnel.md)
