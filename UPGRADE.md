@@ -12,6 +12,10 @@ my approval → execute. Never upgrade silently.
   here, never from recollection.
 - **Releases are build products.** Zips come from the canonical source tree
   (`build-release.py`); nobody ever edits a zip or a project to "match" one.
+  **Release gate (v8.3.19): `bash scripts/release-check.sh` on the canonical
+  tree — it builds, then verifies INSIDE the unpacked artifact (strays, CG leak,
+  rot-able version literals, suites, sha). RED = do not ship. A working-tree
+  check is never the release verification (lesson [release]).
   Keep all release zips in ONE shared folder on this machine (recommended:
   `D:\claude\template-releases\`) so every project upgrades from the same
   artifact.

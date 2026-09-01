@@ -20,3 +20,4 @@ Format: `- [area] When X, do Y instead of Z. (why)`
 - 2026-09-01 — When a template turns a hand-written file into a GENERATED view
   (current.md ← current.json), seed the generator from the old file BEFORE the first
   render, or the first patch silently discards everything that was in it.
+- [release] Verify a release FROM its built artifact (unpack, then run the suites inside it), never from the working tree — the tree is where verification RUNS, so its runtime residue (.env from setup.sh, handoffs/, rotted literals) is exactly what a tree-side check cannot see. Encoded: scripts/release-check.sh is the release gate. (2026-09-01: D4 stray .env and a rotted START-HERE literal both passed tree checks and shipped)

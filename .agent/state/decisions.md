@@ -157,3 +157,19 @@ Owner also approved, as made, the three judgment calls from the v8.3.16 run
 and endorsed seeding `current.json` from the old `current.md` before the first
 render as standing practice — already in `tasks/lessons.md`. The devops audit is
 past cadence: run it before the next long job.
+
+## 2026-09-01 — upgraded template v8.3.16 → v8.3.19 (merge route, CORE unchanged)
+Owner asked to finish the queued upgrade before the next BLC task. Same major,
+every v8 marker present, `CLAUDE.md` byte-identical upstream between FROM and TO →
+merge (UPGRADE.md §2-5), no Kernel Change Rationale, no re-baseline.
+Classification (CR-stripped, three-way old/new/ours): 89 identical upstream ·
+6 replaced (`CHANGELOG.md`, `START-HERE.md`, `TEMPLATE_VERSION`, `UPGRADE.md`,
+`scripts/build-release.py`, `scripts/state-patch.py`) · 1 new
+(`scripts/release-check.sh`) · 0 hand-merges · project-owned bucket untouched
+except ONE appended line in `tasks/lessons.md` ([release], upstream's own lesson).
+D3 proven closed on this tree: `state-patch.py --self-test` GREEN under the default
+console, utf-8 AND cp1252 — the v8.3.16 workaround note is retired.
+`build-release.py` / `release-check.sh` are maintainer-tree tools (exit 2 here by
+design); their change is not exercised in BLC. Survival test = the next BLC task,
+not waived. Sheriff toggle off → probe only (OK), no live canary.
+Devops audit F9-F14 (same day) still await the owner's resolution — kept separate.
