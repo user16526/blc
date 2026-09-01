@@ -67,3 +67,29 @@
   its first commit. Verified narrow: a planted `sk-proj-…` in `temp/` is still blocked
   (rc=1). This is a template defect, not a project preference — re-check it at every
   upgrade and drop the divergence once upstream fixes it.
+
+- 2026-09-01 — trust-pill price is LIVE DATA, not a design token. The pre-v8 design
+  system locked "From $0.06"; `index4.html` ships "From $0.39"; the live site's
+  cheapest case is $0.11 [verified 2026-09-01 via WebFetch]. All three are snapshots
+  of a moving number. Resolution: the capsule now states the invariant — *the pill
+  equals the cheapest case price displayed on that same page* — and index4 is
+  CORRECT as-is ($0.39 pill, $0.39 cheapest card, internally consistent). No mockup
+  was edited. Supersedes the "From $0.06" line in the retired CLAUDE.md design system.
+
+- 2026-09-01 — `gaming-product-owner` and `gaming-ux-strategist` moved
+  `model: sonnet` → `model: opus`. Why: `.claude/rules/model-selection.md` gives the
+  strongest model to thinking-heavy phases (brainstorm, spec, plan, review), and
+  these two ARE this project's analysis/review layer — BLC ships no code, so every
+  task they run is judgment work. Consistent with the shipped roster, where every
+  analyst/reviewer (`architect`, `business-analyst`, `code-reviewer`, `ui-ux-qa`,
+  `verifier`) is opus and only `block-executor` (mechanical execution of an approved
+  plan) is sonnet. Stated, not silent, per the rule. Re-check at the next devops audit.
+
+- 2026-09-01 — trimmed both gaming agents 233→109 and 235→113 lines. The removed
+  ~120-line tail of each was a persistent-agent-memory instruction block pointing at
+  `.claude/agent-memory/<agent>/`, a directory retired earlier the same day — dead
+  instruction aimed at a nonexistent path, which would have had each agent recreate
+  the store the workspace contract forbids. Replaced with correct v8 routing
+  (memory-router targets, the decay rule, and the hard scope limit). All domain
+  expertise, the operating framework, the output format and the self-verification
+  checklist were kept verbatim — that is the knowledge the transplant exists to carry.

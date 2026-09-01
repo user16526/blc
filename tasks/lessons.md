@@ -8,3 +8,4 @@ Format: `- [area] When X, do Y instead of Z. (why)`
 - [mockups] When building or reviewing a BLC page, use real asset `<img>` tags for weapon and case art — never CSS placeholder boxes. (index2.html was marked a negative result for exactly this)
 - [mockups] Serve `mockups/main002/` over `python -m http.server 8099` before any Playwright screenshot — `file://` is blocked and fantaicon's cache-busting query strings only resolve through the server. (silent icon/font failures otherwise)
 - [scope] BLC tasks stop at the spec: product/marketing/UX deliverables only, no BloodyCase application code. (Angular/Go are the dev team's)
+- [design-system] A number that tracks a live value (prices, counts, online players) never becomes a locked design token — write the invariant instead ("the pill equals the cheapest case shown on the page"). (a hardcoded "From $0.06" silently went stale and read as a mockup bug for months)

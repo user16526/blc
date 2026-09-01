@@ -38,9 +38,13 @@
    without hitting this. Fixed here by excluding that one path from the scan
    (owner-approved). Negative control run afterwards: a planted `sk-proj-…` in
    `temp/` is still blocked, rc=1. **Owed upstream — this is a template defect.**
-2. 🟡 **Trust-pill copy conflict.** The design system carried over from the old
-   CLAUDE.md says the hero pill reads "From $0.06"; `index4.html` actually ships
-   "From $0.39". Flagged in the capsule and open-loops; NOT silently reconciled.
+2. 🟢 **Trust-pill copy conflict — RESOLVED.** The old design system said "From $0.06",
+   `index4.html` ships "From $0.39", and the live site's cheapest case is $0.11
+   [verified 2026-09-01 via WebFetch]. All three are snapshots of a moving number, so
+   none of them is "the approved copy". Resolution: the pill is LIVE DATA, not a design
+   token — the capsule now states the invariant (*the pill equals the cheapest case
+   price displayed on that same page*), which makes `index4.html` correct as-is
+   ($0.39 pill, $0.39 cheapest card). No mockup edited. Lesson appended.
 3. 🟢 `.claude/rules/local-first.md` (SQLite→cloud migration) had no referent in this
    project at all — BLC holds no database and no application code. Retired, not merged.
 4. 🟢 `manifest.md` / `repo_access=private-solo` pointed at two scripts that never
@@ -53,6 +57,20 @@
    written to the shipped template is rejected as "no parsable verdict value". This report
    uses `## Verdict — GREEN ✅`. Cosmetic, but every project hits it. Owed upstream.
 
+## Decisions taken after the first gate (owner: "fix all of your own decisions")
+- **Trust-pill price** — not "pick $0.06 or $0.39": the number tracks a live value, so
+  it stops being a design token and becomes an invariant. index4 unchanged.
+- **Model** — both gaming agents sonnet → opus. `model-selection.md` gives the strongest
+  model to judgment work, and with no code in this project every task they run IS
+  judgment work; the shipped roster puts every analyst/reviewer on opus and only
+  `block-executor` on sonnet.
+- **Persona trim** — the ~120-line tail of each agent instructed it to write to
+  `.claude/agent-memory/<agent>/`, retired hours earlier. Dead instruction aimed at a
+  nonexistent path that would have rebuilt the store the workspace contract forbids.
+  Cut and replaced with real v8 routing; all domain expertise kept verbatim.
+- **Template defects** — written up in `docs/template-defects-owed-upstream_2026-09-01_v1.md`
+  and logged as risk R1, since they cannot be fixed from inside this project.
+
 ## Decisions taken mid-run
 - Transplant over merge — no v8 markers present (see decisions.md).
 - Retire the 7 pre-v8 rules rather than merge them: each guarantee is now owned by a
@@ -64,10 +82,13 @@
   project (product/marketing/UX only), so there is no lint/test/build to define.
 
 ## Next steps
-- [ ] Confirm the trust-pill price ("From $0.06" vs "From $0.39").
-- [ ] Confirm `model: sonnet` on both gaming agents.
-- [ ] Decide on trimming the two ~230-line agent personas.
-- [ ] Merge `template-upgrade-v8.3.13` into `main` (owner's call).
+- [x] Trust-pill price — resolved as live data (finding 2).
+- [x] Model choice — both gaming agents moved sonnet → opus, stated not silent.
+- [x] Persona trim — done (233→109, 235→113 lines).
+- [x] Merge `template-upgrade-v8.3.13` into `main`.
+- [ ] Report template defects D1/D2 upstream at the next template build
+      (`docs/template-defects-owed-upstream_2026-09-01_v1.md`). Not actionable from
+      inside this project; tracked as risk R1 + one open loop.
 
 ## Artifacts
 - `_reports/migration-pre-v8-to-v8.3.13_2026-09-01.md` — the two-pile inventory

@@ -40,11 +40,18 @@ Apply to every future BLC HTML mockup.
   keyframe) + one smaller offset secondary. CRT scanline overlay:
   `repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)`.
   Pulsing deposit badge: `badge-pulse` keyframe, 96px circle, hero top-right.
-- **Trust signals (approved copy)** — "Provably Fair" | "Instant Withdrawal" |
-  "From $0.06" — three inline pills inside the hero below the CTAs.
-  ⚠ UNRESOLVED (2026-09-01): `index4.html` actually ships "From $0.39". Either the
-  approved copy is stale or index4 diverged — confirm the real minimum case price
-  with the owner before the next mockup iteration. Do not silently pick one.
+- **Trust signals (approved copy)** — three inline pills inside the hero below the
+  CTAs: "Provably Fair" | "Instant Withdrawal" | "From $<cheapest case price>".
+  The first two are fixed strings (both confirmed live on bloodycase.com,
+  2026-09-01). The third is **LIVE DATA, not a design token** — the invariant is:
+  *the pill must equal the cheapest case price actually displayed on that same page.*
+  Never hardcode it into the design system; that is exactly how it went stale.
+  - Live site cheapest case: **$0.11** [verified 2026-09-01 via WebFetch] — a POINTER
+    that decays, re-pull before quoting it publicly (`verify-external-state.md`).
+  - `index4.html` shows $0.39 in the pill and $0.39 as its cheapest case card, so it
+    is internally consistent and correct as a mockup. The old "From $0.06" figure in
+    the pre-v8 CLAUDE.md was a snapshot of the live minimum on 2026-05-18 and is dead.
+
 - **Glassmorphism header** — `backdrop-filter: blur(12px);`
   `box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.3);`
 - **Header accent strip** — `.page-header::before { height: 2px; background:

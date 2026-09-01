@@ -2,10 +2,8 @@
 <!-- Unresolved tasks / pending approvals. Close when done. -->
 <!-- - [ ] waiting on my approval to deploy staging -->
 
-- [ ] Confirm the hero trust-pill minimum price: the approved copy says "From $0.06",
-      `mockups/main002/index4.html` ships "From $0.39". Owner decision.
-- [ ] Confirm `model: sonnet` for `gaming-product-owner` / `gaming-ux-strategist`
-      (left untouched per `.claude/rules/model-selection.md`).
-- [ ] Decide whether to trim the two ~230-line gaming agent personas (proposed, not taken).
-- [ ] Drop the `scripts/pre-commit` divergence once the template fixes the
-      test-hooks.sh secret-scan self-conflict upstream.
+- [ ] Report the two template defects upstream at the next template build, then drop
+      the `scripts/pre-commit` divergence once D1 is fixed there.
+      Written up: `docs/template-defects-owed-upstream_2026-09-01_v1.md`.
+      (Not actionable from inside this project — the canonical source tree lives
+      elsewhere and releases are build products.)
