@@ -25,3 +25,4 @@ Format: `- [area] When X, do Y instead of Z. (why)`
 - [mcp] crystaldba postgres-mcp needs `uvx --with "mcp<2"`: it imports mcp.server.fastmcp, removed in mcp 2.x. (2026-09-01)
 - [cost] A Skill load or a big Read enters the context ONCE but is re-read on every later API call; a 90k-token Read in a 190-call session cost ~$7 of cache reads by itself. Before Read/Skill on anything >10k tokens: grep/head the part needed, or send it to a subagent. Measure with scripts/session-cost.py. (2026-09-02)
 - [cost] Transcript usage records repeat per content block: dedupe by message.id before summing tokens, else totals are 2-3x too high. (2026-09-02)
+- 2026-09-02: Postgres MCP validator (restricted) rejects AT TIME ZONE and WITHIN GROUP; use now() - interval, min/max/avg, window functions. Probe a new construct with a 1-row query before building the real one.

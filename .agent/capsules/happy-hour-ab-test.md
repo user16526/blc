@@ -1,5 +1,5 @@
 # Capsule: Happy Hour A/B test (BloodyCase)
-Last updated: 2026-09-02 (restored from the remote host's Claude memory
+Last updated: 2026-09-02 (dev update from eugene_s added; earlier: restored from the remote host's Claude memory
 `~/.claude/projects/-home-sparrow/memory/happy_hour_ab_test.md`, last real work 2026-08-27;
 sessions 2026-08-31 and 2026-09-01 on the host were restores only, no new decisions)
 Owner lens: Product / Growth
@@ -35,12 +35,25 @@ H2 `0 18 * * *`, duration 180.
 - Planners have no end-date field → manual `is_active=false` after day 21, or a dev ticket.
 - No A/B-group concept in the service: H0/H1/H2 assignment needs an experiment/feature-flag layer or a
   frontend gate — not designed yet.
-- Median first deposit: new clients $5.99 vs returning $19.99.
+- Median first deposit: new clients $5.99 vs returning $19.99. Standing deposit bonus (live DB 2026-09-02):
+  1st deposit 20 % / 25 % (>= ~$20), 2+ deposits 6-10 %; bonus_amount is logged per deposit in public.deposits.
 
 **6-month hour-of-day analysis (queried 2026-08-26, DB `bloody`, UTC, bots/bloggers excluded):**
 deposits trough 02–05 UTC (457–630/hr) vs peak 18–21 (2144–2342/hr) ≈ 3.5–5×; case bets ≈ 2× gap;
 battles lowest 05 UTC, highest 22–23 UTC (right after H2). New-client share of deposits ~20–28 % in
 every hour → time of day is not a lever for new vs returning.
+
+## Dev update (eugene_s, comments dated ~2026-08-27 and 2026-09-01)
+- Question asked 2026-08-27, unanswered by us: show HH to guests too (needs backend work, variant can be
+  reset by clearing cookies, no cross-device consistency) or logged-in only (one variant per user everywhere,
+  minimal changes). Dev recommended logged-in only.
+- IMPLEMENTED 2026-09-01 without waiting: logged-in users only, experiment on 100 % of logged-in traffic,
+  33.3 % each: control (not shown) / 02 UTC group / 18 UTC group. Live on UAT only; dev will enable on prod
+  when the code ships. Guests and control see nothing.
+- Events sent: `happy_hour_gate_shown` (group resolved), `happy_hour_shown` (modal shown; groups 1-2, in
+  window only), `happy_hour_spun` (conditions met, spin started). Dev asks what else to track.
+- Effect on blockers: #6 (A/B assignment layer) CLOSED for logged-in users. #3 (what prize_cost logs) and
+  #5 (end date) still open; the event list has no prize/bonus-applied event yet.
 
 ## Non-negotiables
 - Only prize types that work today go into the initial test; anything needing dev work is a ticket, not a slot.
@@ -50,14 +63,17 @@ every hour → time of day is not a lever for new vs returning.
   Deposit-Bonus-only plan is the source of truth unless renegotiated.
 
 ## Active risks / open blockers (as of 2026-08-27)
-1. Winner-take-max vs standing first-deposit bonus: HH bonus is a no-op for new clients if the standing
-   bonus % is higher. Standing first-deposit bonus % still UNKNOWN — must be obtained first.
+1. RESOLVED 2026-09-02 from live DB (_reports/blc-data_2026-09-02_0030_v1.md): standing 1st-deposit bonus =
+   20 % (< ~$19) / 25 % (>= ~$19.76), applied on 99.9 % of first deposits; deposits 2+ get 6-10 % (mostly
+   6-7 %). Consequence (winner-take-max): HH slots <= 25 % are a no-op for new clients; any slot >= 10 %
+   beats the standing bonus for returning clients. Decision still owed: slots 30 %+ or a different prize
+   type for new clients (see #2).
 2. Follow-on: give NEW clients Free Ticket / Coins and reserve Deposit Bonus for RETURNING clients?
 3. Unverified with dev: what `prize_won` / `prize_cost` actually log (nominal roll vs applied %).
 4. Habituation: one static prize × 21 days may decay by week 2–3. Proposed: 3–5 bonus % slots now,
    vary composition by WEEK (not day), keep H1/H2 symmetric. Not decided with manager.
 5. No planner end date → manual stop or dev ticket.
-6. A/B assignment layer (hash of client_id → H0/H1/H2) has no home yet.
+6. CLOSED 2026-09-01: dev implemented the split for logged-in users (see Dev update). Still to confirm: assignment persisted in DB and joinable to deposits by client_id.
 Dev tickets identified: real `Weight` selection; re-enable spin-once check; planner end-date field.
 
 ## Read when
