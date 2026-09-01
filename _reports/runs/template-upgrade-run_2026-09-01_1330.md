@@ -1,7 +1,10 @@
 # Template upgrade run — 2026-09-01 13:30
 
-## Verdict
-GREEN ✅
+## Verdict — GREEN ✅
+<!-- The value must sit on the heading line: quality-gate.sh greps the FIRST line
+     containing 'verdict' and looks for GREEN/YELLOW/RED on it, so the
+     'heading then value on the next line' shape in docs/RUN_REPORT_TEMPLATE.md
+     does not parse. Template mismatch, logged as finding 6. -->
 
 ## Inputs
 - Spec: `D:\claude\1-claude-templates\update-new.txt` → `UPGRADE.md` **section T** (transplant)
@@ -44,6 +47,11 @@ GREEN ✅
    existed here (`switch-repo-access.sh`, `migrate.sh`). Retired.
 5. 🟢 `index4.html` logs one console error: `favicon.ico` 404. Pre-existing, cosmetic,
    unrelated to the upgrade.
+6. 🟢 **`docs/RUN_REPORT_TEMPLATE.md` does not satisfy `quality-gate.sh`.** The template
+   puts the verdict on the line AFTER the `## Verdict` heading; the gate greps the first
+   line containing "verdict" and looks for GREEN/YELLOW/RED on that same line, so a report
+   written to the shipped template is rejected as "no parsable verdict value". This report
+   uses `## Verdict — GREEN ✅`. Cosmetic, but every project hits it. Owed upstream.
 
 ## Decisions taken mid-run
 - Transplant over merge — no v8 markers present (see decisions.md).
