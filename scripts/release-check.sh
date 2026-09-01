@@ -60,9 +60,22 @@ leak="$(find . -path './context-guard/*' -o -name 'install-context-guard.py' -o 
 
 # Version literals that can rot: a release zip name or a bare template version
 # in prose, outside the files that legitimately hold history.
-rot="$(grep -rn -E 'v8_3_[0-9]+\.zip|Canonical source: `v8' --include='*.md' . \
-       | grep -v -E 'CHANGELOG\.md|TEMPLATE-DELTA\.md' || true)"
-[ -z "$rot" ] && ok "no rot-able version literals outside history docs" || no "version literal will rot: $rot"
+rot="$(grep -rn -E 'v8_3_[0-9]+\.zip|Canonical source: `v8|CLAUDE\.md` = [0-9]+ lines' --include='*.md' . \
+       | grep -v -E 'CHANGELOG\.md' || true)"
+[ -z "$rot" ] && ok "no rot-able version/count literals outside history docs" || no "literal will rot: $rot"
+
+# Blankness (v8.3.21, owner decision): NO file in the shipped template names a
+# field project — lineage included (history refers to them as A/B/C). The names
+# themselves live in release-blocklist.txt on the canonical tree, which
+# build-release.py keeps OUT of the artifact; a missing blocklist is RED, never
+# a vacuous pass.
+if [ -f "$root/release-blocklist.txt" ]; then
+  field_projects="$(grep -v -E '^[[:space:]]*#|^[[:space:]]*$' "$root/release-blocklist.txt" | paste -sd'|')"
+  leaknames="$(grep -rn -i -I -E "$field_projects" . 2>/dev/null || true)"
+  [ -z "$leaknames" ] && ok "no field project named anywhere in the artifact (blank template)" || no "field project named in artifact: $(echo "$leaknames" | head -3 | tr '\n' ' ')"
+else
+  no "release-blocklist.txt missing on the canonical tree — blankness check cannot run"
+fi
 
 head -3 CHANGELOG.md | grep -q "## $tv" && ok "CHANGELOG top entry is $tv" || no "CHANGELOG top entry is not $tv"
 

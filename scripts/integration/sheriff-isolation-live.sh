@@ -53,7 +53,7 @@ echo "repo:  $ROOT"
 #
 # KNOWN LIMIT, stated rather than papered over: a populated submodule is a gitlink here,
 # so its INTERNAL files are not walked. A review that mutated a submodule's working tree
-# would not be caught. hivoice has no submodules; a project that gains one must extend
+# would not be caught. field project B has no submodules; a project that gains one must extend
 # this with `git submodule foreach`.
 repo_manifest(){ # $1 = a scratch path to stage the NUL-delimited file lists in
   git ls-files -z                          > "$1.t" 2>/dev/null

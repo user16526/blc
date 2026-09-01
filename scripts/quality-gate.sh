@@ -93,7 +93,7 @@ if [ "$TRIVIAL" -eq 0 ]; then
     for sec in Verdict Inputs Findings Artifacts; do
       grep -qi "$sec" "$latest" || bad "run report missing section: $sec"
     done
-    # The VALUE of the verdict matters, not the word "Verdict". BLC finding D2
+    # The VALUE of the verdict matters, not the word "Verdict". field project C finding D2
     # (2026-09-01): the shipped report template puts the value on the line AFTER
     # "## Verdict", so the gate reads the header line AND the next one.
     rv=$(grep -iEA1 -m1 'verdict' "$latest" | grep -oEi 'GREEN|YELLOW|RED' | head -1 | tr '[:lower:]' '[:upper:]')

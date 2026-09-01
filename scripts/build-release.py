@@ -45,7 +45,8 @@ PREFIX = os.path.basename(ROOT)
 EXCLUDE_DIRS = {"__pycache__", ".git", ".pytest_cache", "node_modules",
                 ".claude/handoffs"}
 EXCLUDE_SUFFIX = (".pyc", ".pyo", ".bak", ".cg-tmp", ".orig", ".rej")
-EXCLUDE_NAMES = {".env", ".DS_Store", "Thumbs.db"}
+EXCLUDE_NAMES = {".env", ".DS_Store", "Thumbs.db",
+                 "release-blocklist.txt"}  # gate input, never payload
 
 # Context Guard release only — deliberately absent from the project template.
 CG_ONLY = ("context-guard/", "scripts/install-context-guard.py",
@@ -114,7 +115,7 @@ def main():
     ap.add_argument("--template-name", default=None,
                     help="template zip filename; default derives from "
                          "TEMPLATE_VERSION (fallback: the source dir name) — "
-                         "never a hard-coded release name (hivoice finding, "
+                         "never a hard-coded release name (field project B finding, "
                          "2026-08-30: the old literal default would os.replace "
                          "new content onto an OLD archived artifact)")
     # 2026-08-27T00:00:00Z — pinned so the same tree always hashes the same

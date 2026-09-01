@@ -21,7 +21,7 @@ root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 if [ -f "$root/scripts/secret-patterns.sh" ]; then . "$root/scripts/secret-patterns.sh"; else
   SECRET_REGEX='(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'
 fi
-# EXCLUSION, exactly one path (BLC finding D1, 2026-09-01): scripts/test-hooks.sh
+# EXCLUSION, exactly one path (field project C finding D1, 2026-09-01): scripts/test-hooks.sh
 # carries SYNTHETIC secrets as negative controls, so scanning it blocked every
 # v8 project's FIRST commit. The suite itself asserts this exclusion stays
 # narrow: a synthetic secret in any OTHER file must still block.

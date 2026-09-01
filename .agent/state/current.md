@@ -3,7 +3,7 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-02 01:55
+Last updated: 2026-09-02 02:26
 
 ## Goal
 - Happy Hour A/B test (BloodyCase) resumed in BLC: design + blockers restored from the remote host's Claude memory into .agent/capsules/happy-hour-ab-test.md; next step is the owner's pick among the 6 open blockers
@@ -13,14 +13,14 @@ Last updated: 2026-09-02 01:55
 - Upgrades are HIGH-row: checkpoint branch first, rollback = git checkout main
 
 ## Verified (evidence, not memory)
-- template_version: v8.3.19 (merge commit 27b43e7, gate GREEN)
-- core_sha: unchanged ec9f3774 - no kernel change, no re-baseline
-- test_hooks: 146/0 GREEN
+- template_version: v8.3.21 (merge route 2026-09-02, gate GREEN; run report _reports/runs/template-upgrade-v8.3.21_2026-09-02.md)
+- core_sha: unchanged ec9f3774 across v8.3.19->v8.3.21 - no kernel change, no re-baseline
+- test_hooks: 146/0 GREEN on the v8.3.21 tree [2026-09-02]
 - state_patch_self_test: GREEN under default console, utf-8 and cp1252 - D3 closed on this tree
 - sheriff_probe: OK - automation available (toggle off)
-- release_zip_sha256: de4e823e... matches shipped release/v8_3_19.sha256
+- release_zip_sha256: v8_3_21.zip sha256 c93041a8... computed here - NO .sha256 companion shipped, unverified against a published value
 - devops_audit: 2026-09-01 vs Fable 5.1 guide - RESOLVED: F9-F14 applied (owner), suite 146/0; sheriff prompt is now a BLC-local canonical divergence (decisions.md)
-- template_newest_release: v8.3.19 (2026-09-01) - not security-relevant; TEMPLATE_VERSION still v8.3.16
+- template_newest_release: v8.3.21 (2026-09-02) - docs/comment-only gap from v8.3.19; TAKEN, TEMPLATE_VERSION = v8.3.21
 - pg_tunnel_scripts: scripts/pg-tunnel.ps1 + pg-mcp-register.ps1 + Read-DotEnv.ps1 parse clean (PS 5.1), fail loudly without .env keys; claude mcp add/remove dry-run OK with dummy URI; uvx --with mcp<2 postgres-mcp --help exit 0 [2026-09-01]
 - pg_tunnel_e2e: ssh key auth sparrow@168.119.74.101 OK; host bloodyanalytics02 runs Postgres 18 on 5432, db bloody; tunnel up -> localhost:5432 TcpTestSucceeded; claude mcp get postgres = Connected (restricted mode) [2026-09-02 via scripts/pg-tunnel.ps1 + pg-mcp-register.ps1]
 - mcpb_command: .claude/commands/mcpb.md registered as /mcpb; scripts/pg-tunnel-ensure.ps1 starts the tunnel in a minimized window when 5432 is closed and reports UP when it is [2026-09-02]
@@ -29,7 +29,7 @@ Last updated: 2026-09-02 01:55
 - happy_hour_blocker1: standing 1st-deposit bonus 20%/25% (>=~$20), 2+ deposits 6-10%; from live public.deposits 90d, report _reports/blc-data_2026-09-02_0030_v1.md [2026-09-02]
 
 ## Working set
-- Framework only. No product task active - next real BLC task starts fresh under the v8.3.16 kernel.
+- Framework only. No product task active - next real BLC task starts fresh under the v8.3.21 kernel.
 - Approved mockup design system locked 2026-05-18: .agent/capsules/mockups-design-system.md
 - Product/domain facts: .agent/capsules/bloodycase-product.md
 
@@ -42,6 +42,7 @@ Last updated: 2026-09-02 01:55
 - D3/D4 SHIPPED UPSTREAM in v8.3.17 (canonical zip sha256 415594db, verified here against the artifact); upgrade queued not taken - owner set normal cadence
 - Devops audit 2026-09-01: lineup moved Fable 5 -> Fable 5.1; F5 (opus/sonnet cost table) closed - aliases and prices still valid, effort is the cheaper lever
 - v8.3.16 -> v8.3.19 taken by merge route 2026-09-01: 6 replaced, 1 new, 0 hand-merges, CORE unchanged; merged to main as 27b43e7
+- v8.3.19 -> v8.3.21 taken by merge route 2026-09-02: 13 replaced, 0 hand-merges, TEMPLATE-DELTA.md deleted, CORE unchanged; survival test waived (zero executable bytes changed)
 
 ## Failed / rejected (do NOT retry)
 - Local one-line pre-commit exclusion for test-hooks.sh - superseded by the shipped, suite-asserted v8.3.14 fix; do not reintroduce
@@ -60,6 +61,7 @@ Last updated: 2026-09-02 01:55
 - Happy Hour blockers 1-6 listed in .agent/capsules/happy-hour-ab-test.md; #1 (standing first-deposit bonus %) gates the prize design; #3 (prize_cost logging semantics) gates the metric
 - Happy Hour: reply to eugene_s owed (logged-in-only OK; tracking additions; prod switch date; day-21 stop)
 - /mcpb first live run DONE 2026-09-02; schema capsule .agent/capsules/blc-db-schema.md started (deposits only) - extend on next query
+- v8_3_21.zip shipped without a .sha256 companion - owner publishes/compares one (hash in run report); decisions.md 2026-08-30 seed line still names a field project (template aliased it to A) - project-owned, owner decides
 
 ## Latest evidence
 - _reports/runs/template-upgrade-v8.3.19_2026-09-01.md (gate GREEN on merge commit 27b43e7)

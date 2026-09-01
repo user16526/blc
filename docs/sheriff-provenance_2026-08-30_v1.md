@@ -1,6 +1,6 @@
 # SHERIFF mechanism — canonical export for the template (proposed v8.3.3)
 
-Exported from `hermipro-vps` @ `05160f469d8f`, branch `feat/cg-4.2.4-unknown-keys`, 2026-08-30.
+Exported from field project A @ `05160f469d8f`, branch `feat/cg-4.2.4-unknown-keys`, 2026-08-30.
 Every file below is **byte-identical** to the working, proven copy in that project
 (copied and hash-verified, not retyped).
 

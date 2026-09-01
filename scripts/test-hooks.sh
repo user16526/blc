@@ -149,7 +149,7 @@ if git commit -qm "clean commit" >/dev/null 2>&1; then
 else
   no "pre-commit blocked a clean commit"
 fi
-# BLC finding D1 (2026-09-01): the suite carries synthetic secrets as negative
+# Field project C finding D1 (2026-09-01): the suite carries synthetic secrets as negative
 # controls, so a project's FIRST commit — which stages this very file — must
 # not be blocked by the secret scan. And the exclusion must stay NARROW.
 git add -f scripts/test-hooks.sh 2>/dev/null
@@ -165,7 +165,7 @@ else
   ok "the D1 exclusion is narrow: a secret in any OTHER file still blocks"
 fi
 git rm -q --cached leak.py >/dev/null 2>&1; rm -f leak.py
-# BLC finding D2 (2026-09-01): a report written exactly to the shipped template
+# Field project C finding D2 (2026-09-01): a report written exactly to the shipped template
 # (verdict on the line AFTER "## Verdict") must yield a parsable verdict.
 printf '## Verdict\nGREEN ✅\n## Inputs\nx\n## Findings\nx\n## Artifacts\nx\n' > d2-report.md
 rv=$(grep -iEA1 -m1 'verdict' d2-report.md | grep -oEi 'GREEN|YELLOW|RED' | head -1)
@@ -222,7 +222,7 @@ git checkout -q -- ok.txt 2>/dev/null
 
 # ---------------------------------------------------------------------------
 # test-hooks.sh SECTION 8 -- sheriff-review.sh reviewer-isolation guarantees
-# Splice-ready fragment (hermipro-vps, 2026-08-30, post sheriff round 5).
+# Splice-ready fragment (field project A, 2026-08-30, post sheriff round 5).
 # 29 assertions; verified standalone against this contract: PASS: 29, FAIL: 0.
 # New since v8.3.4: the single-spelling check (round 5) -- see NOTE.md.
 #
