@@ -46,6 +46,9 @@ reduces rubber-stamping; it does not give you truly independent judges. So: for
 genuinely high-stakes/irreversible work, the human is the real independent reviewer
 — don't treat 3 green subagents as a substitute. (On Codex, "sequential passes"
 are weaker still: same weights, same session — closer to one opinion than three.)
+When the lead runs a different model than the reviewers (e.g. a Fable 5.1 lead with
+`opus` reviewers) the correlation is partial, not total — still not a substitute for
+the human on irreversible work.
 
 **Model cost (tunable):** reviewers default to `opus` for max quality (time >
 tokens). If a project's token budget matters more, downgrade the non-high-risk

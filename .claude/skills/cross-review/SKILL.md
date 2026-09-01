@@ -72,7 +72,7 @@ meaning looks identical to the probe.
 1. **Package**: finished diff + the task's acceptance criteria +
    `prompts/sheriff-review.md`. Sheriff sees ONLY this — no CLAUDE.md, no
    skills, no state files. Independence needs less context, not more.
-2. **SHERIFF** returns ≤5 findings, critical/high only, numbered [1]–[5].
+2. **SHERIFF** returns ≤5 findings, severity-tagged, most severe first, numbered [1]–[5].
 3. **AUTHOR** answers every finding, strictly one of:
    - `[N] ✅ fixed:` what changed — silently, no self-justification;
    - `[N] 🧪 test:` provable by a test → write the test; its result IS the answer;

@@ -62,6 +62,9 @@ Apply to every future BLC HTML mockup.
   CSS placeholder boxes are a known regression — that is exactly why index2 was
   marked a negative result.
 
+- **Targeted edits only.** Edit a mockup on the exact lines (Edit tool or sed); never
+  regenerate an `index*.html` wholesale — output cost and an unreviewable diff.
+
 ## Active risks
 - [open] The fantaicon font is fetched from a third-party Netlify host. The local
   copies in `index_files/` are the only guarantee — if a mockup ever references the

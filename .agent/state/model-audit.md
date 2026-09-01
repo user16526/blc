@@ -19,6 +19,12 @@ Audited against (a POINTER — re-check live on every audit, per model-selection
   (`gpt*`) covers them.
 
 ## Log (append-only)
+- 2026-09-01 (2) — RESOLUTION of F9-F14 (owner: "finish the audits" = apply all):
+  F9 checklists cut (2 agents) · F10 ambiguity bullet rewritten · F11 sheriff
+  severity floor dropped, cap kept, sentinel "No findings." (prompt .md + SKILL.md;
+  BLC-local divergence from the template's sheriff files, recorded in decisions.md)
+  · F12 narration line rewritten, line-68 conflict resolved · F13 sentence added
+  · F14 capsule line added. Suite 146/0. Survival test = next BLC task.
 - 2026-09-01 — audit vs the Fable 5.1 guide (model changed today) + template
   freshness (v8.3.19 available, not security). Verdict YELLOW: F9-F14 proposed,
   none CORE; F5 (July) closed by F13. Harness 146/0, gate GREEN. Awaiting the

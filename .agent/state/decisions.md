@@ -173,3 +173,14 @@ console, utf-8 AND cp1252 — the v8.3.16 workaround note is retired.
 design); their change is not exercised in BLC. Survival test = the next BLC task,
 not waived. Sheriff toggle off → probe only (OK), no live canary.
 Devops audit F9-F14 (same day) still await the owner's resolution — kept separate.
+
+## 2026-09-01 — audit F9-F14 applied; sheriff prompt is now a BLC-local divergence
+Owner applied all six audit edits. Five are project-owned files (agents, a rule,
+the orchestration skill, the mockups capsule). One is NOT: F11 changes the sheriff
+prompt (`.claude/skills/cross-review/prompts/sheriff-review.md`, the bullet and the
+"No findings." sentinel) and one line of `cross-review/SKILL.md`. Sheriff files are
+template-owned and "template wins" on upgrade unless this file records ours as
+canonical — so: **the BLC sheriff prompt is canonical here until the template drops
+its severity floor.** Rationale: current models follow "critical/high only"
+literally and under-report; the 5-finding cap already bounds cost. Owed upstream at
+the next template build (field report, not a local patch elsewhere).

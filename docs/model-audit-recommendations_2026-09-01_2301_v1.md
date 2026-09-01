@@ -114,13 +114,13 @@ by "take v8.3.19"; merge scope grows by `scripts/release-check.sh` (new),
 ## Resolution table (owner fills the last column)
 | # | Where | Type | Recommend | Decision |
 |---|---|---|---|---|
-| F9 | 2 agent files | cut ≈17 lines | apply | |
-| F10 | gaming-product-owner.md | rewrite 1 bullet | apply | |
-| F11 | sheriff-review.md | rewrite 1 bullet (+sentinel check) | apply | |
-| F12 | communication.md:71 | rewrite 1 line | apply | |
-| F13 | orchestration/SKILL.md | add 1 sentence | apply (record-only otherwise) | |
-| F14 | mockups capsule | add 1 line | apply | |
-| — | template v8.3.19 | upgrade (HIGH row, own task) | queue as next task | |
+| F9 | 2 agent files | cut ≈17 lines | apply | applied 2026-09-01 |
+| F10 | gaming-product-owner.md | rewrite 1 bullet | apply | applied 2026-09-01 |
+| F11 | sheriff-review.md | rewrite 1 bullet (+sentinel check) | apply | applied 2026-09-01 |
+| F12 | communication.md:71 | rewrite 1 line | apply | applied 2026-09-01 |
+| F13 | orchestration/SKILL.md | add 1 sentence | apply (record-only otherwise) | applied 2026-09-01 |
+| F14 | mockups capsule | add 1 line | apply | applied 2026-09-01 |
+| — | template v8.3.19 | upgrade (HIGH row, own task) | queue as next task | done 2026-09-01 (27b43e7) |
 
 Survival test after approved edits: the v8.3.19 upgrade itself is the natural
 end-to-end task — a removed line whose problem returns goes back in.

@@ -65,10 +65,12 @@ If the answer is longer than roughly one screen: TL;DR on top, most important fi
 details below their own heading. I must never read background to find the decision.
 
 ## Don'ts
-- No preamble/backstory before the conclusion; no closing recap of what you just said.
+- No preamble/backstory before the conclusion; a short answer is not restated at its
+  end (the closing recap below is for long tool tasks only).
 - One paragraph = one thought. 5 short bullets beat 20 lines of prose.
 - A table only when it is genuinely faster to compare.
-- Don't narrate the internal process or every shell/tool step.
+- Don't narrate every shell/tool step. Do give one opening line on any task longer
+  than a few tool calls, a Found/Next line at each phase change, and a closing recap.
 - No motivational filler, no excess politeness, no softening.
 - Don't disguise a problem: a blocker is called a blocker.
 - Don't turn an edge case into a new architecture without proof it is needed.

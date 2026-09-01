@@ -3,7 +3,7 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-01 23:20
+Last updated: 2026-09-01 23:28
 
 ## Goal
 - BLC framework is on template v8.3.19; no product task active - owner is about to give a BLC-oriented task
@@ -19,7 +19,7 @@ Last updated: 2026-09-01 23:20
 - state_patch_self_test: GREEN under default console, utf-8 and cp1252 - D3 closed on this tree
 - sheriff_probe: OK - automation available (toggle off)
 - release_zip_sha256: de4e823e... matches shipped release/v8_3_19.sha256
-- devops_audit: 2026-09-01 vs Fable 5.1 guide - YELLOW, F9-F14 proposed, none CORE; harness 146/0, gate GREEN at 3a84df6
+- devops_audit: 2026-09-01 vs Fable 5.1 guide - RESOLVED: F9-F14 applied (owner), suite 146/0; sheriff prompt is now a BLC-local canonical divergence (decisions.md)
 - template_newest_release: v8.3.19 (2026-09-01) - not security-relevant; TEMPLATE_VERSION still v8.3.16
 
 ## Working set
@@ -42,14 +42,14 @@ Last updated: 2026-09-01 23:20
 - Reporting D1/D2 upstream from inside BLC - releases are build products of the maintainer canonical tree; fixed there in v8.3.14 instead
 
 ## Open loops
-- Resolve audit findings F9-F14: owner apply/veto per line (docs/model-audit-recommendations_2026-09-01_2301_v1.md)
-- Survival test for v8.3.19 = the next BLC task end-to-end (not waived: executable bytes changed)
+- Survival test for v8.3.19 + the F9-F14 edits = the next BLC task end-to-end
 - Owner deletes temp/template-new and temp/template-old (guard blocks recursive deletes from the agent)
-- Confirm whether mockups/main002/index4.html matches what the client last saw before iterating
+- Confirm whether mockups/main002/index4.html matches what the client last saw - not derivable from the repo (only in baseline commit 863ef05, no call note names it); owner must say
+- Sheriff prompt divergence (no severity floor, sentinel No findings.) owed upstream at the next template build
 - Context Guard: config.json is the opt-in switch, shared runtime 4.2.4 - POINTER, re-pull before relying on it
 
 ## Latest evidence
 - _reports/runs/template-upgrade-v8.3.19_2026-09-01.md (gate GREEN on merge commit 27b43e7)
 
 ## Next (exactly one action)
-- Take the BLC-oriented task the owner gives next; it doubles as the v8.3.19 survival test
+- Take the BLC-oriented task the owner gives next; it doubles as the survival test for v8.3.19 and the audit edits
