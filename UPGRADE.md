@@ -62,7 +62,7 @@ Compare files CR-STRIPPED (e.g. hash `tr -d '\r' < file`), never raw bytes:
 `.gitattributes` pins only `*.sh`/`*.py` to LF and leaves `* text=auto`, so a
 Windows worktree checks `.md` out as CRLF while release zips are uniformly LF —
 a raw hash sweep invents divergences that do not exist and manufactures hand-
-merges (hivoice, 2026-08-31). Line-ending-only difference == identical.
+merges (field project B, 2026-08-31). Line-ending-only difference == identical.
 - **Template-owned, unmodified here** (byte-identical to the old template /
   never touched): replace with the new version. Typical: `scripts/*`,
   `.claude/commands/*`, `docs/ROLES.md`, unedited template skills/rules.

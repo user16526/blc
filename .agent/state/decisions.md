@@ -184,3 +184,14 @@ canonical — so: **the BLC sheriff prompt is canonical here until the template 
 its severity floor.** Rationale: current models follow "critical/high only"
 literally and under-report; the 5-finding cap already bounds cost. Owed upstream at
 the next template build (field report, not a local patch elsewhere).
+
+- 2026-09-02 — upgraded template v8.3.19→v8.3.21 by the merge route, unattended
+  on the owner's "continue to the end" go-ahead. Both gap entries are docs/comment
+  only (zero runtime code change): 13 template-owned files replaced, 0 hand-merges,
+  16 kept ours (template side unchanged), `TEMPLATE-DELTA.md` deleted with the
+  template, CORE byte-identical (no re-baseline). Survival test WAIVED under the
+  §5 zero-executable-bytes rule; §4 devops audit satisfied by the 2026-09-01 audit
+  (1 day old). Owed: no `.sha256` shipped for `v8_3_21.zip` (hash `c93041a8…`
+  recorded in the run report); the 2026-08-30 sheriff seed line here still names a
+  field project (project-owned, left as is). Run report:
+  `_reports/runs/template-upgrade-v8.3.21_2026-09-02.md`.

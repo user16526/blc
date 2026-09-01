@@ -1,5 +1,72 @@
 # Template Changelog
 
+## v8.3.21 — clean template: no field project named anywhere (2026-09-02)
+No code changes in behavior: every touched script line is a comment (diff it),
+plus the release-side gate and one build exclude. Owner decision: the template
+is a clean base for standup and upgrade, so no field project is named in ANY
+file — history included. v8.3.20 had exempted lineage files ("provenance is
+not a leak"); that exemption is withdrawn. Provenance is kept, names are not:
+history now refers to **field project A** (the pilot — staged the
+communication rule and the sheriff wrapper), **B** (CR-agnostic classification,
+freshness-check class, sheriff round 6) and **C** (findings D1–D4). The owner
+holds the mapping; the names live only in `release-blocklist.txt` on the
+canonical tree, which build-release.py now excludes from both artifacts.
+- DELETE TEMPLATE-DELTA.md — a staging delta report about field project A,
+  history not instructions. Its one open follow-up is carried here so it is
+  not lost: field project A hardened `scripts/secret-patterns.sh` with
+  WireGuard `PrivateKey`, wgcf `license_key`/`access_token` and Netscape
+  cookie-file shapes (+3 suite assertions) — still an upstream candidate;
+  propose it from that project's diff when next at hand.
+- Names replaced with A/B/C in: CHANGELOG (21 lines), comments in test-hooks.sh,
+  state-patch.py, quality-gate.sh, pre-commit, build-release.py,
+  sheriff-isolation-live.sh; UPGRADE.md §2; decisions.md; the sheriff
+  provenance doc. START-HERE / README_UA no longer point at the deleted file.
+- release-check.sh: the blankness assertion now sweeps the WHOLE unpacked
+  artifact, reading the patterns from release-blocklist.txt; a missing
+  blocklist is RED, never a vacuous pass. The rot check drops its
+  TEMPLATE-DELTA exemption.
+- .claude/rules/communication.md shipped with CRLF endings (staged through a
+  Windows worktree; git warned on first commit) — normalized to LF, the only
+  non-LF file in the artifact.
+Context Guard release source untouched (runtime 4.2.4 unchanged, not shipped).
+Gated from the artifact: release-check PASS 13 / FAIL 0; test-hooks 146/0.
+Controls: blocklist removed → RED; a name planted in one script comment → RED.
+
+## v8.3.20 — distribution: ONE zip = ONE folder = ONE project (2026-09-02)
+No project-runtime code changed: docs plus one release-side script
+(release-check.sh, which exits 2 inside a project). Owner decision after a
+fresh-eye re-check of the shipped v8.3.19 (byte-identical to its sha256 —
+nothing had drifted; the review found doc rot, not code). The all-in-one
+wrapper (template + context-guard + release/ + README-FIRST, v8.3.14–v8.3.19)
+is retired: it made the user pick the right one of three folders, and its
+README-FIRST had already picked up a duplicated paragraph — the wrapper was a
+second thing to get wrong. The canonical artifact `v8_3_N.zip` — one folder
+named by version, built by build-release.py, gated by release-check.sh — is now
+the ONLY distribution form. Context Guard is unchanged (runtime 4.2.4 since
+2026-08-27) and ships SEPARATELY as `context-guard-<version>.zip`, only when
+the runtime changes; a machine that already has it needs nothing.
+- START-HERE.md de-staged: step 1 was still the staging-era
+  `cp -r temp/new-project-template` (no such path exists in a release); two
+  field-project names contradicted its own "nothing about <field project> is
+  in here"; a `CLAUDE.md = 221 lines` count had rotted (220). Now: unzip →
+  rename; no project names; no counts; the first-session ⚑ model-audit banner
+  is explained as cadence, not defect.
+- README_UA.md refreshed to v8.3.x: its "Як працює" block still described the
+  AUTONOMY A/B/C levels deleted in v8.1.9-p1 (the paragraph above it said so);
+  now covers one-folder distribution, SHERIFF, machine-level Context Guard,
+  hybrid state, the release gate and the upgrade path; per-version history
+  collapsed into a pointer to this file.
+- release-check.sh: +1 assertion — entry docs (START-HERE, README_UA,
+  CLAUDE.md, tasks/board.md, .agent/state/current.md) name no field project
+  (blank template, asserted not promised); the rot check also catches a
+  `CLAUDE.md = N lines` count. Lineage files (CHANGELOG, TEMPLATE-DELTA,
+  decisions.md, docs/, script comments) stay exempt: provenance of a finding
+  is not a leak.
+Observation, not changed: `.agent/state/model-audit.md` is dated 2026-07-28
+with a 35-day cadence, so a project stood up today sees the audit banner on
+its first session — by design (the config decays; audit at onboarding).
+Gated from the artifact: release-check PASS 13 / FAIL 0; test-hooks 146/0.
+
 ## v8.3.19 — release gate: verify from the artifact, never the tree (2026-09-01)
 Owner decision after two same-day escapes (D4 stray .env, rotted START-HERE
 literal) that passed working-tree checks. ADD scripts/release-check.sh — builds
@@ -19,8 +86,8 @@ two releases (the exact class the suffix retirement in v8.3.15 was about).
 The line now refers to TEMPLATE_VERSION instead of naming a version, so it
 cannot rot again. Docs-only; no code changed. Suite: PASS 146 / FAIL 0.
 
-## v8.3.17 — BLC upgrade-run findings D3/D4 closed at the source (2026-09-01)
-Reported by BLC on its v8.3.13 -> v8.3.16 upgrade (second defect report from
+## v8.3.17 — field project C upgrade-run findings D3/D4 closed at the source (2026-09-01)
+Reported by field project C on its v8.3.13 -> v8.3.16 upgrade (second defect report from
 the field that came back as a fix — the pipeline working as designed).
 - D3: scripts/state-patch.py --self-test died with UnicodeEncodeError printing
   its check marks under a cp1252 console. Fixed at source with the same
@@ -61,21 +128,21 @@ pipeline exists to prevent. CG runtime pairing now lives only where it is
 enforced: `.claude/context-guard/config.json` min_runtime (still 4.2.0 — no
 CG 5.x source has been verified into the canon), the `runtime_version` line
 `build-release.py` prints, and the release's CHANGELOG entry. Content is
-otherwise identical to v8.3.14 plus the hermipro-staged additions:
+otherwise identical to v8.3.14 plus the additions staged from field project A:
 `.claude/rules/communication.md` (final-first / advise-only-when-needed) with
 the CLAUDE.md MY RULES bullet pointing at it, and `START-HERE.md`.
 Full suite re-run at release: PASS 146 / FAIL 0.
 
-## v8.3.14 — BLC findings D1/D2 fixed at the source, CODE release (2026-09-01)
+## v8.3.14 — field project C findings D1/D2 fixed at the source, CODE release (2026-09-01)
 Artifact suffix at the time: derived -cgN. Retired in v8.3.15 (see above); the
 "CG runtime 5.x on the fleet" wording that briefly appeared here was never
 verified by mechanism and is struck.
 `build-release.py` derives the suffix from `.claude/context-guard/config.json`
 min_runtime instead of a literal; the stale "-cg4" literal was itself a D-class
-bug of the kind BLC just reported. NOTE for the owner: `min_runtime` in that
+bug of the kind field project C just reported. NOTE for the owner: `min_runtime` in that
 config still says 4.2.0 — bump it to the CG5 floor you actually require, per
 project, when CG5 is verified there (compatibility is your call, not mine).
-Reported by BLC with write-up docs/template-defects-owed-upstream_2026-09-01_v1.md;
+Reported by field project C with write-up docs/template-defects-owed-upstream_2026-09-01_v1.md;
 fixed at the canonical tree, every project upgrades (D1 blocked every NEW v8
 project's first commit).
 
@@ -90,7 +157,7 @@ project's first commit).
   same-line form. Both styles are valid; the contract is stated in both files.
 - Three new suite assertions (146/0 here): first-commit-with-suite allowed;
   D1 exclusion narrow; template-style verdict parses.
-- For BLC on upgrade: its local D1 workaround and D2 report-format workaround
+- For field project C on upgrade: its local D1 workaround and D2 report-format workaround
   are SUPERSEDED — the 3-way merge should take the template versions, and risk
   R1 (a mechanical merge reverting the workaround) dissolves with them.
 - Canonicity, recorded: releases are payload builds of the maintainer's
@@ -141,22 +208,22 @@ in the devops skill's audit checklist: temp/ entries older than 14 days are
 listed for a sweep each audit — scratch is deleted freely, but
 sheriff-export*/provenance trees are evidence and get zipped into docs/ first
 (the template's provenance doc points at those bytes). Deletions still go
-through the owner manually per the guard. Origin: hermipro accumulated ~90
+through the owner manually per the guard. Origin: field project A accumulated ~90
 scratch files in a week; the fix is a standing rule, not an episode.
 
 ## v8.3.12a — two upgrade-procedure rules from the fan-out, docs only (2026-08-31)
 No code changes; projects already on v8.3.12 need nothing.
-- **CR-agnostic classification** (hivoice): step 2 file comparison must be
+- **CR-agnostic classification** (field project B): step 2 file comparison must be
   CR-stripped — `* text=auto` gives Windows worktrees CRLF `.md` while release
   zips are LF, so raw hashes invent divergences and manufacture hand-merges
   that do not exist. Line-ending-only difference == identical.
-- **Survival-task waiver** (hermipro): when an upgrade changes zero executable
+- **Survival-task waiver** (field project A): when an upgrade changes zero executable
   bytes in the project, the survival task may be waived with the owner's
   explicit OK, recorded in the run report — a rule to cite instead of a
   precedent to argue.
 
 ## v8.3.12 — sheriff rounds 8–9 folded in: CODE release (2026-08-31)
-hermipro's field-first close of the round-7 findings, plus what its own loop
+field project A's field-first close of the round-7 findings, plus what its own loop
 caught in the fixes. Suite here: 132/0 (section 8 alone: 91 assertions). Every
 project upgrades to this one via update-new — first code release since v8.3.9.
 
@@ -187,7 +254,7 @@ project upgrades to this one via update-new — first code release since v8.3.9.
   now plain text.
 
 ## v8.3.11a — cadence rule: docs-only gaps are not "behind" (2026-08-31)
-Docs only. hivoice caught the class: the freshness check compared bare versions,
+Docs only. field project B caught the class: the freshness check compared bare versions,
 so every docs-only release would generate a false "behind" in every project
 forever (it had to leave a project-local standing note to suppress one). The
 UPDATE POLICY cadence rule now says: a version gap counts as "behind" only if
@@ -195,7 +262,7 @@ the gap contains a CODE release (docs-only entries are marked "No code changes"
 and are skippable by design). Projects need no local notes for this anymore.
 
 ## v8.3.11 — round-7 record corrections, docs only (2026-08-31)
-No code changes. hermipro's round 7 (3 findings, none blocking, everything
+No code changes. field project A's round 7 (3 findings, none blocking, everything
 still tighter than v8.3.8) lands three corrections to the round-6 record:
 - The v8.3.9 claim "one rule closing hard links, symlinks and pre-planted
   files" OVERSTATES: `reserve_target` closes the package path (held descriptor),
@@ -210,14 +277,14 @@ still tighter than v8.3.8) lands three corrections to the round-6 record:
   `.git/hooks/*` (code-execution persistence), config, refs or index mutation
   scores GREEN. Until fixed, the canary's stated limits are: submodules not
   walked AND `.git/` internals not walked.
-Fixes go the field-first route (hermipro's AGENT queue owns [3]); the template
+Fixes go the field-first route (field project A's AGENT queue owns [3]); the template
 folds the proven result as the next code release. Fan-out on v8.3.10/11 remains
 correct: nothing here relaxes anything relative to v8.3.8.
 
 ## v8.3.10 — record correction, docs only (2026-08-31)
 No code changes. The v8.3.9 entry recorded finding 9 (the CRLF worktree
 condition) as "still open upstream — fix it there per the recipe". That was
-already false at release time: hivoice closed it at c38a55e on 2026-08-31
+already false at release time: field project B closed it at c38a55e on 2026-08-31
 (core.autocrlf false + forced re-checkout through .gitattributes, decision in
 its decisions.md). The recipe is superseded — upgrades must NOT re-issue it.
 The 2 stray CR bytes the v8.3.9 fold saw predated that close. Lesson, same
@@ -225,7 +292,7 @@ class as everything else here: a changelog entry is an instruction, and a stale
 instruction re-executes — correct the record the moment the fact changes.
 
 ## v8.3.9 — sheriff round 6 folded in (2026-08-31)
-hivoice's round 6: my three upstream findings fixed field-first, plus four more
+field project B's round 6: my three upstream findings fixed field-first, plus four more
 the process caught in the fixes themselves (including `exec 9> "$PKG"
 2>/dev/null` permanently muting every later refusal — found by an assertion,
 not by any reviewer). Running total: 6 rounds, 18 findings, 0 disputes.
@@ -254,7 +321,7 @@ not by any reviewer). Running total: 6 rounds, 18 findings, 0 disputes.
   upstream — fix it there per the repo-local recipe already given).
 
 ## v8.3.8 — build-release default name unhardcoded (2026-08-30)
-hivoice's post-upgrade sheriff pass, finding [1] of 4: `build-release.py
+field project B's post-upgrade sheriff pass, finding [1] of 4: `build-release.py
 --template-name` defaulted to the literal `v8_2_0-cg4.zip`, so on any newer
 source tree the documented default invocation would `os.replace` new content
 onto an OLD archived artifact. Default is now derived: `TEMPLATE_VERSION`
@@ -556,7 +623,7 @@ Runtime `4.2.4`, schema **`1` — unchanged**. Scope is exactly one class: a
 - **FIX (workstation gate): `quality-gate.sh` read `latest.json` in the platform
   codepage.** A bare `open()` on Windows is charmap, so one non-ASCII byte in a
   valid UTF-8 file reported "unreadable" and "not valid JSON" — a false RED. Both
-  reads are now explicit `encoding="utf-8"` (template and hermipro-vps copies).
+  reads are now explicit `encoding="utf-8"` (template and field project A copies).
 - **Suite:** the length-dependence mutant (M8) is removed with the rule it
   tested; the M6 mutant now restores the underscore *metadata namespace* and
   must reproduce `_sof_limit`, `_1M`, `_1rn` and `_parked` all passing on it;
@@ -781,7 +848,7 @@ Runtime `4.2.4`, schema **`1` — unchanged**. Scope is exactly one class: a
 - **Schema stays 1, deliberately.** `schema_version` is compared for *equality*,
   so a bump would turn every existing project config INCOMPATIBLE until each one
   is migrated — for a change that migrates **no document**. Every config on this
-  machine (template, `hermipro-vps`, `hivoice`) validates unchanged, and the
+  machine (template, field projects A and B) validates unchanged, and the
   suite asserts it. What narrows is not the documented format but the set of
   documents that were *silently mis-read*; as in 4.2.3, catching a misspelled key
   is validation, not a document-format change. `min_runtime: 4.2.0` (a floor)
@@ -811,7 +878,7 @@ Runtime `4.2.4`, schema **`1` — unchanged**. Scope is exactly one class: a
 Runtime `4.2.3`, schema **`1` — unchanged**. Stricter validation of fields the
 schema already declared is not a change to the accepted document format, so no
 config migrates and `min_runtime: 4.2.0` (a floor) keeps accepting this runtime:
-the `hermipro-vps` and `hivoice` configs are untouched by design. Scope is one
+the field project A and B configs are untouched by design. Scope is one
 blocker (M4) plus the two cleanups adjacent to it. Nothing else was pulled in.
 
 - **FIX (M4, release blocker): a declared field with the wrong TYPE is now
@@ -877,7 +944,7 @@ blocker (M4) plus the two cleanups adjacent to it. Nothing else was pulled in.
 
 ## Context Guard 4.2.2 — bounded hardening (2026-08-28)
 Runtime `4.2.2`, schema `1` (unchanged — no config migration; `min_runtime: 4.2.0`
-is a floor and accepts 4.2.2, so the `hermipro-vps` and `hivoice` configs are
+is a floor and accepts 4.2.2, so the field project A and B configs are
 untouched by design). Scope is exactly three items — M1 correctness, M3 path
 classification, M2 acceptance harness — all three raised by the independent
 reviewer against 4.2.1. No unrelated backlog was pulled in.

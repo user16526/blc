@@ -33,7 +33,7 @@ view, keeps the "Last updated:" line other hooks grep). Schema:
 """
 import argparse, json, os, sys, tempfile, datetime
 
-# BLC finding D3 (2026-09-01): under a cp1252 console the "\u2713" marks killed
+# Field project C finding D3 (2026-09-01): under a cp1252 console the "\u2713" marks killed
 # --self-test with UnicodeEncodeError at the first assertion — the release's own
 # stated verification step was unusable on Windows. Same fix build-release.py
 # already carries: force utf-8 with replacement, never crash on printing.
