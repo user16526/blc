@@ -1,0 +1,843 @@
+@font-face {
+    font-family: "icons";
+    src: url("./icons.eot?154e2aa3b7323361b893aeb453d814cf#iefix") format("embedded-opentype"),
+url("./icons.woff2?154e2aa3b7323361b893aeb453d814cf") format("woff2"),
+url("./icons.woff?154e2aa3b7323361b893aeb453d814cf") format("woff");
+}
+
+i[class^="icon-"]:before, i[class*=" icon-"]:before {
+    font-family: icons !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-2fa:before {
+    content: "\f101";
+}
+.icon-achievements:before {
+    content: "\f102";
+}
+.icon-active-battles:before {
+    content: "\f103";
+}
+.icon-add-filled:before {
+    content: "\f104";
+}
+.icon-add-info:before {
+    content: "\f105";
+}
+.icon-agent-collection:before {
+    content: "\f106";
+}
+.icon-agent-point:before {
+    content: "\f107";
+}
+.icon-alert:before {
+    content: "\f108";
+}
+.icon-all-drop:before {
+    content: "\f109";
+}
+.icon-amount:before {
+    content: "\f10a";
+}
+.icon-arrow-circle:before {
+    content: "\f10b";
+}
+.icon-arrow-down:before {
+    content: "\f10c";
+}
+.icon-arrow-filled-down:before {
+    content: "\f10d";
+}
+.icon-arrow-filled-link:before {
+    content: "\f10e";
+}
+.icon-arrow-filled-up:before {
+    content: "\f10f";
+}
+.icon-arrow-left:before {
+    content: "\f110";
+}
+.icon-arrow-link:before {
+    content: "\f111";
+}
+.icon-arrow-progress:before {
+    content: "\f112";
+}
+.icon-arrow-right:before {
+    content: "\f113";
+}
+.icon-arrow-roll:before {
+    content: "\f114";
+}
+.icon-arrow-timer:before {
+    content: "\f115";
+}
+.icon-arrow-triangle-down:before {
+    content: "\f116";
+}
+.icon-arrow-triangle-left:before {
+    content: "\f117";
+}
+.icon-arrow-triangle-right:before {
+    content: "\f118";
+}
+.icon-arrow-triangle-up:before {
+    content: "\f119";
+}
+.icon-arrow-up-right:before {
+    content: "\f11a";
+}
+.icon-arrow-up:before {
+    content: "\f11b";
+}
+.icon-avatar-frames:before {
+    content: "\f11c";
+}
+.icon-background:before {
+    content: "\f11d";
+}
+.icon-balance:before {
+    content: "\f11e";
+}
+.icon-balance2:before {
+    content: "\f11f";
+}
+.icon-best-deals:before {
+    content: "\f120";
+}
+.icon-best-price:before {
+    content: "\f121";
+}
+.icon-bf-sale-2024:before {
+    content: "\f122";
+}
+.icon-bin:before {
+    content: "\f123";
+}
+.icon-blog:before {
+    content: "\f124";
+}
+.icon-bonus-case:before {
+    content: "\f125";
+}
+.icon-bot:before {
+    content: "\f126";
+}
+.icon-brazil:before {
+    content: "\f127";
+}
+.icon-brazilflag:before {
+    content: "\f128";
+}
+.icon-brush:before {
+    content: "\f129";
+}
+.icon-cake:before {
+    content: "\f12a";
+}
+.icon-calendar:before {
+    content: "\f12b";
+}
+.icon-camera:before {
+    content: "\f12c";
+}
+.icon-cancel:before {
+    content: "\f12d";
+}
+.icon-cart:before {
+    content: "\f12e";
+}
+.icon-case-battles:before {
+    content: "\f12f";
+}
+.icon-case-contains:before {
+    content: "\f130";
+}
+.icon-case:before {
+    content: "\f131";
+}
+.icon-check-filled:before {
+    content: "\f132";
+}
+.icon-check:before {
+    content: "\f133";
+}
+.icon-chevron-down:before {
+    content: "\f134";
+}
+.icon-chevron-left:before {
+    content: "\f135";
+}
+.icon-chevron-right-double:before {
+    content: "\f136";
+}
+.icon-chevron-right:before {
+    content: "\f137";
+}
+.icon-chevron-up:before {
+    content: "\f138";
+}
+.icon-christmas-limited:before {
+    content: "\f139";
+}
+.icon-christmas-sale:before {
+    content: "\f13a";
+}
+.icon-circus:before {
+    content: "\f13b";
+}
+.icon-classic:before {
+    content: "\f13c";
+}
+.icon-clear-all:before {
+    content: "\f13d";
+}
+.icon-clear:before {
+    content: "\f13e";
+}
+.icon-clock:before {
+    content: "\f13f";
+}
+.icon-close-filled:before {
+    content: "\f140";
+}
+.icon-close:before {
+    content: "\f141";
+}
+.icon-code:before {
+    content: "\f142";
+}
+.icon-coin:before {
+    content: "\f143";
+}
+.icon-colors:before {
+    content: "\f144";
+}
+.icon-connection:before {
+    content: "\f145";
+}
+.icon-contract:before {
+    content: "\f146";
+}
+.icon-contracts:before {
+    content: "\f147";
+}
+.icon-cookies:before {
+    content: "\f148";
+}
+.icon-copy:before {
+    content: "\f149";
+}
+.icon-counter-terrorist:before {
+    content: "\f14a";
+}
+.icon-creator:before {
+    content: "\f14b";
+}
+.icon-crush:before {
+    content: "\f14c";
+}
+.icon-cs2-cases:before {
+    content: "\f14d";
+}
+.icon-cs2:before {
+    content: "\f14e";
+}
+.icon-cs2mini:before {
+    content: "\f14f";
+}
+.icon-csgo-logo:before {
+    content: "\f150";
+}
+.icon-cup:before {
+    content: "\f151";
+}
+.icon-cyber:before {
+    content: "\f152";
+}
+.icon-dash:before {
+    content: "\f153";
+}
+.icon-delivery:before {
+    content: "\f154";
+}
+.icon-devices:before {
+    content: "\f155";
+}
+.icon-discord:before {
+    content: "\f156";
+}
+.icon-docs:before {
+    content: "\f157";
+}
+.icon-dollar-in-round:before {
+    content: "\f158";
+}
+.icon-dollar-text:before {
+    content: "\f159";
+}
+.icon-dollar:before {
+    content: "\f15a";
+}
+.icon-door:before {
+    content: "\f15b";
+}
+.icon-dota-cases:before {
+    content: "\f15c";
+}
+.icon-dota2:before {
+    content: "\f15d";
+}
+.icon-download:before {
+    content: "\f15e";
+}
+.icon-dropland:before {
+    content: "\f15f";
+}
+.icon-dropland2:before {
+    content: "\f160";
+}
+.icon-dropland3:before {
+    content: "\f161";
+}
+.icon-drops:before {
+    content: "\f162";
+}
+.icon-easter:before {
+    content: "\f163";
+}
+.icon-easy-start:before {
+    content: "\f164";
+}
+.icon-edit:before {
+    content: "\f165";
+}
+.icon-engineering:before {
+    content: "\f166";
+}
+.icon-equals:before {
+    content: "\f167";
+}
+.icon-esports:before {
+    content: "\f168";
+}
+.icon-event:before {
+    content: "\f169";
+}
+.icon-exchange:before {
+    content: "\f16a";
+}
+.icon-eye-cross:before {
+    content: "\f16b";
+}
+.icon-eye:before {
+    content: "\f16c";
+}
+.icon-facebook:before {
+    content: "\f16d";
+}
+.icon-faceit:before {
+    content: "\f16e";
+}
+.icon-faq:before {
+    content: "\f16f";
+}
+.icon-farm-cases:before {
+    content: "\f170";
+}
+.icon-fast:before {
+    content: "\f171";
+}
+.icon-filter:before {
+    content: "\f172";
+}
+.icon-fire:before {
+    content: "\f173";
+}
+.icon-flag-star:before {
+    content: "\f174";
+}
+.icon-flash:before {
+    content: "\f175";
+}
+.icon-games:before {
+    content: "\f176";
+}
+.icon-gbp:before {
+    content: "\f177";
+}
+.icon-general:before {
+    content: "\f178";
+}
+.icon-germany-day-of-unity:before {
+    content: "\f179";
+}
+.icon-giftbox:before {
+    content: "\f17a";
+}
+.icon-google:before {
+    content: "\f17b";
+}
+.icon-great-challenger:before {
+    content: "\f17c";
+}
+.icon-halloween-sales:before {
+    content: "\f17d";
+}
+.icon-halloween:before {
+    content: "\f17e";
+}
+.icon-halloween24:before {
+    content: "\f17f";
+}
+.icon-hand:before {
+    content: "\f180";
+}
+.icon-head-shot:before {
+    content: "\f181";
+}
+.icon-heart:before {
+    content: "\f182";
+}
+.icon-hellcase-support:before {
+    content: "\f183";
+}
+.icon-hellcase:before {
+    content: "\f184";
+}
+.icon-hellsquad:before {
+    content: "\f185";
+}
+.icon-heritage:before {
+    content: "\f186";
+}
+.icon-home:before {
+    content: "\f187";
+}
+.icon-hot-deal:before {
+    content: "\f188";
+}
+.icon-hours24:before {
+    content: "\f189";
+}
+.icon-inform:before {
+    content: "\f18a";
+}
+.icon-instagram:before {
+    content: "\f18b";
+}
+.icon-item-add:before {
+    content: "\f18c";
+}
+.icon-item:before {
+    content: "\f18d";
+}
+.icon-key:before {
+    content: "\f18e";
+}
+.icon-king:before {
+    content: "\f18f";
+}
+.icon-knives:before {
+    content: "\f190";
+}
+.icon-kyc:before {
+    content: "\f191";
+}
+.icon-last-top-drop:before {
+    content: "\f192";
+}
+.icon-latin-america:before {
+    content: "\f193";
+}
+.icon-latin-america2:before {
+    content: "\f194";
+}
+.icon-leaderboard-rank:before {
+    content: "\f195";
+}
+.icon-link:before {
+    content: "\f196";
+}
+.icon-loader:before {
+    content: "\f197";
+}
+.icon-lock:before {
+    content: "\f198";
+}
+.icon-log-in:before {
+    content: "\f199";
+}
+.icon-log-out:before {
+    content: "\f19a";
+}
+.icon-mail:before {
+    content: "\f19b";
+}
+.icon-marker:before {
+    content: "\f19c";
+}
+.icon-messages:before {
+    content: "\f19d";
+}
+.icon-messenger:before {
+    content: "\f19e";
+}
+.icon-minus:before {
+    content: "\f19f";
+}
+.icon-mixer:before {
+    content: "\f1a0";
+}
+.icon-multicases:before {
+    content: "\f1a1";
+}
+.icon-multiple:before {
+    content: "\f1a2";
+}
+.icon-new:before {
+    content: "\f1a3";
+}
+.icon-night-ops:before {
+    content: "\f1a4";
+}
+.icon-notification-cross:before {
+    content: "\f1a5";
+}
+.icon-notification-filled:before {
+    content: "\f1a6";
+}
+.icon-notification-stroke:before {
+    content: "\f1a7";
+}
+.icon-on-fire:before {
+    content: "\f1a8";
+}
+.icon-partner:before {
+    content: "\f1a9";
+}
+.icon-patch:before {
+    content: "\f1aa";
+}
+.icon-percent:before {
+    content: "\f1ab";
+}
+.icon-pinterest:before {
+    content: "\f1ac";
+}
+.icon-planet:before {
+    content: "\f1ad";
+}
+.icon-playoff:before {
+    content: "\f1ae";
+}
+.icon-pln:before {
+    content: "\f1af";
+}
+.icon-plus-add-big:before {
+    content: "\f1b0";
+}
+.icon-plus-add-small:before {
+    content: "\f1b1";
+}
+.icon-premium:before {
+    content: "\f1b2";
+}
+.icon-privacy-policy:before {
+    content: "\f1b3";
+}
+.icon-promocode-frame:before {
+    content: "\f1b4";
+}
+.icon-promocode:before {
+    content: "\f1b5";
+}
+.icon-race-active:before {
+    content: "\f1b6";
+}
+.icon-race:before {
+    content: "\f1b7";
+}
+.icon-real-item:before {
+    content: "\f1b8";
+}
+.icon-real-prize:before {
+    content: "\f1b9";
+}
+.icon-rec:before {
+    content: "\f1ba";
+}
+.icon-referal:before {
+    content: "\f1bb";
+}
+.icon-replacement-minus:before {
+    content: "\f1bc";
+}
+.icon-replacement-plus:before {
+    content: "\f1bd";
+}
+.icon-requirements:before {
+    content: "\f1be";
+}
+.icon-reversed:before {
+    content: "\f1bf";
+}
+.icon-roles:before {
+    content: "\f1c0";
+}
+.icon-ron:before {
+    content: "\f1c1";
+}
+.icon-rust-clothes:before {
+    content: "\f1c2";
+}
+.icon-rust-collection:before {
+    content: "\f1c3";
+}
+.icon-rust-doors:before {
+    content: "\f1c4";
+}
+.icon-rust-logo:before {
+    content: "\f1c5";
+}
+.icon-rust-randomskins:before {
+    content: "\f1c6";
+}
+.icon-rust-tools:before {
+    content: "\f1c7";
+}
+.icon-rust-weaponcases:before {
+    content: "\f1c8";
+}
+.icon-school:before {
+    content: "\f1c9";
+}
+.icon-search:before {
+    content: "\f1ca";
+}
+.icon-settings:before {
+    content: "\f1cb";
+}
+.icon-shard-parts:before {
+    content: "\f1cc";
+}
+.icon-shard:before {
+    content: "\f1cd";
+}
+.icon-share:before {
+    content: "\f1ce";
+}
+.icon-sharing:before {
+    content: "\f1cf";
+}
+.icon-single-case:before {
+    content: "\f1d0";
+}
+.icon-skin-family:before {
+    content: "\f1d1";
+}
+.icon-skip:before {
+    content: "\f1d2";
+}
+.icon-smiley:before {
+    content: "\f1d3";
+}
+.icon-snake:before {
+    content: "\f1d4";
+}
+.icon-snapchat:before {
+    content: "\f1d5";
+}
+.icon-sold-out:before {
+    content: "\f1d6";
+}
+.icon-solstice:before {
+    content: "\f1d7";
+}
+.icon-sort-default:before {
+    content: "\f1d8";
+}
+.icon-sort-high-low:before {
+    content: "\f1d9";
+}
+.icon-sort-low-high:before {
+    content: "\f1da";
+}
+.icon-sound-off:before {
+    content: "\f1db";
+}
+.icon-sound-on:before {
+    content: "\f1dc";
+}
+.icon-speed:before {
+    content: "\f1dd";
+}
+.icon-stalker:before {
+    content: "\f1de";
+}
+.icon-star-filled:before {
+    content: "\f1df";
+}
+.icon-star-half:before {
+    content: "\f1e0";
+}
+.icon-star-stroke:before {
+    content: "\f1e1";
+}
+.icon-stars:before {
+    content: "\f1e2";
+}
+.icon-stat-give:before {
+    content: "\f1e3";
+}
+.icon-stat:before {
+    content: "\f1e4";
+}
+.icon-steam-filled:before {
+    content: "\f1e5";
+}
+.icon-steam:before {
+    content: "\f1e6";
+}
+.icon-sticker:before {
+    content: "\f1e7";
+}
+.icon-support-add:before {
+    content: "\f1e8";
+}
+.icon-support-check:before {
+    content: "\f1e9";
+}
+.icon-support:before {
+    content: "\f1ea";
+}
+.icon-swap:before {
+    content: "\f1eb";
+}
+.icon-target:before {
+    content: "\f1ec";
+}
+.icon-telegram-star:before {
+    content: "\f1ed";
+}
+.icon-telegram:before {
+    content: "\f1ee";
+}
+.icon-terrorist:before {
+    content: "\f1ef";
+}
+.icon-thumb-up-stroke:before {
+    content: "\f1f0";
+}
+.icon-thumb-up:before {
+    content: "\f1f1";
+}
+.icon-ticket-raffle:before {
+    content: "\f1f2";
+}
+.icon-tiktok:before {
+    content: "\f1f3";
+}
+.icon-time-off:before {
+    content: "\f1f4";
+}
+.icon-top-skins:before {
+    content: "\f1f5";
+}
+.icon-top:before {
+    content: "\f1f6";
+}
+.icon-trustpilot:before {
+    content: "\f1f7";
+}
+.icon-twitch:before {
+    content: "\f1f8";
+}
+.icon-twitter:before {
+    content: "\f1f9";
+}
+.icon-unlock:before {
+    content: "\f1fa";
+}
+.icon-upgrader:before {
+    content: "\f1fb";
+}
+.icon-user-blocked:before {
+    content: "\f1fc";
+}
+.icon-user-checked:before {
+    content: "\f1fd";
+}
+.icon-user-dollar:before {
+    content: "\f1fe";
+}
+.icon-user-giveaways:before {
+    content: "\f1ff";
+}
+.icon-user:before {
+    content: "\f200";
+}
+.icon-users:before {
+    content: "\f201";
+}
+.icon-verified-user:before {
+    content: "\f202";
+}
+.icon-verify-user:before {
+    content: "\f203";
+}
+.icon-viber:before {
+    content: "\f204";
+}
+.icon-vk:before {
+    content: "\f205";
+}
+.icon-wallet:before {
+    content: "\f206";
+}
+.icon-wallpaper:before {
+    content: "\f207";
+}
+.icon-warbreak_packs:before {
+    content: "\f208";
+}
+.icon-warbreak-cards:before {
+    content: "\f209";
+}
+.icon-warbreak-rank1:before {
+    content: "\f20a";
+}
+.icon-warbreak-rank2:before {
+    content: "\f20b";
+}
+.icon-warbreak-rank3:before {
+    content: "\f20c";
+}
+.icon-wartag-shop:before {
+    content: "\f20d";
+}
+.icon-wartags:before {
+    content: "\f20e";
+}
+.icon-whatsapp:before {
+    content: "\f20f";
+}
+.icon-winterfront:before {
+    content: "\f210";
+}
+.icon-withdraw-item:before {
+    content: "\f211";
+}
+.icon-xp:before {
+    content: "\f212";
+}
+.icon-youtube:before {
+    content: "\f213";
+}

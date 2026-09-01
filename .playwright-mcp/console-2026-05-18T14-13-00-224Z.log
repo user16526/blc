@@ -1,0 +1,3 @@
+[     911ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://chipper-manatee-749c59.netlify.app/favicon.ico:0
+[   28827ms] TypeError: Cannot read properties of undefined (reading 'contains')
+    at addCard (https://chipper-manatee-749c59.netlify.app/:1682:30)

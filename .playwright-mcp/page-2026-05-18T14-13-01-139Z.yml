@@ -1,0 +1,286 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - img "BloodyCase" [ref=e6]
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e10]
+          - generic [ref=e14]: 6 834
+          - generic [ref=e15]: Online
+        - link "Promo code" [ref=e16] [cursor=pointer]:
+          - /url: "#"
+        - link "Affiliate system" [ref=e17] [cursor=pointer]:
+          - /url: "#"
+      - navigation [ref=e18]:
+        - button "CS2" [ref=e19] [cursor=pointer]:
+          - generic [ref=e21]: CS2
+        - button "Rust" [ref=e22] [cursor=pointer]:
+          - generic: Rust
+        - button "Dota 2" [ref=e24] [cursor=pointer]:
+          - generic: Dota 2
+      - generic [ref=e26]:
+        - generic [ref=e28] [cursor=pointer]: EN
+        - generic [ref=e31] [cursor=pointer]: USD
+    - generic [ref=e33]:
+      - navigation [ref=e34]:
+        - link " Cases" [ref=e35] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e37]: 
+          - text: Cases
+        - link " Dragon Cases" [ref=e38] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e40]: 
+          - text: Dragon
+          - text: Cases
+        - link " 1 Daily Free" [ref=e41] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e43]: 
+          - generic [ref=e44]: "1"
+          - text: Daily
+          - text: Free
+        - link " 36 Case Battle" [ref=e45] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e47]: 
+          - generic [ref=e48]: "36"
+          - text: Case
+          - text: Battle
+        - link " 21 Sniper Battle" [ref=e49] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e51]: 
+          - generic [ref=e52]: "21"
+          - text: Sniper
+          - text: Battle
+        - link " Event" [ref=e53] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e55]: 
+          - text: Event
+        - link " Tournament" [ref=e56] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e58]: 
+          - text: Tournament
+        - link " 1 Giveaways" [ref=e59] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e61]: 
+          - generic [ref=e62]: "1"
+          - text: Giveaways
+        - link " Upgrader" [ref=e63] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e65]: 
+          - text: Upgrader
+        - link " Contract" [ref=e66] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e68]: 
+          - text: Contract
+        - link " Bonuses" [ref=e69] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e71]: 
+          - text: Bonuses
+      - generic [ref=e72]:
+        - generic [ref=e75]:
+          - generic [ref=e76]: $123 40.55
+          - link "Sell skins [255]" [ref=e77] [cursor=pointer]:
+            - /url: "#"
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - img [ref=e80]
+            - generic [ref=e83]: "999"
+            - generic [ref=e84]: tickets
+          - generic [ref=e85]:
+            - generic [ref=e86]: 475.2K
+            - generic [ref=e87]: coins
+        - button "Deposit + 15%" [ref=e88] [cursor=pointer]:
+          - text: Deposit
+          - generic [ref=e89]: +
+          - text: 15%
+        - generic [ref=e91] [cursor=pointer]: 
+  - generic [ref=e92]:
+    - generic [ref=e93]:
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - generic [ref=e98]: 
+            - text: Tournament
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - generic [ref=e101]: "02"
+              - generic [ref=e102]: Days
+            - generic [ref=e103]:
+              - generic [ref=e104]: "14"
+              - generic [ref=e105]: Hrs
+            - generic [ref=e106]:
+              - generic [ref=e107]: "37"
+              - generic [ref=e108]: Min
+            - generic [ref=e109]:
+              - generic [ref=e110]: "59"
+              - generic [ref=e111]: Sec
+        - generic [ref=e112]:
+          - generic [ref=e113]:
+            - generic [ref=e115]: 
+            - text: Major Event
+          - generic [ref=e116]:
+            - generic [ref=e117]:
+              - generic [ref=e118]: "01"
+              - generic [ref=e119]: Days
+            - generic [ref=e120]:
+              - generic [ref=e121]: "09"
+              - generic [ref=e122]: Hrs
+            - generic [ref=e123]:
+              - generic [ref=e124]: "24"
+              - generic [ref=e125]: Min
+            - generic [ref=e126]:
+              - generic [ref=e127]: "15"
+              - generic [ref=e128]: Sec
+      - generic [ref=e129]:
+        - generic [ref=e134]:
+          - heading "Champions Offer" [level=1] [ref=e135]
+          - paragraph [ref=e136]:
+            - text: Depo from $24.99 & get the best
+            - text: Arena Champion Case for FREE
+          - button "Top up" [ref=e137] [cursor=pointer]
+        - button "Previous slide" [ref=e138] [cursor=pointer]:
+          - img [ref=e139]
+        - button "Next slide" [ref=e141] [cursor=pointer]:
+          - img [ref=e142]
+        - generic [ref=e144]:
+          - button [ref=e145] [cursor=pointer]
+          - button [ref=e146] [cursor=pointer]
+          - button [ref=e147] [cursor=pointer]
+      - heading "Hot Summer Cases " [level=3] [ref=e148]:
+        - text: Hot Summer Cases
+        - generic [ref=e150]: 
+      - generic [ref=e151]:
+        - generic [ref=e152] [cursor=pointer]:
+          - generic [ref=e154]: Gradient
+          - generic [ref=e155]:
+            - generic [ref=e156]: $
+            - text: "49.00"
+        - generic [ref=e157] [cursor=pointer]:
+          - generic [ref=e159]: Lost World Case
+          - generic [ref=e160]:
+            - generic [ref=e161]: $
+            - text: "0.39"
+        - generic [ref=e162] [cursor=pointer]:
+          - generic [ref=e164]: Sun Strike Case
+          - generic [ref=e165]:
+            - generic [ref=e166]: $
+            - text: "0.47"
+        - generic [ref=e167] [cursor=pointer]:
+          - generic [ref=e169]: CSGO2 Case
+          - generic [ref=e170]:
+            - generic [ref=e171]: $
+            - text: "0.49"
+        - generic [ref=e172] [cursor=pointer]:
+          - generic [ref=e174]: The Hot Case
+          - generic [ref=e175]:
+            - generic [ref=e176]: $
+            - text: "0.71"
+        - generic [ref=e177] [cursor=pointer]:
+          - generic [ref=e179]: Inferno Case
+          - generic [ref=e180]:
+            - generic [ref=e181]: $
+            - text: "6.66"
+        - generic [ref=e182] [cursor=pointer]:
+          - generic [ref=e184]: Case of your dreams
+          - generic [ref=e185]:
+            - generic [ref=e186]: $
+            - text: "49.00"
+      - generic [ref=e187]:
+        - generic [ref=e188]:
+          - generic [ref=e189]: 
+          - text: Case Battles
+          - generic [ref=e190]: 
+        - link "See all" [ref=e191] [cursor=pointer]:
+          - /url: "#"
+          - text: See all
+          - img [ref=e192]
+      - generic [ref=e194]:
+        - generic [ref=e195]:
+          - generic [ref=e197]:
+            - img
+            - generic [ref=e198]: "2"
+            - generic [ref=e199]: Rounds
+          - generic [ref=e201]:
+            - generic [ref=e202]:
+              - generic [ref=e203]: Players
+              - generic [ref=e204]: 3 / 5
+            - generic [ref=e205]:
+              - generic [ref=e206]: Value
+              - generic [ref=e207]: $12.25
+            - button "Join" [ref=e208] [cursor=pointer]
+        - generic [ref=e209]:
+          - generic [ref=e211]:
+            - img
+            - generic [ref=e212]: "1"
+            - generic [ref=e213]: Rounds
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - generic [ref=e217]: Players
+              - generic [ref=e218]: 2 / 3
+            - generic [ref=e219]:
+              - generic [ref=e220]: Value
+              - generic [ref=e221]: $12.25
+            - button "Join" [ref=e222] [cursor=pointer]
+        - generic [ref=e223]:
+          - generic [ref=e225]:
+            - img
+            - generic [ref=e226]: "6"
+            - generic [ref=e227]: Rounds
+          - generic [ref=e229]:
+            - generic [ref=e230]:
+              - generic [ref=e231]: Players
+              - generic [ref=e232]: 3 / 4
+            - generic [ref=e233]:
+              - generic [ref=e234]: Value
+              - generic [ref=e235]: $14.00
+            - button "Join" [ref=e236] [cursor=pointer]
+        - generic [ref=e237]:
+          - generic [ref=e239]:
+            - img
+            - generic [ref=e240]: "2"
+            - generic [ref=e241]: Rounds
+          - generic [ref=e243]:
+            - generic [ref=e244]:
+              - generic [ref=e245]: Players
+              - generic [ref=e246]: 1 / 2
+            - generic [ref=e247]:
+              - generic [ref=e248]: Value
+              - generic [ref=e249]: $12.25
+            - button "Join" [ref=e250] [cursor=pointer]
+        - generic [ref=e251]:
+          - generic [ref=e253]:
+            - img
+            - generic [ref=e254]: "2"
+            - generic [ref=e255]: Rounds
+          - generic [ref=e257]:
+            - generic [ref=e258]:
+              - generic [ref=e259]: Players
+              - generic [ref=e260]: 3 / 4
+            - generic [ref=e261]:
+              - generic [ref=e262]: Value
+              - generic [ref=e263]: $22.50
+            - button "Join" [ref=e264] [cursor=pointer]
+        - generic [ref=e265] [cursor=pointer]:
+          - generic [ref=e266]: +
+          - generic [ref=e267]: Create battle
+    - complementary [ref=e268]:
+      - generic [ref=e271]:
+        - generic [ref=e272]: AK-47
+        - generic [ref=e273]: Vulcan
+      - generic [ref=e276]:
+        - generic [ref=e277]: AWP
+        - generic [ref=e278]: Asiimov
+      - generic [ref=e281]:
+        - generic [ref=e282]: AK-47
+        - generic [ref=e283]: Redline
+      - generic [ref=e286]:
+        - generic [ref=e287]: Bayonet
+        - generic [ref=e288]: Tiger Tooth
+      - generic [ref=e291]:
+        - generic [ref=e292]: AWP
+        - generic [ref=e293]: Dragon Lore
+      - generic [ref=e296]:
+        - generic [ref=e297]: AK-47
+        - generic [ref=e298]: Fire Serpent
+      - generic [ref=e301]:
+        - generic [ref=e302]: Butterfly Knife
+        - generic [ref=e303]: Gold

@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BloodyCase — Open CS2 Cases, Win Real Skins</title>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="index_files/css2.css" rel="stylesheet">
+  <link href="index_files/fantaicon.css" rel="stylesheet">
+  <style>
+    /* ============ DESIGN TOKENS ============ */
+    :root {
+      --bg:           #080e1a;
+      --bg-deep:      #04080f;
+      --bg-panel:     #0b1628;
+      --bg-panel-2:   #0e1c32;
+      --bg-elev:      #122040;
+
+      --border:       rgba(79,129,180,0.28);
+      --border-sub:   rgba(79,129,180,0.18);
+      --border-soft:  rgba(255,255,255,0.06);
+      --border-glow:  rgba(0,210,255,0.35);
+
+      --cyan:         #00d2ff;
+      --cyan-dim:     rgba(0,210,255,0.12);
+      --cyan-glow:    rgba(0,210,255,0.35);
+      --blue:         #3B99FF;
+      --blue-light:   #6BB4FE;
+      --blue-dark:    #1c4878;
+      --rank-blue:    #10a5ff;
+      --timer:        #43f0ff;
+      --red:          #ff1317;
+      --gold:         #FFC53A;
+      --gold-light:   #FFE89A;
+      --gold-dim:     rgba(255,197,58,0.15);
+      --yellow:       #FFF266;
+      --green:        #00ba95;
+      --green-soft:   #2ee7a8;
+      --green-dim:    rgba(0,186,149,0.15);
+
+      --nav-default:  #5e7ea3;
+      --nav-hover:    #30DFFF;
+      --nav-active:   #00d2ff;
+      --label:        #4e6a8a;
+      --txt-mute:     #7a9abc;
+
+      --milspec:      #4b69ff;
+      --restricted:   #722cff;
+      --classified:   #d32ce6;
+      --covert:       #eb4b4b;
+      --rare:         #e4ae39;
+
+      --font-hero:    'Russo One', sans-serif;
+      --font-body:    'Montserrat', sans-serif;
+    }
+
+    /* ============ RESET ============ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { overflow-x: hidden; }
+    body {
+      background: #080e1a;
+      background-image:
+        radial-gradient(ellipse 120% 60% at 50% 0%, rgba(0,80,160,0.22) 0%, transparent 65%),
+        radial-gradient(ellipse 80% 40% at 100% 100%, rgba(42,0,4,0.18) 0%, transparent 60%);
+      background-attachment: fixed;
+      font-family: var(--font-body);
+      color: #fff;
+      min-height: 100vh;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ============ CONTAINER ============ */
+    .page {
+      max-width: 1760px;
+      margin: 0 auto;
+      padding: 146px 24px 24px 24px;
+      position: relative;
+    }
+
+    /* ============ FIXED PAGE HEADER ============ */
+    .page-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      padding: 0 24px;
+      background: rgba(9, 13, 22, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    /* Thin accent gradient strip at top */
+    .page-header::before {
+      content: '';
+      display: block;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--cyan) 30%, var(--gold) 60%, var(--cyan) 80%, transparent 100%);
+      opacity: 0.7;
+    }
+
+    /* ============ HEADER TOP BAR ============ */
+    .header-top {
+      display: grid;
+      grid-template-columns: 200px 1fr auto auto;
+      align-items: center;
+      gap: 28px;
+      padding: 0 12px;
+      min-height: 50px;
+      margin-bottom: 8px;
+      margin-top: 4px;
+    }
+    .logo { width: 162px; }
+    .logo img { width: 100%; height: auto; }
+
+    .header-util {
+      display: inline-flex;
+      align-items: center;
+      gap: 36px;
+      margin-left: -30px;
+    }
+    .online {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .online__icon {
+      width: 14px; height: 14px;
+      display: grid; place-items: center;
+      color: var(--green-soft);
+    }
+    .online__icon svg { width: 100%; height: 100%; }
+    .online__count {
+      color: var(--green-soft);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-shadow: 0 0 12px rgba(46,231,168,0.5);
+    }
+    .online__label { color: var(--label); font-weight: 500; }
+    .util-link {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--nav-default);
+      transition: color .18s;
+    }
+    .util-link:hover { color: var(--nav-hover); }
+
+    /* Game tabs */
+    .game-tabs {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: rgba(60,86,113,0.18);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+    }
+    .game-tab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 9px;
+      color: var(--nav-default);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: background .25s, color .25s, box-shadow .25s, padding .25s;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .game-tab__icon {
+      width: 26px; height: 26px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .game-tab__icon img {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain;
+      filter: invert(1) brightness(1.1);
+      mix-blend-mode: screen;
+      opacity: 0.65;
+      transition: opacity .25s;
+    }
+    .game-tab:hover .game-tab__icon img { opacity: 0.95; }
+    .game-tab__label {
+      display: inline-block;
+      max-width: 0;
+      margin-left: 0;
+      opacity: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      transition: max-width .28s ease, margin-left .28s ease, opacity .22s ease;
+    }
+    .game-tab.is-active {
+      background: linear-gradient(180deg, rgba(0,180,255,0.2) 0%, rgba(0,124,200,0.25) 100%);
+      color: var(--cyan);
+      box-shadow: inset 0 0 0 1px rgba(0,210,255,0.45), 0 0 18px rgba(0,210,255,0.22);
+    }
+    .game-tab.is-active .game-tab__icon img {
+      opacity: 1;
+      filter: invert(1) brightness(1.2) drop-shadow(0 0 5px rgba(0,210,255,0.7));
+    }
+    .game-tab.is-active .game-tab__label { max-width: 90px; margin-left: 8px; opacity: 1; }
+
+    .header-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .selector {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 38px;
+      padding: 0 14px;
+      background: rgba(11,22,40,0.8);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      color: #cfd9e6;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: border-color .18s, background .18s;
+    }
+    .selector:hover, .selector.is-open {
+      border-color: rgba(0,210,255,0.35);
+      background: rgba(11,22,40,0.98);
+    }
+    .selector__caret {
+      width: 8px; height: 8px;
+      border-right: 1.5px solid #6287ad;
+      border-bottom: 1.5px solid #6287ad;
+      transform: rotate(45deg) translateY(-1px);
+      transition: transform .2s;
+    }
+    .selector.is-open .selector__caret { transform: rotate(-135deg) translateY(2px) translateX(-2px); }
+    .selector--compact { background: rgba(60,86,113,0.18); gap: 6px; padding: 0 10px; height: 34px; }
+    .selector--compact .selector__caret { width: 6px; height: 6px; border-right-width: 1.2px; border-bottom-width: 1.2px; }
+    .selector__menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 100%;
+      padding: 4px;
+      background: rgba(11,20,38,0.97);
+      border: 1px solid rgba(79,129,180,0.30);
+      border-radius: 10px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.5), 0 0 16px rgba(0,210,255,0.12);
+      backdrop-filter: blur(16px);
+      display: none;
+      flex-direction: column;
+      gap: 1px;
+      z-index: 50;
+    }
+    .selector.is-open .selector__menu { display: flex; }
+    .selector__option {
+      display: flex; align-items: center; justify-content: center;
+      padding: 7px 14px;
+      border-radius: 6px;
+      color: #cfd9e6;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-align: center;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .selector__option:hover { background: rgba(0,210,255,0.10); color: #fff; }
+    .selector__option.is-active { background: rgba(0,210,255,0.14); color: var(--cyan); }
+
+    /* ============ HEADER ROW 2 — nav + balance ============ */
+    .header-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 8px;
+    }
+
+    /* nav panel */
+    .nav-bar {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      gap: 2px;
+      padding: 4px 10px 0;
+      background: rgba(60,86,113,0.12);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      overflow-x: auto;
+      scrollbar-width: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .nav-bar::-webkit-scrollbar { display: none; }
+
+    .nav-item {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 68px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 5px 6px 8px;
+      color: #c5d6ea;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.15;
+      cursor: pointer;
+      transition: color .18s;
+    }
+    .nav-item:hover { color: #fff; }
+    .nav-item.is-active::after {
+      content: '';
+      position: absolute;
+      left: 18%; right: 18%;
+      bottom: -1px;
+      height: 2px;
+      border-radius: 9999px 9999px 0 0;
+      background: var(--cyan);
+      box-shadow: 0 0 14px rgba(0,210,255,0.8);
+    }
+    .nav-item__icon {
+      width: 28px; height: 28px;
+      display: grid; place-items: center;
+      color: #5e88be;
+      transition: color .18s, filter .18s;
+    }
+    .nav-item:hover .nav-item__icon { color: #8ec0f0; }
+    .nav-item.is-active .nav-item__icon {
+      color: var(--cyan);
+      filter: drop-shadow(0 0 5px rgba(0,210,255,0.6));
+    }
+    .nav-item__icon i[class*="fantaicon"] { font-size: 22px; line-height: 1; }
+    .nav-item__badge {
+      position: absolute;
+      top: 0; right: calc(50% - 22px);
+      min-width: 16px; height: 14px;
+      padding: 0 4px;
+      background: var(--red);
+      color: #fff;
+      font-size: 8px;
+      font-weight: 800;
+      border-radius: 9999px;
+      display: grid; place-items: center;
+      box-shadow: 0 0 0 2px var(--bg-panel), 0 0 8px rgba(255,19,23,0.5);
+    }
+
+    /* ============ BALANCE WIDGET ============ */
+    .balance {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 8px 8px 14px;
+      background: rgba(60,86,113,0.12);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      min-height: 64px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .balance__user { display: flex; align-items: center; gap: 12px; padding-right: 14px; border-right: 1px solid var(--border-sub); }
+    .balance__avatar {
+      width: 42px; height: 42px;
+      border-radius: 9999px;
+      overflow: hidden;
+      background: #1c2533;
+      flex-shrink: 0;
+      border: 2px solid rgba(0,210,255,0.3);
+      box-shadow: 0 0 12px rgba(0,210,255,0.2);
+    }
+    .balance__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .balance__money { display: flex; flex-direction: column; gap: 3px; }
+    .balance__amount { font-size: 18px; font-weight: 700; line-height: 1; letter-spacing: 0.005em; color: #fff; }
+    .balance__amount .currency { color: var(--red); font-weight: 900; margin-right: 3px; }
+    .balance__sell { font-size: 11px; font-weight: 400; color: var(--rank-blue); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 2px; }
+    .balance__stats { display: flex; flex-direction: column; gap: 4px; padding-right: 8px; font-size: 12px; color: var(--blue-light); }
+    .balance__stat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .balance__stat svg, .balance__stat img { width: 16px; height: 16px; }
+    .balance__stat .v { color: #fff; font-weight: 700; }
+    .balance__stat .v.coins { color: var(--gold); }
+    .balance__stat .lbl { color: var(--txt-mute); font-weight: 500; }
+
+    .btn-deposit {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 44px;
+      padding: 0 26px;
+      background: linear-gradient(135deg, rgba(0,186,149,0.75) 0%, rgba(0,140,110,0.85) 100%);
+      border: 1px solid rgba(0,186,149,0.6);
+      border-radius: 9999px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      box-shadow: 0 0 28px rgba(0,186,149,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+      transition: transform .15s, box-shadow .18s, background .18s;
+      white-space: nowrap;
+    }
+    .btn-deposit .plus { font-weight: 800; opacity: 0.9; margin: 0 2px 0 6px; }
+    .btn-deposit:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(0,210,168,0.9) 0%, rgba(0,160,125,0.95) 100%);
+      box-shadow: 0 0 40px rgba(0,186,149,0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .balance__menu { width: 28px; height: 48px; display: grid; place-items: center; color: var(--nav-default); font-size: 20px; cursor: pointer; }
+    .balance__menu:hover { color: var(--nav-hover); }
+
+    /* ============ MAIN LAYOUT ============ */
+    .content-with-aside {
+      display: block;
+      padding-right: 140px;
+      padding-top: 18px;
+    }
+    .content-main { min-width: 0; }
+
+    /* ============ LIVE DROPS RAIL ============ */
+    .live-drops-aside {
+      position: fixed;
+      top: 162px;
+      right: 24px;
+      bottom: 14px;
+      width: 126px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 30;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(79,129,180,0.3) transparent;
+      -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+              mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+    }
+    .live-drops-aside::-webkit-scrollbar { width: 3px; }
+    .live-drops-aside::-webkit-scrollbar-track { background: transparent; }
+    .live-drops-aside::-webkit-scrollbar-thumb { background: rgba(79,129,180,0.3); border-radius: 9999px; }
+
+    .live-card {
+      position: relative;
+      display: grid;
+      grid-template-rows: 60px auto;
+      gap: 0;
+      padding: 6px 8px 8px;
+      border-radius: 12px;
+      min-height: 106px;
+      flex-shrink: 0;
+      background:
+        linear-gradient(180deg, rgba(16,24,42,0.95) 0%, rgba(10,16,28,0.95) 100%) padding-box,
+        linear-gradient(180deg,
+          color-mix(in srgb, var(--rarity-color, #4b69ff) 75%, transparent) 0%,
+          color-mix(in srgb, var(--rarity-color, #4b69ff) 28%, transparent) 40%,
+          rgba(79,129,180,0.15) 100%) border-box;
+      border: 1px solid transparent;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4), 0 0 12px color-mix(in srgb, var(--rarity-color, #4b69ff) 18%, transparent);
+      animation: live-drop-in .6s cubic-bezier(.16,1,.3,1) both;
+      overflow: hidden;
+    }
+    .live-card.is-removing { animation: live-drop-out .35s ease forwards; }
+    .live-card--milspec     { --rarity-color: #4b69ff; }
+    .live-card--restricted  { --rarity-color: #722cff; }
+    .live-card--classified  { --rarity-color: #d32ce6; }
+    .live-card--contraband  { --rarity-color: #c7000e; }
+    .live-card--remarkable  { --rarity-color: #ffee31; }
+    .live-card--legendary   { --rarity-color: #00eda2; }
+    .live-card--rare-orange { --rarity-color: #ff8a1a; }
+    @keyframes live-drop-in {
+      0%   { opacity: 0; transform: translateY(-40px) scale(0.92); filter: blur(2px); }
+      55%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes live-drop-out {
+      to { opacity: 0; transform: translateY(24px) scale(0.94); max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: -8px; }
+    }
+    .live-card__art {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .live-card__art img {
+      width: auto;
+      height: 60px;
+      max-width: none;
+      max-height: 60px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px color-mix(in srgb, var(--rarity-color, #4b69ff) 70%, transparent)) drop-shadow(0 3px 4px rgba(0,0,0,0.6));
+    }
+    .live-card__name {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      text-align: center;
+      margin-top: -16px;
+      padding: 2px 4px 0;
+      position: relative;
+      z-index: 1;
+    }
+    .live-card__weapon { font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .live-card__skin { font-size: 10px; font-weight: 500; color: color-mix(in srgb, var(--rarity-color, #4b69ff) 85%, #ffffff); letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* NEW: dollar value on live cards */
+    .live-card__value {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+      text-align: center;
+      margin-top: 2px;
+      text-shadow: 0 0 8px rgba(255,197,58,0.5);
+    }
+
+    /* ============ TIMER PANELS ============ */
+    .timers-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .timer-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 24px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--panel-tint, rgba(11,28,52,0.65)) 0%, rgba(8,16,30,0.65) 70%);
+      border: 1px solid var(--panel-border, rgba(79,129,180,0.2));
+      border-radius: 14px;
+      overflow: hidden;
+      min-height: 80px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: box-shadow .25s;
+    }
+    .timer-panel:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px var(--panel-accent, var(--cyan)) inset; }
+    /* Animated top-edge glow line */
+    .timer-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--panel-accent, var(--cyan)), transparent);
+      opacity: 0.7;
+    }
+    /* Ambient glow blob */
+    .timer-panel::after {
+      content: '';
+      position: absolute;
+      top: -30%; left: -10%;
+      width: 60%; height: 120%;
+      background: radial-gradient(ellipse at center, color-mix(in srgb, var(--panel-accent, var(--cyan)) 20%, transparent) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .timer-panel--tournament {
+      --panel-tint: rgba(8,28,60,0.55);
+      --panel-border: rgba(0,210,255,0.22);
+      --panel-accent: var(--cyan);
+    }
+    .timer-panel--major {
+      --panel-tint: rgba(60,38,6,0.50);
+      --panel-border: rgba(255,197,58,0.25);
+      --panel-accent: var(--gold);
+    }
+    .timer-panel__title {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-hero);
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--panel-accent, var(--cyan));
+      text-shadow: 0 0 20px color-mix(in srgb, var(--panel-accent, var(--cyan)) 60%, transparent);
+      position: relative;
+      z-index: 1;
+    }
+    .timer-panel__icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--panel-accent, var(--cyan)); font-size: 24px; }
+    .timer-panel__clock { display: inline-flex; align-items: stretch; gap: 4px; position: relative; z-index: 1; }
+    .clock-cell {
+      min-width: 54px;
+      padding: 6px 10px 4px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      backdrop-filter: blur(4px);
+    }
+    .clock-cell__v {
+      font-family: 'Russo One', sans-serif;
+      font-size: 24px;
+      font-weight: 400;
+      color: #fff;
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      text-shadow: 0 0 16px color-mix(in srgb, var(--panel-accent, var(--cyan)) 80%, transparent);
+    }
+    .clock-cell__lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--panel-accent, var(--cyan));
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    @keyframes clock-tick {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-1px); }
+    }
+
+    /* ============ HERO — FULL REDESIGN ============ */
+    .hero {
+      position: relative;
+      margin-bottom: 18px;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .hero__viewport {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      background: var(--bg-panel);
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid rgba(79,129,180,0.15);
+    }
+    .hero__track {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Subtle CRT scanlines overlay on entire hero */
+    .hero__viewport::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: minmax(380px, 500px) 1fr;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .6s ease, visibility 0s linear .6s;
+      z-index: 1;
+    }
+    .hero-slide.is-active {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity .6s ease, visibility 0s linear 0s;
+      z-index: 2;
+    }
+
+    /* Full-bleed background */
+    .hero-slide__bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-size: cover;
+      background-position: center right;
+      background-repeat: no-repeat;
+    }
+    .hero-slide__bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(90deg, rgba(6,10,20,0.96) 0%, rgba(6,10,20,0.85) 25%, rgba(6,10,20,0.55) 50%, rgba(6,10,20,0.2) 75%, transparent 100%),
+        linear-gradient(0deg, rgba(6,10,20,0.4) 0%, transparent 40%);
+    }
+
+    /* Slide content — glassmorphic left panel */
+    .hero-slide__content {
+      position: relative;
+      z-index: 3;
+      padding: 44px 0 44px 52px;
+    }
+
+    /* Eyebrow online badge */
+    .hero-slide__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      background: rgba(0,186,149,0.12);
+      border: 1px solid rgba(0,186,149,0.3);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-soft);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero-slide__eyebrow::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green-soft);
+      box-shadow: 0 0 8px var(--green-soft);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .hero-slide__title {
+      font-family: var(--font-hero);
+      font-size: 44px;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      line-height: 1.08;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      color: #fff;
+    }
+    .hero-slide__title .gradient-line {
+      background: linear-gradient(90deg, var(--cyan) 0%, var(--gold) 60%, var(--green-soft) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      text-shadow: none;
+      filter: drop-shadow(0 0 18px rgba(0,210,255,0.45));
+    }
+    .hero-slide__title .gold { color: var(--gold); -webkit-text-fill-color: var(--gold); text-shadow: 0 0 20px rgba(255,197,58,0.45); }
+    .hero-slide__title .pink { color: #FF92EA; -webkit-text-fill-color: #FF92EA; text-shadow: 0 0 20px rgba(255,146,234,0.45); }
+    .hero-slide__title .cyan { color: var(--cyan); -webkit-text-fill-color: var(--cyan); text-shadow: 0 0 20px rgba(0,210,255,0.45); }
+    .hero-slide__title .white { color: #fff; -webkit-text-fill-color: #fff; }
+
+    .hero-slide__sub {
+      font-size: 15px;
+      font-weight: 400;
+      color: rgba(197,214,230,0.9);
+      line-height: 1.6;
+      margin-bottom: 26px;
+      max-width: 400px;
+    }
+    .hero-slide__sub .currency { color: var(--red); font-weight: 900; margin-right: 1px; }
+    .hero-slide__sub .price-num, .hero-slide__sub .price-dec { color: #fff; font-weight: 700; }
+    .hero-slide__sub .case { color: var(--gold); font-weight: 700; }
+
+    /* CTA row */
+    .hero-slide__ctas {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .hero-slide__cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 46px;
+      padding: 0 32px;
+      background: linear-gradient(135deg, rgba(0,186,149,0.8) 0%, rgba(0,140,110,0.9) 100%);
+      border: 1px solid rgba(0,186,149,0.6);
+      border-radius: 9999px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      box-shadow: 0 0 32px rgba(0,186,149,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+      transition: transform .2s, box-shadow .2s;
+      cursor: pointer;
+    }
+    .hero-slide__cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 44px rgba(0,186,149,0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .hero-slide__cta--ghost {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #cfd9e6;
+      box-shadow: none;
+    }
+    .hero-slide__cta--ghost:hover {
+      background: rgba(255,255,255,0.1);
+      box-shadow: none;
+      color: #fff;
+    }
+    /* Slide-specific primary CTAs */
+    .hero-slide__cta--blue {
+      background: linear-gradient(135deg, rgba(0,130,243,0.8) 0%, rgba(0,90,200,0.9) 100%);
+      border-color: rgba(0,157,243,0.6);
+      box-shadow: 0 0 32px rgba(0,157,243,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .hero-slide__cta--blue:hover { box-shadow: 0 0 44px rgba(0,157,243,0.55), inset 0 1px 0 rgba(255,255,255,0.2); }
+
+    /* Trust pills */
+    .hero-slide__trust {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .trust-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: rgba(197,214,230,0.85);
+      letter-spacing: 0.03em;
+      backdrop-filter: blur(4px);
+    }
+    .trust-pill .pill-icon {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    .trust-pill--green { border-color: rgba(0,186,149,0.3); }
+    .trust-pill--green .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-soft); box-shadow: 0 0 6px var(--green-soft); }
+    .trust-pill--cyan { border-color: rgba(0,210,255,0.25); }
+    .trust-pill--gold { border-color: rgba(255,197,58,0.25); }
+
+    /* ============ HERO RIGHT — Weapon Art Column ============ */
+    .hero-slide__art-col {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Ambient light glow behind weapons */
+    .hero-slide__art-col::before {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 70%;
+      background: radial-gradient(ellipse at center, var(--weapon-glow, rgba(0,210,255,0.3)) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-slide--s1 { --weapon-glow: rgba(255,197,58,0.35); }
+    .hero-slide--s2 { --weapon-glow: rgba(255,146,234,0.3); }
+    .hero-slide--s3 { --weapon-glow: rgba(0,210,255,0.35); }
+
+    .weapon-primary {
+      position: absolute;
+      bottom: -10px;
+      right: 2%;
+      height: 85%;
+      max-height: 360px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.6)) drop-shadow(0 0 30px var(--weapon-glow, rgba(0,210,255,0.3)));
+      animation: weapon-float 4s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+    .weapon-secondary {
+      position: absolute;
+      bottom: 20px;
+      right: 42%;
+      height: 50%;
+      max-height: 200px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)) drop-shadow(0 0 16px var(--weapon-glow, rgba(0,210,255,0.2)));
+      animation: weapon-float 4s ease-in-out 1s infinite;
+      opacity: 0.85;
+    }
+    @keyframes weapon-float {
+      0%, 100% { transform: translateY(0) rotate(-1deg); }
+      50%       { transform: translateY(-12px) rotate(1deg); }
+    }
+
+    /* Deposit Badge */
+    .hero__deposit-badge {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      z-index: 8;
+      width: 96px; height: 96px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      background: radial-gradient(ellipse at 40% 30%, rgba(255,220,60,0.25) 0%, rgba(180,100,0,0.15) 100%);
+      border: 2px solid rgba(255,197,58,0.5);
+      border-radius: 50%;
+      box-shadow: 0 0 0 6px rgba(255,197,58,0.08), 0 0 30px rgba(255,197,58,0.3);
+      animation: badge-pulse 2.5s ease-in-out infinite;
+      text-align: center;
+    }
+    @keyframes badge-pulse {
+      0%, 100% { box-shadow: 0 0 0 6px rgba(255,197,58,0.08), 0 0 30px rgba(255,197,58,0.3); }
+      50%       { box-shadow: 0 0 0 10px rgba(255,197,58,0.04), 0 0 44px rgba(255,197,58,0.5); }
+    }
+    .hero__deposit-badge .badge-pct {
+      font-family: var(--font-hero);
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1;
+      color: var(--gold);
+      text-shadow: 0 0 16px rgba(255,197,58,0.7);
+    }
+    .hero__deposit-badge .badge-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.2;
+      opacity: 0.9;
+    }
+
+    /* Arrow buttons */
+    .hero__arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px; height: 36px;
+      border-radius: 9999px;
+      background: rgba(11,22,42,0.7);
+      border: 1px solid rgba(79,129,180,0.3);
+      color: #cfd9e6;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      transition: background .2s, color .2s, border-color .2s, transform .15s;
+      z-index: 9;
+    }
+    .hero__arrow:hover { background: rgba(22,44,80,0.95); color: #fff; border-color: rgba(0,210,255,0.5); box-shadow: 0 0 12px rgba(0,210,255,0.2); }
+    .hero__arrow:active { transform: translateY(-50%) scale(0.93); }
+    .hero__arrow svg { width: 14px; height: 14px; }
+    .hero__arrow--prev { left: 14px; }
+    .hero__arrow--next { right: 14px; }
+
+    /* Dot pagination */
+    .hero__dots {
+      position: absolute;
+      bottom: 14px;
+      left: 50px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 9;
+    }
+    .hero__dot { width: 7px; height: 7px; background: rgba(255,255,255,0.22); border-radius: 9999px; cursor: pointer; transition: background .2s, width .2s; }
+    .hero__dot.is-active { width: 24px; background: var(--cyan); box-shadow: 0 0 10px rgba(0,210,255,0.7); }
+
+    /* ============ SECTION TITLE ============ */
+    .section-title {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 22px 0 14px;
+      font-family: var(--font-hero);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(255,197,58,0.4);
+    }
+    .section-title__caret { display: inline-grid; place-items: center; color: var(--gold); font-size: 12px; transform: rotate(180deg); line-height: 1; }
+    .section-title__caret svg { width: 12px; height: 12px; }
+
+    /* ============ CASE GRID ============ */
+    .cases-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .case-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 4px 10px;
+      background: rgba(60,86,113,0.08);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: transform .18s, border-color .18s, box-shadow .18s;
+    }
+    .case-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,210,255,0.25);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 18px rgba(0,210,255,0.12);
+    }
+    .case-card:hover .case-card__art img {
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)) drop-shadow(0 0 16px rgba(0,210,255,0.3));
+    }
+    .case-card__art {
+      width: 100%;
+      aspect-ratio: 1 / 0.85;
+      display: grid;
+      place-items: center;
+      margin-bottom: -16px;
+    }
+    .case-card__art img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); }
+    .case-card__name { font-size: 12px; font-weight: 600; text-align: center; position: relative; padding: 0 10px; line-height: 1.3; color: #92b8d8; height: 32px; display: flex; align-items: center; justify-content: center; }
+    .case-card__price {
+      border: 1px solid rgba(56,65,76,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(20,28,42,0.8);
+      border-radius: 20px;
+      min-width: 80px;
+      height: 28px;
+      padding: 0 12px;
+      margin: auto;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.02em;
+      gap: 3px;
+    }
+    .case-card__price .currency { color: var(--red); font-weight: 900; }
+
+    /* ============ CASE BATTLES ============ */
+    .battles-head {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 4px 0 14px;
+    }
+    .battles-head__title {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      font-size: 15px;
+      font-weight: 400;
+      color: #88b3f6;
+      text-align: center;
+      text-transform: uppercase;
+      font-family: var(--font-hero);
+      letter-spacing: 0.1em;
+    }
+    .battles-head__title .sword { color: #88b3f6; font-size: 18px; }
+    .battles-head__see-all {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--rank-blue);
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: color .18s;
+    }
+    .battles-head__see-all svg { width: 10px; height: 10px; }
+    .battles-head__see-all:hover { color: var(--cyan); }
+    .battles-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .battle-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      background: rgba(60,86,113,0.12);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      overflow: hidden;
+      min-height: 130px;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .battle-card:hover { border-color: rgba(0,157,243,0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 12px rgba(0,157,243,0.12); }
+    .battle-card__top { display: flex; align-items: center; gap: 14px; padding: 14px 14px 12px; flex: 1; border-bottom: 1px solid rgba(79,129,180,0.15); }
+    .battle-rounds { position: relative; width: 42px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+    .battle-rounds__hex { position: absolute; top: 0; left: 0; width: 42px; height: 26px; pointer-events: none; }
+    .battle-rounds span:not(.battle-rounds__label) { position: absolute; top: 0; left: 0; width: 42px; height: 26px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 0.02em; }
+    .battle-rounds__label { position: absolute; top: 28px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 700; color: var(--label); letter-spacing: 0.10em; text-transform: uppercase; white-space: nowrap; }
+    .battle-cases { display: flex; align-items: end; flex: 1; min-width: 0; justify-content: center; padding-right: 4px; }
+    .battle-cases img { width: 54px; height: 54px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); position: relative; transform: scale(0.86); transform-origin: bottom center; z-index: 1; }
+    .battle-cases img + img { margin-left: -14px; }
+    .battle-cases img:nth-child(2) { width: 64px; height: 64px; transform: scale(1) translateY(-2px); z-index: 2; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6)); }
+    .battle-card__bottom { display: grid; grid-template-columns: 1fr 1fr auto; align-items: center; padding: 8px 0; }
+    .battle-stat { display: flex; flex-direction: column; gap: 2px; padding: 4px 12px; position: relative; }
+    .battle-stat + .battle-stat::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 1px; background: rgba(79,129,180,0.15); }
+    .battle-stat__lbl { font-size: 9px; font-weight: 700; color: var(--label); letter-spacing: 0.10em; text-transform: uppercase; }
+    .battle-stat__v { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.01em; }
+    .battle-stat__v .currency { color: var(--red); font-weight: 900; margin-right: 1px; }
+    .battle-join {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 30px; padding: 0 22px;
+      margin: 0 12px 0 12px;
+      background: rgba(0,157,243,0.7);
+      border: 1px solid rgba(0,157,243,0.7);
+      border-radius: 9999px;
+      color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      box-shadow: 0 0 18px rgba(52,172,212,0.22);
+      transition: background .2s, box-shadow .2s, transform .15s;
+      position: relative;
+    }
+    .battle-join::before { content: ''; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 1px; background: rgba(79,129,180,0.15); }
+    .battle-join:hover { background: rgba(0,157,243,1); box-shadow: 0 0 26px rgba(52,172,212,0.4); transform: translateY(-1px); }
+    .battle-card--create { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border-style: dashed; border-color: rgba(79,129,180,0.3); background: transparent; cursor: pointer; transition: border-color .18s, background .18s; }
+    .battle-card--create:hover { border-color: rgba(0,210,255,0.35); background: rgba(0,210,255,0.04); }
+    .battle-card--create__plus { width: 44px; height: 44px; border-radius: 9999px; border: 1px solid rgba(0,157,243,0.5); display: grid; place-items: center; color: var(--rank-blue); font-size: 22px; font-weight: 300; }
+    .battle-card--create__plus::before { content: '+'; }
+    .battle-card--create__lbl { font-size: 13px; font-weight: 700; color: var(--rank-blue); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- STICKY HEADER -->
+  <div class="page-header">
+
+    <!-- TOP BAR -->
+    <header class="header-top">
+      <div class="logo">
+        <img src="index_files/logo-bloodycase.svg" alt="BloodyCase">
+      </div>
+      <div class="header-util">
+        <div class="online">
+          <span class="online__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+              <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+              <line x1="12" y1="20" x2="12.01" y2="20"></line>
+            </svg>
+          </span>
+          <span class="online__count">6 834</span>
+          <span class="online__label">Online</span>
+        </div>
+        <a class="util-link" href="#">Promo code</a>
+        <a class="util-link" href="#">Affiliate system</a>
+      </div>
+      <nav class="game-tabs" id="gameTabs">
+        <button class="game-tab is-active" data-game="cs2">
+          <span class="game-tab__icon"><img src="index_files/game-cs2.png" alt=""></span>
+          <span class="game-tab__label">CS2</span>
+        </button>
+        <button class="game-tab" data-game="rust">
+          <span class="game-tab__icon"><img src="index_files/game-rust.png" alt=""></span>
+          <span class="game-tab__label">Rust</span>
+        </button>
+        <button class="game-tab" data-game="dota">
+          <span class="game-tab__icon"><img src="index_files/game-dota.jpg" alt=""></span>
+          <span class="game-tab__label">Dota 2</span>
+        </button>
+      </nav>
+      <div class="header-right">
+        <div class="selector selector--compact" data-selector="lang">
+          <span class="selector__value">EN</span>
+          <span class="selector__caret"></span>
+          <div class="selector__menu">
+            <div class="selector__option is-active" data-value="EN">EN</div>
+            <div class="selector__option" data-value="RU">RU</div>
+            <div class="selector__option" data-value="UA">UA</div>
+            <div class="selector__option" data-value="DE">DE</div>
+            <div class="selector__option" data-value="FR">FR</div>
+          </div>
+        </div>
+        <div class="selector selector--compact" data-selector="currency">
+          <span class="selector__value">USD</span>
+          <span class="selector__caret"></span>
+          <div class="selector__menu">
+            <div class="selector__option is-active" data-value="USD">USD</div>
+            <div class="selector__option" data-value="EUR">EUR</div>
+            <div class="selector__option" data-value="GBP">GBP</div>
+            <div class="selector__option" data-value="RUB">RUB</div>
+            <div class="selector__option" data-value="UAH">UAH</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAV ROW + BALANCE -->
+    <div class="header-row">
+      <nav class="nav-bar">
+        <a class="nav-item is-active" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-cases"></i></span>
+          Cases
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-deposit-cases"></i></span>
+          Dragon<br>Cases
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-daily-free"></i></span>
+          <span class="nav-item__badge">1</span>
+          Daily<br>Free
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-battles"></i></span>
+          <span class="nav-item__badge">36</span>
+          Case<br>Battle
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-snb-sniper-battle-icon"></i></span>
+          <span class="nav-item__badge">21</span>
+          Sniper<br>Battle
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-events-icon"></i></span>
+          Event
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-tournament"></i></span>
+          Tournament
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-my-nft"></i></span>
+          <span class="nav-item__badge">1</span>
+          Giveaways
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-upgrader"></i></span>
+          Upgrader
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-contract"></i></span>
+          Contract
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-item__icon"><i class="fantaicon fantaicon-bonuses"></i></span>
+          Bonuses
+        </a>
+      </nav>
+
+      <div class="balance">
+        <div class="balance__user">
+          <div class="balance__avatar"><img src="index_files/avatar.png" alt=""></div>
+          <div class="balance__money">
+            <div class="balance__amount">
+              <span class="currency">$</span>123&nbsp;40.55
+            </div>
+            <a class="balance__sell" href="#">Sell skins [255]</a>
+          </div>
+        </div>
+        <div class="balance__stats">
+          <div class="balance__stat">
+            <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path opacity="0.43" d="M11.5671 3.18909H3.43402C2.79226 3.18909 2.27118 3.6765 2.27118 4.27678V4.66157C3.68222 4.87192 4.75044 6.09557 4.75044 7.50136C4.75044 8.90714 3.68222 10.1308 2.2081 10.4104L2.27118 10.7259C2.27118 11.3249 2.79226 11.8136 3.43402 11.8136H11.5671C12.2074 11.8136 12.7285 11.3262 12.7285 10.7259V10.3411C11.3175 10.1295 10.2493 8.90586 10.2493 7.50007C10.2493 6.11353 11.2873 4.90527 12.7285 4.60257V4.27421C12.7285 3.67521 12.2074 3.18652 11.5671 3.18652V3.18909Z" fill="#0a4f44"></path>
+              <path d="M11.5671 2H3.43401C2.09154 2 1 3.02099 1 4.27542V4.66021C1 5.18995 1.40178 5.65042 1.95578 5.75431C2.83888 5.92362 3.48064 6.6573 3.48064 7.5C3.48064 8.3427 2.83888 9.07638 1.95304 9.24569C1.40178 9.35343 1.00137 9.81262 1.00137 10.3398V10.7246C1.00137 11.9803 2.09291 13 3.43539 13H11.5684C12.9095 13 13.9997 11.979 13.9997 10.7246V10.3398C13.9997 9.81133 13.5979 9.35086 13.0439 9.24569C12.1608 9.07638 11.5204 8.3427 11.5204 7.5C11.5204 6.6573 12.1608 5.92234 13.0439 5.75431H13.048C13.5993 5.64529 13.9997 5.1861 13.9997 4.66021V4.27542C13.9997 3.01971 12.9082 2 11.5671 2Z" fill="#00EA96"></path>
+            </svg>
+            <span class="v">999</span> <span class="lbl">tickets</span>
+          </div>
+          <div class="balance__stat">
+            <img src="index_files/coin-balance.webp" alt="">
+            <span class="v coins">475.2K</span> <span class="lbl">coins</span>
+          </div>
+        </div>
+        <button class="btn-deposit">Deposit <span class="plus">+</span> 25%</button>
+        <span class="balance__menu"><i class="fantaicon fantaicon-more"></i></span>
+      </div>
+    </div>
+
+  </div><!-- /.page-header -->
+
+  <!-- MAIN CONTENT -->
+  <div class="content-with-aside">
+    <div class="content-main">
+
+      <!-- TIMER PANELS -->
+      <div class="timers-row">
+        <div class="timer-panel timer-panel--tournament">
+          <div class="timer-panel__title">
+            <span class="timer-panel__icon"><i class="fantaicon fantaicon-tournament"></i></span>
+            Tournament
+          </div>
+          <div class="timer-panel__clock">
+            <div class="clock-cell"><div class="clock-cell__v">02</div><div class="clock-cell__lbl">Days</div></div>
+            <div class="clock-cell"><div class="clock-cell__v">14</div><div class="clock-cell__lbl">Hrs</div></div>
+            <div class="clock-cell"><div class="clock-cell__v">37</div><div class="clock-cell__lbl">Min</div></div>
+            <div class="clock-cell"><div class="clock-cell__v">59</div><div class="clock-cell__lbl">Sec</div></div>
+          </div>
+        </div>
+        <div class="timer-panel timer-panel--major">
+          <div class="timer-panel__title">
+            <span class="timer-panel__icon"><i class="fantaicon fantaicon-events-icon"></i></span>
+            Major Event
+          </div>
+          <div class="timer-panel__clock">
+            <div class="clock-cell"><div class="clock-cell__v">01</div><div class="clock-cell__lbl">Days</div></div>
+            <div class="clock-cell"><div class="clock-cell__v">09</div><div class="clock-cell__lbl">Hrs</div></div>
+            <div class="clock-cell"><div class="clock-cell__v">24</div><div class="clock-cell__lbl">Min</div></div>
+            <div class="clock-cell"><div class="clock-cell__v">15</div><div class="clock-cell__lbl">Sec</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HERO SLIDER — v4 redesign -->
+      <section class="hero" id="hero">
+        <div class="hero__viewport">
+          <div class="hero__track">
+
+            <!-- Slide 1 — Champions Offer -->
+            <div class="hero-slide hero-slide--s1" data-slide="0">
+              <div class="hero-slide__bg" style="background-image:url('index_files/ak-47-redline.webp'); background-size: cover; background-position: center; opacity:0.08;"></div>
+
+              <!-- LEFT: content -->
+              <div class="hero-slide__content">
+                <div class="hero-slide__eyebrow">6 834 players online</div>
+                <h2 class="hero-slide__title">
+                  <span class="gold">Champions</span>
+                  <span class="white"> Offer</span>
+                </h2>
+                <p class="hero-slide__sub">
+                  Deposit from <span class="currency">$</span><span class="price-num">24</span><span class="price-dec">.99</span> and get the<br>
+                  <span class="case">Arena Champion Case</span> for FREE
+                </p>
+                <div class="hero-slide__ctas">
+                  <button class="hero-slide__cta">Top up now</button>
+                  <button class="hero-slide__cta hero-slide__cta--ghost">Watch Live</button>
+                </div>
+                <div class="hero-slide__trust">
+                  <span class="trust-pill trust-pill--green">
+                    <span class="pill-dot"></span>
+                    Provably Fair
+                  </span>
+                  <span class="trust-pill trust-pill--cyan">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.62a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"></path></svg>
+                    Instant Withdrawal
+                  </span>
+                  <span class="trust-pill trust-pill--gold">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    From $0.39
+                  </span>
+                </div>
+              </div>
+
+              <!-- RIGHT: weapon art -->
+              <div class="hero-slide__art-col">
+                <img class="weapon-primary" src="index_files/knife-gold.png" alt="Karambit Gold">
+                <img class="weapon-secondary" src="index_files/ak-47-vulcan.png" alt="AK-47 Vulcan">
+              </div>
+
+              <!-- Deposit badge — only slide 1 -->
+              <div class="hero__deposit-badge">
+                <span class="badge-pct">+25%</span>
+                <span class="badge-label">First<br>Deposit</span>
+              </div>
+            </div>
+
+            <!-- Slide 2 — Dragon Cases -->
+            <div class="hero-slide hero-slide--s2 is-active" data-slide="1">
+              <div class="hero-slide__bg" style="background-image:url('index_files/awp-dragon-lore.webp'); background-size: cover; background-position: right center; opacity:0.07;"></div>
+
+              <div class="hero-slide__content">
+                <div class="hero-slide__eyebrow">6 834 players online</div>
+                <h2 class="hero-slide__title">
+                  <span class="pink">Dragon</span>
+                  <span class="white"> Cases</span>
+                </h2>
+                <p class="hero-slide__sub">
+                  Forge through fire &amp; claim the<br>
+                  <span class="case" style="color:#FF92EA;">legendary dragon loot</span> tonight.
+                </p>
+                <div class="hero-slide__ctas">
+                  <button class="hero-slide__cta hero-slide__cta--blue">Open Now</button>
+                  <button class="hero-slide__cta hero-slide__cta--ghost">See All Cases</button>
+                </div>
+                <div class="hero-slide__trust">
+                  <span class="trust-pill trust-pill--green">
+                    <span class="pill-dot"></span>
+                    Provably Fair
+                  </span>
+                  <span class="trust-pill trust-pill--cyan">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.62a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"></path></svg>
+                    Instant Withdrawal
+                  </span>
+                  <span class="trust-pill trust-pill--gold">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    From $0.39
+                  </span>
+                </div>
+              </div>
+
+              <div class="hero-slide__art-col">
+                <img class="weapon-primary" src="index_files/awp-dragon-lore.webp" alt="AWP Dragon Lore">
+                <img class="weapon-secondary" src="index_files/knife-butterfly-gold.png" alt="Butterfly Gold">
+              </div>
+            </div>
+
+            <!-- Slide 3 — Sniper Battle -->
+            <div class="hero-slide hero-slide--s3" data-slide="2">
+              <div class="hero-slide__bg" style="background-image:url('index_files/awp-asiimov.webp'); background-size: cover; background-position: right center; opacity:0.07;"></div>
+
+              <div class="hero-slide__content">
+                <div class="hero-slide__eyebrow">6 834 players online</div>
+                <h2 class="hero-slide__title">
+                  <span class="cyan">Sniper</span>
+                  <span class="white"> Battle</span>
+                </h2>
+                <p class="hero-slide__sub">
+                  Last shot wins it all. Join the live arena<br>
+                  and grab the <span class="case">$10,000 prize pool</span> tonight.
+                </p>
+                <div class="hero-slide__ctas">
+                  <button class="hero-slide__cta">Enter Arena</button>
+                  <button class="hero-slide__cta hero-slide__cta--ghost">How It Works</button>
+                </div>
+                <div class="hero-slide__trust">
+                  <span class="trust-pill trust-pill--green">
+                    <span class="pill-dot"></span>
+                    Provably Fair
+                  </span>
+                  <span class="trust-pill trust-pill--cyan">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.62a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"></path></svg>
+                    21 Active Battles
+                  </span>
+                  <span class="trust-pill trust-pill--gold">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    $10K Prize Pool
+                  </span>
+                </div>
+              </div>
+
+              <div class="hero-slide__art-col">
+                <img class="weapon-primary" src="index_files/awp-asiimov.webp" alt="AWP Asiimov">
+                <img class="weapon-secondary" src="index_files/ak-47-fire-serpent.webp" alt="AK Fire Serpent">
+              </div>
+            </div>
+
+          </div><!-- /.hero__track -->
+        </div><!-- /.hero__viewport -->
+
+        <button class="hero__arrow hero__arrow--prev" id="heroPrev" aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="hero__arrow hero__arrow--next" id="heroNext" aria-label="Next slide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <div class="hero__dots" id="heroDots">
+          <button class="hero__dot" data-dot="0"></button>
+          <button class="hero__dot is-active" data-dot="1"></button>
+          <button class="hero__dot" data-dot="2"></button>
+        </div>
+      </section>
+
+      <!-- HOT SUMMER CASES -->
+      <h3 class="section-title">
+        Hot Summer Cases
+        <span class="section-title__caret"><i class="fantaicon fantaicon-arrow-round-bottom"></i></span>
+      </h3>
+      <div class="cases-grid">
+        <div class="case-card">
+          <div class="case-card__art"><img src="index_files/case-gradient.png" alt=""></div>
+          <div class="case-card__name">Gradient</div>
+          <div class="case-card__price"><span class="currency">$</span> 49.00</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card__art"><img src="index_files/case-lost-world.png" alt=""></div>
+          <div class="case-card__name">Lost World Case</div>
+          <div class="case-card__price"><span class="currency">$</span> 0.39</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card__art"><img src="index_files/case-sun-strike.png" alt=""></div>
+          <div class="case-card__name">Sun Strike Case</div>
+          <div class="case-card__price"><span class="currency">$</span> 0.47</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card__art"><img src="index_files/case-csgo2.png" alt=""></div>
+          <div class="case-card__name">CSGO2 Case</div>
+          <div class="case-card__price"><span class="currency">$</span> 0.49</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card__art"><img src="index_files/case-hot.png" alt=""></div>
+          <div class="case-card__name">The Hot Case</div>
+          <div class="case-card__price"><span class="currency">$</span> 0.71</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card__art"><img src="index_files/case-inferno.png" alt=""></div>
+          <div class="case-card__name">Inferno Case</div>
+          <div class="case-card__price"><span class="currency">$</span> 6.66</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card__art"><img src="index_files/case-dreams.png" alt=""></div>
+          <div class="case-card__name">Case of your dreams</div>
+          <div class="case-card__price"><span class="currency">$</span> 49.00</div>
+        </div>
+      </div>
+
+      <!-- CASE BATTLES -->
+      <div class="battles-head">
+        <div class="battles-head__title">
+          <i class="fantaicon fantaicon-battles sword"></i>
+          Case Battles
+          <i class="fantaicon fantaicon-battles sword"></i>
+        </div>
+        <a class="battles-head__see-all" href="#">See all <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
+      </div>
+      <div class="battles-grid">
+        <div class="battle-card">
+          <div class="battle-card__top">
+            <div class="battle-rounds"><svg class="battle-rounds__hex" width="42" height="26" viewBox="0 0 42 26" fill="none"><path opacity="0.2" d="M31.92 17.46C31.92 18.51 31.35 19.48 30.42 20.01L22.48 24.53C21.56 25.05 20.42 25.05 19.5 24.53L11.56 20.01C10.64 19.48 10.07 18.51 10.07 17.46V8.44C10.07 7.39 10.64 6.42 11.56 5.9L19.5 1.38C20.42 0.86 21.56 0.86 22.48 1.38L30.42 5.9C31.34 6.43 31.91 7.4 31.91 8.45V17.47L31.92 17.46Z" fill="#0262C1"/><path d="M30.97 5.09L22.92 0.51C21.74 -0.16 20.27 -0.16 19.09 0.51L11.04 5.09C9.86 5.76 9.12 7.02 9.12 8.37V17.52C9.12 18.87 9.86 20.13 11.04 20.8L19.09 25.38C19.68 25.71 20.34 25.88 21.01 25.88C21.68 25.88 22.34 25.71 22.93 25.38L30.98 20.8C32.16 20.12 32.9 18.87 32.9 17.52V8.37C32.9 7.02 32.16 5.76 30.98 5.09H30.97Z" fill="#4E9EF4"/></svg><span>2</span><span class="battle-rounds__label">Rounds</span></div>
+            <div class="battle-cases"><img src="index_files/case-csgo2.png" alt=""><img src="index_files/case-hot.png" alt=""></div>
+          </div>
+          <div class="battle-card__bottom">
+            <div class="battle-stat"><div class="battle-stat__lbl">Players</div><div class="battle-stat__v">3 / 5</div></div>
+            <div class="battle-stat"><div class="battle-stat__lbl">Value</div><div class="battle-stat__v"><span class="currency">$</span>12.25</div></div>
+            <button class="battle-join">Join</button>
+          </div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-card__top">
+            <div class="battle-rounds"><svg class="battle-rounds__hex" width="42" height="26" viewBox="0 0 42 26" fill="none"><path opacity="0.2" d="M31.92 17.46C31.92 18.51 31.35 19.48 30.42 20.01L22.48 24.53C21.56 25.05 20.42 25.05 19.5 24.53L11.56 20.01C10.64 19.48 10.07 18.51 10.07 17.46V8.44C10.07 7.39 10.64 6.42 11.56 5.9L19.5 1.38C20.42 0.86 21.56 0.86 22.48 1.38L30.42 5.9C31.34 6.43 31.91 7.4 31.91 8.45V17.47L31.92 17.46Z" fill="#0262C1"/><path d="M30.97 5.09L22.92 0.51C21.74 -0.16 20.27 -0.16 19.09 0.51L11.04 5.09C9.86 5.76 9.12 7.02 9.12 8.37V17.52C9.12 18.87 9.86 20.13 11.04 20.8L19.09 25.38C19.68 25.71 20.34 25.88 21.01 25.88C21.68 25.88 22.34 25.71 22.93 25.38L30.98 20.8C32.16 20.12 32.9 18.87 32.9 17.52V8.37C32.9 7.02 32.16 5.76 30.98 5.09H30.97Z" fill="#4E9EF4"/></svg><span>1</span><span class="battle-rounds__label">Rounds</span></div>
+            <div class="battle-cases"><img src="index_files/case-lost-world.png" alt=""><img src="index_files/case-sun-strike.png" alt=""></div>
+          </div>
+          <div class="battle-card__bottom">
+            <div class="battle-stat"><div class="battle-stat__lbl">Players</div><div class="battle-stat__v">2 / 3</div></div>
+            <div class="battle-stat"><div class="battle-stat__lbl">Value</div><div class="battle-stat__v"><span class="currency">$</span>12.25</div></div>
+            <button class="battle-join">Join</button>
+          </div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-card__top">
+            <div class="battle-rounds"><svg class="battle-rounds__hex" width="42" height="26" viewBox="0 0 42 26" fill="none"><path opacity="0.2" d="M31.92 17.46C31.92 18.51 31.35 19.48 30.42 20.01L22.48 24.53C21.56 25.05 20.42 25.05 19.5 24.53L11.56 20.01C10.64 19.48 10.07 18.51 10.07 17.46V8.44C10.07 7.39 10.64 6.42 11.56 5.9L19.5 1.38C20.42 0.86 21.56 0.86 22.48 1.38L30.42 5.9C31.34 6.43 31.91 7.4 31.91 8.45V17.47L31.92 17.46Z" fill="#0262C1"/><path d="M30.97 5.09L22.92 0.51C21.74 -0.16 20.27 -0.16 19.09 0.51L11.04 5.09C9.86 5.76 9.12 7.02 9.12 8.37V17.52C9.12 18.87 9.86 20.13 11.04 20.8L19.09 25.38C19.68 25.71 20.34 25.88 21.01 25.88C21.68 25.88 22.34 25.71 22.93 25.38L30.98 20.8C32.16 20.12 32.9 18.87 32.9 17.52V8.37C32.9 7.02 32.16 5.76 30.98 5.09H30.97Z" fill="#4E9EF4"/></svg><span>6</span><span class="battle-rounds__label">Rounds</span></div>
+            <div class="battle-cases"><img src="index_files/case-gradient.png" alt=""><img src="index_files/case-inferno.png" alt=""><img src="index_files/case-csgo2.png" alt=""></div>
+          </div>
+          <div class="battle-card__bottom">
+            <div class="battle-stat"><div class="battle-stat__lbl">Players</div><div class="battle-stat__v">3 / 4</div></div>
+            <div class="battle-stat"><div class="battle-stat__lbl">Value</div><div class="battle-stat__v"><span class="currency">$</span>14.00</div></div>
+            <button class="battle-join">Join</button>
+          </div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-card__top">
+            <div class="battle-rounds"><svg class="battle-rounds__hex" width="42" height="26" viewBox="0 0 42 26" fill="none"><path opacity="0.2" d="M31.92 17.46C31.92 18.51 31.35 19.48 30.42 20.01L22.48 24.53C21.56 25.05 20.42 25.05 19.5 24.53L11.56 20.01C10.64 19.48 10.07 18.51 10.07 17.46V8.44C10.07 7.39 10.64 6.42 11.56 5.9L19.5 1.38C20.42 0.86 21.56 0.86 22.48 1.38L30.42 5.9C31.34 6.43 31.91 7.4 31.91 8.45V17.47L31.92 17.46Z" fill="#0262C1"/><path d="M30.97 5.09L22.92 0.51C21.74 -0.16 20.27 -0.16 19.09 0.51L11.04 5.09C9.86 5.76 9.12 7.02 9.12 8.37V17.52C9.12 18.87 9.86 20.13 11.04 20.8L19.09 25.38C19.68 25.71 20.34 25.88 21.01 25.88C21.68 25.88 22.34 25.71 22.93 25.38L30.98 20.8C32.16 20.12 32.9 18.87 32.9 17.52V8.37C32.9 7.02 32.16 5.76 30.98 5.09H30.97Z" fill="#4E9EF4"/></svg><span>2</span><span class="battle-rounds__label">Rounds</span></div>
+            <div class="battle-cases"><img src="index_files/case-sun-strike.png" alt=""><img src="index_files/case-dreams.png" alt=""></div>
+          </div>
+          <div class="battle-card__bottom">
+            <div class="battle-stat"><div class="battle-stat__lbl">Players</div><div class="battle-stat__v">1 / 2</div></div>
+            <div class="battle-stat"><div class="battle-stat__lbl">Value</div><div class="battle-stat__v"><span class="currency">$</span>12.25</div></div>
+            <button class="battle-join">Join</button>
+          </div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-card__top">
+            <div class="battle-rounds"><svg class="battle-rounds__hex" width="42" height="26" viewBox="0 0 42 26" fill="none"><path opacity="0.2" d="M31.92 17.46C31.92 18.51 31.35 19.48 30.42 20.01L22.48 24.53C21.56 25.05 20.42 25.05 19.5 24.53L11.56 20.01C10.64 19.48 10.07 18.51 10.07 17.46V8.44C10.07 7.39 10.64 6.42 11.56 5.9L19.5 1.38C20.42 0.86 21.56 0.86 22.48 1.38L30.42 5.9C31.34 6.43 31.91 7.4 31.91 8.45V17.47L31.92 17.46Z" fill="#0262C1"/><path d="M30.97 5.09L22.92 0.51C21.74 -0.16 20.27 -0.16 19.09 0.51L11.04 5.09C9.86 5.76 7.02 8.37 8.37 8.37V17.52C8.37 18.87 9.86 20.13 11.04 20.8L19.09 25.38C19.68 25.71 20.34 25.88 21.01 25.88C21.68 25.88 22.34 25.71 22.93 25.38L30.98 20.8C32.16 20.12 32.9 18.87 32.9 17.52V8.37C32.9 7.02 32.16 5.76 30.98 5.09H30.97Z" fill="#4E9EF4"/></svg><span>2</span><span class="battle-rounds__label">Rounds</span></div>
+            <div class="battle-cases"><img src="index_files/case-inferno.png" alt=""><img src="index_files/case-csgo2.png" alt=""></div>
+          </div>
+          <div class="battle-card__bottom">
+            <div class="battle-stat"><div class="battle-stat__lbl">Players</div><div class="battle-stat__v">3 / 4</div></div>
+            <div class="battle-stat"><div class="battle-stat__lbl">Value</div><div class="battle-stat__v"><span class="currency">$</span>22.50</div></div>
+            <button class="battle-join">Join</button>
+          </div>
+        </div>
+        <div class="battle-card battle-card--create">
+          <div class="battle-card--create__plus"></div>
+          <div class="battle-card--create__lbl">Create battle</div>
+        </div>
+      </div>
+
+    </div><!-- /.content-main -->
+
+    <!-- LIVE DROPS RAIL — with dollar values added -->
+    <aside class="live-drops-aside" id="liveDropsAside">
+      <div class="live-card live-card--rare-orange">
+        <div class="live-card__art"><img src="index_files/ak-47-vulcan.png" alt=""></div>
+        <div class="live-card__name">
+          <span class="live-card__weapon">AK-47</span>
+          <span class="live-card__skin">Vulcan</span>
+          <span class="live-card__value">$87.40</span>
+        </div>
+      </div>
+      <div class="live-card live-card--classified">
+        <div class="live-card__art"><img src="index_files/awp-asiimov.webp" alt=""></div>
+        <div class="live-card__name">
+          <span class="live-card__weapon">AWP</span>
+          <span class="live-card__skin">Asiimov</span>
+          <span class="live-card__value">$34.20</span>
+        </div>
+      </div>
+      <div class="live-card live-card--rare-orange" style="animation:none;">
+        <div class="live-card__art"><img src="index_files/ak-47-vulcan.png" alt=""></div>
+        <div class="live-card__name">
+          <span class="live-card__weapon">AK-47</span>
+          <span class="live-card__skin">Vulcan</span>
+          <span class="live-card__value">$87.40</span>
+        </div>
+      </div>
+      <div class="live-card live-card--classified" style="animation:none;">
+        <div class="live-card__art"><img src="index_files/awp-asiimov.webp" alt=""></div>
+        <div class="live-card__name">
+          <span class="live-card__weapon">AWP</span>
+          <span class="live-card__skin">Asiimov</span>
+          <span class="live-card__value">$34.20</span>
+        </div>
+      </div>
+      <div class="live-card live-card--classified" style="animation:none;">
+        <div class="live-card__art"><img src="index_files/ak-47-redline.webp" alt=""></div>
+        <div class="live-card__name">
+          <span class="live-card__weapon">AK-47</span>
+          <span class="live-card__skin">Redline</span>
+          <span class="live-card__value">$18.60</span>
+        </div>
+      </div>
+      <div class="live-card live-card--classified" style="animation:none;">
+        <div class="live-card__art"><img src="index_files/bayonet-tiger-tooth.webp" alt=""></div>
+        <div class="live-card__name">
+          <span class="live-card__weapon">Bayonet</span>
+          <span class="live-card__skin">Tiger Tooth</span>
+          <span class="live-card__value">$312.00</span>
+        </div>
+      </div>
+      <div class="live-card live-card--remarkable" style="animation:none;">
+        <div class="live-card__art"><img src="index_files/awp-dragon-lore.webp" alt=""></div>
+        <div class="live-card__name">
+          <span class="live-card__weapon">AWP</span>
+          <span class="live-card__skin">Dragon Lore</span>
+          <span class="live-card__value">$1,240.00</span>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /.content-with-aside -->
+
+  <script>
+    /* Game tabs */
+    (function () {
+      const tabs = document.querySelectorAll('#gameTabs .game-tab');
+      tabs.forEach(t => t.addEventListener('click', () => {
+        tabs.forEach(o => o.classList.remove('is-active'));
+        t.classList.add('is-active');
+      }));
+    })();
+
+    /* Lang/Currency selectors */
+    (function () {
+      const selectors = document.querySelectorAll('.selector[data-selector]');
+      selectors.forEach(sel => {
+        const value = sel.querySelector('.selector__value');
+        const options = sel.querySelectorAll('.selector__option');
+        sel.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const wasOpen = sel.classList.contains('is-open');
+          document.querySelectorAll('.selector').forEach(s => s.classList.remove('is-open'));
+          if (!wasOpen) sel.classList.add('is-open');
+        });
+        options.forEach(opt => {
+          opt.addEventListener('click', (e) => {
+            e.stopPropagation();
+            options.forEach(o => o.classList.remove('is-active'));
+            opt.classList.add('is-active');
+            value.textContent = opt.dataset.value;
+            sel.classList.remove('is-open');
+          });
+        });
+      });
+      document.addEventListener('click', () => {
+        document.querySelectorAll('.selector').forEach(s => s.classList.remove('is-open'));
+      });
+    })();
+
+    /* Hero slider */
+    (function () {
+      const slides = document.querySelectorAll('.hero-slide');
+      const dots   = document.querySelectorAll('.hero__dot');
+      let current  = 1;
+      let timer;
+
+      function goTo(idx) {
+        slides[current].classList.remove('is-active');
+        dots[current].classList.remove('is-active');
+        current = (idx + slides.length) % slides.length;
+        slides[current].classList.add('is-active');
+        dots[current].classList.add('is-active');
+      }
+
+      function autoPlay() {
+        timer = setInterval(() => goTo(current + 1), 5000);
+      }
+
+      document.getElementById('heroPrev').addEventListener('click', () => { clearInterval(timer); goTo(current - 1); autoPlay(); });
+      document.getElementById('heroNext').addEventListener('click', () => { clearInterval(timer); goTo(current + 1); autoPlay(); });
+      dots.forEach(d => d.addEventListener('click', () => { clearInterval(timer); goTo(+d.dataset.dot); autoPlay(); }));
+
+      autoPlay();
+    })();
+
+    /* Live drops seeder — adds dollar values */
+    (function () {
+      const drops = [
+        { weapon:'AK-47', skin:'Vulcan', rarity:'rare-orange', img:'index_files/ak-47-vulcan.png', value:'$87.40' },
+        { weapon:'AWP', skin:'Asiimov', rarity:'classified', img:'index_files/awp-asiimov.webp', value:'$34.20' },
+        { weapon:'AK-47', skin:'Redline', rarity:'classified', img:'index_files/ak-47-redline.webp', value:'$18.60' },
+        { weapon:'Bayonet', skin:'Tiger Tooth', rarity:'classified', img:'index_files/bayonet-tiger-tooth.webp', value:'$312.00' },
+        { weapon:'AWP', skin:'Dragon Lore', rarity:'remarkable', img:'index_files/awp-dragon-lore.webp', value:'$1,240.00' },
+        { weapon:'AK-47', skin:'Fire Serpent', rarity:'contraband', img:'index_files/ak-47-fire-serpent.webp', value:'$488.00' },
+      ];
+      const rail = document.getElementById('liveDropsAside');
+
+      function addDrop() {
+        const d = drops[Math.floor(Math.random() * drops.length)];
+        const card = document.createElement('div');
+        card.className = `live-card live-card--${d.rarity}`;
+        card.innerHTML = `
+          <div class="live-card__art"><img src="${d.img}" alt=""></div>
+          <div class="live-card__name">
+            <span class="live-card__weapon">${d.weapon}</span>
+            <span class="live-card__skin">${d.skin}</span>
+            <span class="live-card__value">${d.value}</span>
+          </div>`;
+        rail.insertBefore(card, rail.firstChild);
+
+        const cards = rail.querySelectorAll('.live-card');
+        if (cards.length > 12) {
+          const last = cards[cards.length - 1];
+          last.classList.add('is-removing');
+          setTimeout(() => last.remove(), 380);
+        }
+      }
+
+      function scheduleNext() {
+        setTimeout(() => { addDrop(); scheduleNext(); }, 2200 + Math.random() * 2400);
+      }
+      scheduleNext();
+    })();
+  </script>
+
+</div><!-- /.page -->
+</body>
+</html>

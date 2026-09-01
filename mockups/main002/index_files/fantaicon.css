@@ -1,0 +1,658 @@
+@font-face {
+  font-display: block;
+  font-family: "fantaicon";
+  src: url("./fantaicon.eot?483d01349ba3f60b386f2a82b647a229#iefix") format("embedded-opentype"),
+url("./fantaicon.woff2?483d01349ba3f60b386f2a82b647a229") format("woff2"),
+url("./fantaicon.woff?483d01349ba3f60b386f2a82b647a229") format("woff");
+}
+
+i[class^="fantaicon-"]::before, i[class*=" fantaicon-"]::before {
+  font-family: fantaicon !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.fantaicon-2FA::before {
+  content: "\f101";
+}
+.fantaicon-achievements-icon::before {
+  content: "\f102";
+}
+.fantaicon-achievements-mini::before {
+  content: "\f103";
+}
+.fantaicon-achievements-30-100-icon::before {
+  content: "\f104";
+}
+.fantaicon-achievements-blogger-icon::before {
+  content: "\f105";
+}
+.fantaicon-achievements-case-battles-icon::before {
+  content: "\f106";
+}
+.fantaicon-achievements-caseman-icon::before {
+  content: "\f107";
+}
+.fantaicon-achievements-event-maker-icon::before {
+  content: "\f108";
+}
+.fantaicon-achievements-fighter-icon::before {
+  content: "\f109";
+}
+.fantaicon-achievements-first-blood-icon::before {
+  content: "\f10a";
+}
+.fantaicon-achievements-giveaways-icon::before {
+  content: "\f10b";
+}
+.fantaicon-achievements-rich-icon::before {
+  content: "\f10c";
+}
+.fantaicon-achievements-skins-icon::before {
+  content: "\f10d";
+}
+.fantaicon-achievements-sniper-battles-icon::before {
+  content: "\f10e";
+}
+.fantaicon-achievements-social-icon::before {
+  content: "\f10f";
+}
+.fantaicon-add::before {
+  content: "\f110";
+}
+.fantaicon-amount::before {
+  content: "\f111";
+}
+.fantaicon-apple::before {
+  content: "\f112";
+}
+.fantaicon-arrow-round-bottom::before {
+  content: "\f113";
+}
+.fantaicon-arrow-round-top::before {
+  content: "\f114";
+}
+.fantaicon-arrow1::before {
+  content: "\f115";
+}
+.fantaicon-arrow2-left::before {
+  content: "\f116";
+}
+.fantaicon-arrow2-right::before {
+  content: "\f117";
+}
+.fantaicon-arrow2::before {
+  content: "\f118";
+}
+.fantaicon-arrow3::before {
+  content: "\f119";
+}
+.fantaicon-auction::before {
+  content: "\f11a";
+}
+.fantaicon-B::before {
+  content: "\f11b";
+}
+.fantaicon-backup-restore::before {
+  content: "\f11c";
+}
+.fantaicon-backup-restore2::before {
+  content: "\f11d";
+}
+.fantaicon-battles::before {
+  content: "\f11e";
+}
+.fantaicon-beenhere::before {
+  content: "\f11f";
+}
+.fantaicon-best::before {
+  content: "\f120";
+}
+.fantaicon-bluesky::before {
+  content: "\f121";
+}
+.fantaicon-bonus-case::before {
+  content: "\f122";
+}
+.fantaicon-bonus::before {
+  content: "\f123";
+}
+.fantaicon-bonuses::before {
+  content: "\f124";
+}
+.fantaicon-box::before {
+  content: "\f125";
+}
+.fantaicon-burned::before {
+  content: "\f126";
+}
+.fantaicon-calendar::before {
+  content: "\f127";
+}
+.fantaicon-case-battles-bottom-small::before {
+  content: "\f128";
+}
+.fantaicon-case-battles-bottom::before {
+  content: "\f129";
+}
+.fantaicon-case-battles-cards::before {
+  content: "\f12a";
+}
+.fantaicon-case-battles-draw::before {
+  content: "\f12b";
+}
+.fantaicon-case-battles-left::before {
+  content: "\f12c";
+}
+.fantaicon-case-battles-plus::before {
+  content: "\f12d";
+}
+.fantaicon-case-battles-right::before {
+  content: "\f12e";
+}
+.fantaicon-case-battles-settings-cashback::before {
+  content: "\f12f";
+}
+.fantaicon-case-battles-settings-dollar::before {
+  content: "\f130";
+}
+.fantaicon-case-battles-settings-team::before {
+  content: "\f131";
+}
+.fantaicon-case-battles-settings-user::before {
+  content: "\f132";
+}
+.fantaicon-case-battles-tickets-count::before {
+  content: "\f133";
+}
+.fantaicon-case-battles-tickets::before {
+  content: "\f134";
+}
+.fantaicon-case-battles-top::before {
+  content: "\f135";
+}
+.fantaicon-case-battles-type-1::before {
+  content: "\f136";
+}
+.fantaicon-case-battles-type-2::before {
+  content: "\f137";
+}
+.fantaicon-case-battles-type-3::before {
+  content: "\f138";
+}
+.fantaicon-cases-ico::before {
+  content: "\f139";
+}
+.fantaicon-cases::before {
+  content: "\f13a";
+}
+.fantaicon-cash::before {
+  content: "\f13b";
+}
+.fantaicon-check-roll::before {
+  content: "\f13c";
+}
+.fantaicon-check::before {
+  content: "\f13d";
+}
+.fantaicon-check2::before {
+  content: "\f13e";
+}
+.fantaicon-close::before {
+  content: "\f13f";
+}
+.fantaicon-coin::before {
+  content: "\f140";
+}
+.fantaicon-contract::before {
+  content: "\f141";
+}
+.fantaicon-copy_2::before {
+  content: "\f142";
+}
+.fantaicon-copy::before {
+  content: "\f143";
+}
+.fantaicon-credit-card::before {
+  content: "\f144";
+}
+.fantaicon-cs-go-icon::before {
+  content: "\f145";
+}
+.fantaicon-daily-free::before {
+  content: "\f146";
+}
+.fantaicon-default-ava::before {
+  content: "\f147";
+}
+.fantaicon-default-user::before {
+  content: "\f148";
+}
+.fantaicon-deposit-cases::before {
+  content: "\f149";
+}
+.fantaicon-deposit-icon::before {
+  content: "\f14a";
+}
+.fantaicon-deposit::before {
+  content: "\f14b";
+}
+.fantaicon-diamond::before {
+  content: "\f14c";
+}
+.fantaicon-discord::before {
+  content: "\f14d";
+}
+.fantaicon-discrd::before {
+  content: "\f14e";
+}
+.fantaicon-dota_logo::before {
+  content: "\f14f";
+}
+.fantaicon-download::before {
+  content: "\f150";
+}
+.fantaicon-email::before {
+  content: "\f151";
+}
+.fantaicon-ethereum::before {
+  content: "\f152";
+}
+.fantaicon-events-icon::before {
+  content: "\f153";
+}
+.fantaicon-events::before {
+  content: "\f154";
+}
+.fantaicon-exchange-icon::before {
+  content: "\f155";
+}
+.fantaicon-exchange::before {
+  content: "\f156";
+}
+.fantaicon-facebook::before {
+  content: "\f157";
+}
+.fantaicon-filter::before {
+  content: "\f158";
+}
+.fantaicon-giveaway::before {
+  content: "\f159";
+}
+.fantaicon-gun::before {
+  content: "\f15a";
+}
+.fantaicon-has-bg-icon::before {
+  content: "\f15b";
+}
+.fantaicon-hex-border::before {
+  content: "\f15c";
+}
+.fantaicon-hex::before {
+  content: "\f15d";
+}
+.fantaicon-history::before {
+  content: "\f15e";
+}
+.fantaicon-info::before {
+  content: "\f15f";
+}
+.fantaicon-instagram::before {
+  content: "\f160";
+}
+.fantaicon-items::before {
+  content: "\f161";
+}
+.fantaicon-level-1::before {
+  content: "\f162";
+}
+.fantaicon-level-2::before {
+  content: "\f163";
+}
+.fantaicon-level-3::before {
+  content: "\f164";
+}
+.fantaicon-level-4::before {
+  content: "\f165";
+}
+.fantaicon-level-5::before {
+  content: "\f166";
+}
+.fantaicon-level-6::before {
+  content: "\f167";
+}
+.fantaicon-linkedin::before {
+  content: "\f168";
+}
+.fantaicon-login-discord::before {
+  content: "\f169";
+}
+.fantaicon-login-fb::before {
+  content: "\f16a";
+}
+.fantaicon-login-google::before {
+  content: "\f16b";
+}
+.fantaicon-login-steam::before {
+  content: "\f16c";
+}
+.fantaicon-login-twitch::before {
+  content: "\f16d";
+}
+.fantaicon-logout::before {
+  content: "\f16e";
+}
+.fantaicon-message::before {
+  content: "\f16f";
+}
+.fantaicon-mini-battles::before {
+  content: "\f170";
+}
+.fantaicon-minus::before {
+  content: "\f171";
+}
+.fantaicon-more::before {
+  content: "\f172";
+}
+.fantaicon-my-items::before {
+  content: "\f173";
+}
+.fantaicon-my-nft::before {
+  content: "\f174";
+}
+.fantaicon-nft-landing-case-icon::before {
+  content: "\f175";
+}
+.fantaicon-nft-landing-collaboration-icon::before {
+  content: "\f176";
+}
+.fantaicon-nft-landing-email-icon::before {
+  content: "\f177";
+}
+.fantaicon-nft-landing-questions-icon::before {
+  content: "\f178";
+}
+.fantaicon-nft-landing-road-map-icon::before {
+  content: "\f179";
+}
+.fantaicon-nft-landing-stats-icon::before {
+  content: "\f17a";
+}
+.fantaicon-nft::before {
+  content: "\f17b";
+}
+.fantaicon-no-cases::before {
+  content: "\f17c";
+}
+.fantaicon-oll::before {
+  content: "\f17d";
+}
+.fantaicon-online-bank::before {
+  content: "\f17e";
+}
+.fantaicon-online::before {
+  content: "\f17f";
+}
+.fantaicon-participating-ico::before {
+  content: "\f180";
+}
+.fantaicon-partner::before {
+  content: "\f181";
+}
+.fantaicon-partners::before {
+  content: "\f182";
+}
+.fantaicon-pinterest::before {
+  content: "\f183";
+}
+.fantaicon-points-icon::before {
+  content: "\f184";
+}
+.fantaicon-premium-cases::before {
+  content: "\f185";
+}
+.fantaicon-premium::before {
+  content: "\f186";
+}
+.fantaicon-promo-2::before {
+  content: "\f187";
+}
+.fantaicon-promo::before {
+  content: "\f188";
+}
+.fantaicon-provably-fair::before {
+  content: "\f189";
+}
+.fantaicon-provably-history::before {
+  content: "\f18a";
+}
+.fantaicon-question-mark::before {
+  content: "\f18b";
+}
+.fantaicon-raffle-items-ico::before {
+  content: "\f18c";
+}
+.fantaicon-rarity_star::before {
+  content: "\f18d";
+}
+.fantaicon-reddit::before {
+  content: "\f18e";
+}
+.fantaicon-repeat-icon::before {
+  content: "\f18f";
+}
+.fantaicon-right-dir::before {
+  content: "\f190";
+}
+.fantaicon-sb-field::before {
+  content: "\f191";
+}
+.fantaicon-search::before {
+  content: "\f192";
+}
+.fantaicon-seeds-settings::before {
+  content: "\f193";
+}
+.fantaicon-sell-item::before {
+  content: "\f194";
+}
+.fantaicon-sell-skins::before {
+  content: "\f195";
+}
+.fantaicon-sell::before {
+  content: "\f196";
+}
+.fantaicon-settings-lock::before {
+  content: "\f197";
+}
+.fantaicon-settings::before {
+  content: "\f198";
+}
+.fantaicon-share::before {
+  content: "\f199";
+}
+.fantaicon-shield-border::before {
+  content: "\f19a";
+}
+.fantaicon-shield::before {
+  content: "\f19b";
+}
+.fantaicon-skin-changer::before {
+  content: "\f19c";
+}
+.fantaicon-skins::before {
+  content: "\f19d";
+}
+.fantaicon-snb-field-16::before {
+  content: "\f19e";
+}
+.fantaicon-snb-field-36::before {
+  content: "\f19f";
+}
+.fantaicon-snb-random::before {
+  content: "\f1a0";
+}
+.fantaicon-snb-shot-hover::before {
+  content: "\f1a1";
+}
+.fantaicon-snb-sniper-battle-icon::before {
+  content: "\f1a2";
+}
+.fantaicon-social-login-discord::before {
+  content: "\f1a3";
+}
+.fantaicon-social-login-facebook::before {
+  content: "\f1a4";
+}
+.fantaicon-social-login-steam::before {
+  content: "\f1a5";
+}
+.fantaicon-social-login-twitch::before {
+  content: "\f1a6";
+}
+.fantaicon-sold-icon::before {
+  content: "\f1a7";
+}
+.fantaicon-sort::before {
+  content: "\f1a8";
+}
+.fantaicon-sound-off::before {
+  content: "\f1a9";
+}
+.fantaicon-sound-on::before {
+  content: "\f1aa";
+}
+.fantaicon-statistics-case-battles::before {
+  content: "\f1ab";
+}
+.fantaicon-statistics-contracts-signed::before {
+  content: "\f1ac";
+}
+.fantaicon-statistics-online::before {
+  content: "\f1ad";
+}
+.fantaicon-statistics-opened-cases::before {
+  content: "\f1ae";
+}
+.fantaicon-statistics-players::before {
+  content: "\f1af";
+}
+.fantaicon-statistics-upgrades::before {
+  content: "\f1b0";
+}
+.fantaicon-status-accepted::before {
+  content: "\f1b1";
+}
+.fantaicon-status-contract::before {
+  content: "\f1b2";
+}
+.fantaicon-status-exchanged::before {
+  content: "\f1b3";
+}
+.fantaicon-status-sent::before {
+  content: "\f1b4";
+}
+.fantaicon-status-sold::before {
+  content: "\f1b5";
+}
+.fantaicon-status-upgraded::before {
+  content: "\f1b6";
+}
+.fantaicon-status-waiting::before {
+  content: "\f1b7";
+}
+.fantaicon-steam-2::before {
+  content: "\f1b8";
+}
+.fantaicon-steam-3::before {
+  content: "\f1b9";
+}
+.fantaicon-steam1::before {
+  content: "\f1ba";
+}
+.fantaicon-subscribe::before {
+  content: "\f1bb";
+}
+.fantaicon-telegram::before {
+  content: "\f1bc";
+}
+.fantaicon-threads::before {
+  content: "\f1bd";
+}
+.fantaicon-tik-tok::before {
+  content: "\f1be";
+}
+.fantaicon-to-contract::before {
+  content: "\f1bf";
+}
+.fantaicon-top-winners-ico::before {
+  content: "\f1c0";
+}
+.fantaicon-tournament::before {
+  content: "\f1c1";
+}
+.fantaicon-trade-url::before {
+  content: "\f1c2";
+}
+.fantaicon-transfer::before {
+  content: "\f1c3";
+}
+.fantaicon-try-again::before {
+  content: "\f1c4";
+}
+.fantaicon-twitch::before {
+  content: "\f1c5";
+}
+.fantaicon-twitter::before {
+  content: "\f1c6";
+}
+.fantaicon-upgrade-history::before {
+  content: "\f1c7";
+}
+.fantaicon-upgrade-item::before {
+  content: "\f1c8";
+}
+.fantaicon-upgrader::before {
+  content: "\f1c9";
+}
+.fantaicon-upgrader2::before {
+  content: "\f1ca";
+}
+.fantaicon-upgrades::before {
+  content: "\f1cb";
+}
+.fantaicon-user-mini::before {
+  content: "\f1cc";
+}
+.fantaicon-viber::before {
+  content: "\f1cd";
+}
+.fantaicon-vk::before {
+  content: "\f1ce";
+}
+.fantaicon-waiting3::before {
+  content: "\f1cf";
+}
+.fantaicon-wallet::before {
+  content: "\f1d0";
+}
+.fantaicon-warning::before {
+  content: "\f1d1";
+}
+.fantaicon-warning2::before {
+  content: "\f1d2";
+}
+.fantaicon-whatsapp::before {
+  content: "\f1d3";
+}
+.fantaicon-x-icon::before {
+  content: "\f1d4";
+}
+.fantaicon-youtube::before {
+  content: "\f1d5";
+}

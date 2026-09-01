@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BloodyCase — Open CS2 Cases, Win Real Skins</title>
+  <link href="BloodyCase%20%E2%80%94%20Home_files/css2.css" rel="stylesheet" />
+  <link href="BloodyCase%20%E2%80%94%20Home_files/fantaicon.css" rel="stylesheet" />
+  <style>
+    /* ============ TOKENS ============ */
+    :root {
+      --bg:           #0a1220;
+      --bg-deep:      #060c18;
+      --bg-panel:     #0e1a2e;
+      --bg-panel2:    #112038;
+      --bg-panel-2:   #112038;
+      --bg-elev:      #15263f;
+      --border:       rgba(79,129,180,0.30);
+      --border-sub:   rgba(79,129,180,0.20);
+      --border-soft:  rgba(255,255,255,0.06);
+      --cyan:         #00d2ff;
+      --cyan-dim:     rgba(0,210,255,0.15);
+      --blue:         #3b99ff;
+      --blue-light:   #6BB4FE;
+      --blue-dark:    #1c4878;
+      --rank-blue:    #10a5ff;
+      --timer:        #43f0ff;
+      --gold:         #FFC53A;
+      --gold-light:   #FFE89A;
+      --gold-dim:     rgba(255,197,58,0.18);
+      --yellow:       #FFF266;
+      --green:        #00ba95;
+      --green-soft:   #2ee7a8;
+      --green-dim:    rgba(0,186,149,0.18);
+      --red:          #ff1317;
+      --txt-mute:     #8aa6c9;
+      --label:        #5e7ea3;
+      --nav-default:  #6287ad;
+      --nav-hover:    #30DFFF;
+      --nav-active:   #00d2ff;
+      /* rarity */
+      --milspec:      #4b69ff;
+      --restricted:   #722cff;
+      --classified:   #d32ce6;
+      --covert:       #eb4b4b;
+      --rare:         #e4ae39;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html,body{overflow-x:hidden;}
+    body{
+      font-family:'Montserrat',sans-serif;
+      background:
+        radial-gradient(74.94% 100% at 50% 0%, #2b3248, #1e2733 20%, #111821 70%),
+        radial-gradient(57.35% 100% at 100% 100%, #2a00044d, #2a000400 70%);
+      background-attachment:fixed;
+      color:#fff;
+      font-size:14px;
+      line-height:1.4;
+    }
+    img{display:block;max-width:100%;}
+    button,a{font-family:inherit;cursor:pointer;text-decoration:none;color:inherit;}
+    button{border:none;background:none;}
+
+    /* ============ STICKY NAV ============ */
+    .nav{
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      height:60px;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 32px;
+      background:rgba(6,12,24,0.88);
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(14px);
+    }
+    .nav__logo{
+      display:flex;align-items:center;flex-shrink:0;
+    }
+    .nav__logo img{display:block;height:auto;}
+    .nav__logo span{color:var(--red);-webkit-text-fill-color:var(--red);}
+    .nav__links{
+      display:flex;align-items:center;gap:28px;
+    }
+    .nav__link{
+      font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+      color:var(--nav-default);transition:color .18s;
+    }
+    .nav__link:hover{color:var(--nav-hover);}
+    .nav__link.is-active{color:var(--nav-active);}
+    .nav__online{
+      display:flex;align-items:center;gap:6px;
+      font-size:11px;font-weight:700;color:var(--green);
+    }
+    .nav__online::before{
+      content:'';display:block;width:7px;height:7px;border-radius:50%;
+      background:var(--green);box-shadow:0 0 8px var(--green);
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+    .nav__right{display:flex;align-items:center;gap:10px;}
+    .btn-nav-login{
+      height:34px;padding:0 18px;
+      background:transparent;border:1px solid var(--border);
+      border-radius:8px;color:var(--txt-mute);
+      font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+      transition:border-color .18s,color .18s;
+    }
+    .btn-nav-login:hover{border-color:var(--cyan);color:var(--cyan);}
+    .btn-nav-register{
+      height:34px;padding:0 20px;
+      background:linear-gradient(135deg,var(--green) 0%,#00d9ad 100%);
+      border-radius:8px;
+      font-size:12px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;
+      color:#fff;
+      box-shadow:0 0 20px rgba(0,186,149,0.35);
+      transition:box-shadow .18s,transform .15s;
+    }
+    .btn-nav-register:hover{box-shadow:0 0 32px rgba(0,186,149,0.55);transform:translateY(-1px);}
+
+    /* ============ NAV GAME TABS ============ */
+    .game-tabs{
+      display:inline-flex;
+      gap:3px;
+      padding:3px;
+      background:#3c567126;
+      border:1px solid var(--border-soft);
+      border-radius:10px;
+      isolation:isolate;
+    }
+    .game-tab{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      height:30px;
+      padding:0 9px;
+      border-radius:7px;
+      color:var(--nav-default);
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:0.05em;
+      text-transform:uppercase;
+      cursor:pointer;
+      overflow:hidden;
+      transition:background .22s,color .22s,box-shadow .22s,padding .22s;
+    }
+    .game-tab__icon{
+      width:20px;height:20px;
+      display:grid;place-items:center;
+      flex-shrink:0;
+    }
+    .game-tab__icon img{
+      max-width:100%;max-height:100%;
+      object-fit:contain;
+      filter:invert(1) brightness(1.1);
+      mix-blend-mode:screen;
+      opacity:0.60;
+      transition:opacity .22s,filter .22s;
+    }
+    .game-tab:hover .game-tab__icon img{opacity:0.90;}
+    .game-tab__label{
+      display:inline-block;
+      max-width:0;margin-left:0;
+      opacity:0;overflow:hidden;white-space:nowrap;
+      transition:max-width .26s ease,margin-left .26s ease,opacity .20s ease;
+    }
+    .game-tab.is-active{
+      background:linear-gradient(180deg,rgba(0,180,255,0.18) 0%,rgba(0,124,200,0.22) 100%);
+      color:var(--cyan);
+      box-shadow:inset 0 0 0 1px rgba(0,210,255,0.40),0 0 12px rgba(0,210,255,0.16);
+    }
+    .game-tab.is-active .game-tab__icon img{
+      opacity:1;
+      filter:invert(1) brightness(1.2) drop-shadow(0 0 3px rgba(0,210,255,0.55));
+    }
+    .game-tab.is-active .game-tab__label{
+      max-width:80px;margin-left:6px;opacity:1;
+    }
+
+    /* ============ COMPACT SELECTORS (lang / currency) ============ */
+    .selector--compact{
+      position:relative;
+      display:inline-flex;align-items:center;
+      gap:5px;
+      height:30px;padding:0 9px;
+      background:#3c567126;
+      border:1px solid var(--border-soft);
+      border-radius:8px;
+      color:#cfd9e6;
+      font-size:11px;font-weight:600;letter-spacing:0.04em;
+      cursor:pointer;
+      transition:border-color .18s,background .18s;
+    }
+    .selector--compact:hover,.selector--compact.is-open{
+      border-color:rgba(0,210,255,0.35);
+      background:rgba(14,26,46,0.85);
+    }
+    .selector__caret{
+      width:6px;height:6px;
+      border-right:1.2px solid var(--nav-default);
+      border-bottom:1.2px solid var(--nav-default);
+      transform:rotate(45deg) translateY(-1px);
+      transition:transform .18s;
+    }
+    .selector--compact.is-open .selector__caret{transform:rotate(-135deg) translateY(1px) translateX(-1px);}
+    .selector__menu{
+      position:absolute;
+      top:calc(100% + 5px);right:0;
+      min-width:100%;
+      padding:4px;
+      background:rgba(14,24,42,0.97);
+      border:1px solid rgba(79,129,180,0.30);
+      border-radius:9px;
+      box-shadow:0 10px 24px rgba(0,0,0,0.45),0 0 12px rgba(0,210,255,0.08);
+      backdrop-filter:blur(14px);
+      display:none;flex-direction:column;gap:1px;
+      z-index:200;
+    }
+    .selector--compact.is-open .selector__menu{display:flex;}
+    .selector__option{
+      display:flex;align-items:center;justify-content:center;
+      padding:6px 12px;border-radius:6px;
+      color:#cfd9e6;font-size:11px;font-weight:600;letter-spacing:0.04em;
+      cursor:pointer;transition:background .14s,color .14s;white-space:nowrap;
+    }
+    .selector__option:hover{background:rgba(0,210,255,0.10);color:#fff;}
+    .selector__option.is-active{background:rgba(0,210,255,0.14);color:var(--cyan);}
+
+    /* ============ HERO ============ */
+    .hero{
+      position:relative;min-height:100vh;
+      display:flex;align-items:center;
+      padding:0 32px;
+      overflow:hidden;
+    }
+    /* deep radial bg */
+    .hero::before{
+      content:'';position:absolute;inset:0;z-index:0;
+      background:
+        radial-gradient(ellipse 80% 60% at 60% 50%, rgba(0,210,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 85% 30%, rgba(59,153,255,0.08) 0%, transparent 55%),
+        linear-gradient(180deg, #060c18 0%, #0a1220 60%, #0e1a2e 100%);
+    }
+    /* grid overlay */
+    .hero::after{
+      content:'';position:absolute;inset:0;z-index:0;
+      background-image:
+        linear-gradient(rgba(0,210,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,210,255,0.04) 1px, transparent 1px);
+      background-size:60px 60px;
+      mask-image:radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 80%);
+    }
+
+    /* floating weapon art placeholders */
+    .hero__weapon{
+      position:absolute;z-index:1;
+      pointer-events:none;
+      border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+      color:rgba(255,255,255,0.35);
+    }
+    .hero__weapon--ak{
+      right:26%;top:50%;transform:translateY(-55%) rotate(-22deg);
+      width:220px;height:80px;
+      background:linear-gradient(135deg,rgba(235,75,75,0.18) 0%,rgba(75,105,255,0.12) 100%);
+      border:1px solid rgba(235,75,75,0.25);
+      box-shadow:0 0 40px rgba(235,75,75,0.15),inset 0 1px 0 rgba(255,255,255,0.06);
+      animation:float1 7s ease-in-out infinite;
+    }
+    .hero__weapon--awp{
+      right:12%;top:28%;transform:rotate(15deg);
+      width:260px;height:68px;
+      background:linear-gradient(135deg,rgba(228,174,57,0.16) 0%,rgba(0,210,255,0.10) 100%);
+      border:1px solid rgba(228,174,57,0.28);
+      box-shadow:0 0 40px rgba(228,174,57,0.12);
+      animation:float2 9s ease-in-out infinite;
+    }
+    .hero__weapon--knife{
+      right:38%;top:22%;transform:rotate(-8deg);
+      width:110px;height:110px;border-radius:50%;
+      background:radial-gradient(circle,rgba(114,44,255,0.22) 0%,rgba(114,44,255,0.06) 70%);
+      border:1px solid rgba(114,44,255,0.35);
+      box-shadow:0 0 50px rgba(114,44,255,0.20);
+      animation:float3 11s ease-in-out infinite;
+    }
+    @keyframes float1{0%,100%{transform:translateY(-55%) rotate(-22deg);}50%{transform:translateY(-60%) rotate(-20deg);}}
+    @keyframes float2{0%,100%{transform:rotate(15deg) translateY(0);}50%{transform:rotate(16deg) translateY(-12px);}}
+    @keyframes float3{0%,100%{transform:rotate(-8deg) scale(1);}50%{transform:rotate(-6deg) scale(1.04);}}
+
+    /* scan line shimmer on weapons */
+    .hero__weapon::after{
+      content:'';position:absolute;inset:0;border-radius:inherit;
+      background:linear-gradient(180deg,rgba(255,255,255,0.06) 0%,transparent 50%);
+    }
+
+    .hero__content{
+      position:relative;z-index:2;
+      max-width:640px;
+      padding-top:60px;
+    }
+    .hero__eyebrow{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:5px 14px;
+      background:rgba(0,210,255,0.08);
+      border:1px solid rgba(0,210,255,0.22);
+      border-radius:999px;
+      font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+      color:var(--cyan);margin-bottom:22px;
+    }
+    .hero__eyebrow svg{width:10px;height:10px;fill:var(--green);}
+    .hero__title{
+      font-size:clamp(38px,5vw,68px);
+      font-weight:900;
+      line-height:1.0;
+      letter-spacing:-0.01em;
+      margin-bottom:20px;
+    }
+    .hero__title .line1{display:block;color:#fff;}
+    .hero__title .line2{
+      display:block;
+      background:linear-gradient(90deg,var(--cyan) 0%,var(--blue) 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .hero__sub{
+      font-size:16px;font-weight:400;color:var(--txt-mute);line-height:1.6;
+      margin-bottom:32px;max-width:500px;
+    }
+    .hero__sub strong{color:#fff;font-weight:600;}
+    .hero__cta-row{
+      display:flex;align-items:center;gap:14px;margin-bottom:36px;flex-wrap:wrap;
+    }
+    .btn-primary{
+      display:inline-flex;align-items:center;gap:10px;
+      height:52px;padding:0 32px;
+      background:linear-gradient(135deg,var(--green) 0%,#00d9ad 100%);
+      border-radius:12px;
+      font-size:15px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;
+      color:#fff;
+      box-shadow:0 0 32px rgba(0,186,149,0.4),0 4px 16px rgba(0,0,0,0.4);
+      transition:box-shadow .2s,transform .15s;
+    }
+    .btn-primary:hover{box-shadow:0 0 48px rgba(0,186,149,0.6),0 8px 24px rgba(0,0,0,0.5);transform:translateY(-2px);}
+    .btn-primary svg{width:18px;height:18px;flex-shrink:0;}
+    .btn-ghost{
+      display:inline-flex;align-items:center;gap:8px;
+      height:52px;padding:0 28px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:12px;
+      font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+      color:#cfd9e6;
+      transition:border-color .18s,background .18s,color .18s;
+    }
+    .btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,210,255,0.06);}
+    .btn-ghost svg{width:16px;height:16px;}
+
+    /* trust pills inside hero */
+    .hero__trust{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    }
+    .trust-pill{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:6px 14px;
+      background:rgba(14,26,46,0.7);
+      border:1px solid var(--border);
+      border-radius:999px;
+      font-size:11px;font-weight:700;letter-spacing:0.06em;
+      color:#cfd9e6;
+      backdrop-filter:blur(8px);
+    }
+    .trust-pill svg{width:13px;height:13px;flex-shrink:0;}
+    .trust-pill--fair svg{color:var(--green);}
+    .trust-pill--online svg{color:var(--cyan);}
+    .trust-pill--withdraw svg{color:var(--gold);}
+
+    /* bonus badge */
+    .hero__bonus-badge{
+      position:absolute;top:90px;right:32px;z-index:5;
+      display:flex;flex-direction:column;align-items:center;
+      width:110px;height:110px;
+      background:linear-gradient(135deg,rgba(255,197,58,0.18) 0%,rgba(255,197,58,0.08) 100%);
+      border:2px solid rgba(255,197,58,0.5);
+      border-radius:50%;
+      justify-content:center;
+      box-shadow:0 0 40px rgba(255,197,58,0.25),inset 0 1px 0 rgba(255,255,255,0.08);
+      animation:badgePulse 3s ease-in-out infinite;
+    }
+    @keyframes badgePulse{0%,100%{box-shadow:0 0 40px rgba(255,197,58,0.25);}50%{box-shadow:0 0 60px rgba(255,197,58,0.42);}}
+    .hero__bonus-badge__pct{
+      font-size:34px;font-weight:900;color:var(--gold);line-height:1;letter-spacing:-0.02em;
+    }
+    .hero__bonus-badge__label{
+      font-size:9px;font-weight:800;letter-spacing:0.10em;text-transform:uppercase;
+      color:rgba(255,197,58,0.75);margin-top:2px;text-align:center;line-height:1.2;
+    }
+
+    /* ============ LIVE WINS TICKER ============ */
+    .ticker{
+      position:relative;z-index:10;
+      background:rgba(10,18,32,0.95);
+      border-top:1px solid var(--border-soft);
+      border-bottom:1px solid var(--border-soft);
+      height:46px;overflow:hidden;display:flex;align-items:center;
+    }
+    .ticker__label{
+      flex-shrink:0;padding:0 18px;
+      font-size:10px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;
+      color:var(--cyan);white-space:nowrap;
+      border-right:1px solid var(--border-soft);
+      display:flex;align-items:center;gap:6px;height:100%;
+    }
+    .ticker__label::before{
+      content:'';width:6px;height:6px;border-radius:50%;
+      background:var(--red);box-shadow:0 0 6px var(--red);
+      animation:pulse 1.2s ease-in-out infinite;
+    }
+    .ticker__track-wrap{flex:1;overflow:hidden;}
+    .ticker__track{
+      display:flex;align-items:center;gap:0;
+      animation:tickerScroll 40s linear infinite;
+      width:max-content;
+    }
+    .ticker__track:hover{animation-play-state:paused;}
+    @keyframes tickerScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+    .ticker__item{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:0 28px;border-right:1px solid var(--border-soft);
+      white-space:nowrap;font-size:12px;
+    }
+    .ticker__avatar{
+      width:22px;height:22px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:9px;font-weight:800;
+      flex-shrink:0;
+    }
+    .ticker__user{color:var(--txt-mute);font-weight:600;}
+    .ticker__action{color:var(--label);}
+    .ticker__skin{font-weight:700;color:#fff;}
+    .ticker__value{font-weight:800;color:var(--green);}
+    .ticker__rarity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+    /* ============ STATS BAR ============ */
+    .stats-bar{
+      background:var(--bg-panel);
+      border-bottom:1px solid var(--border-soft);
+      padding:0 32px;
+    }
+    .stats-bar__inner{
+      max-width:1200px;margin:0 auto;
+      display:grid;grid-template-columns:repeat(4,1fr);
+      gap:1px;
+    }
+    .stat-item{
+      display:flex;flex-direction:column;align-items:center;
+      padding:20px 16px;
+      position:relative;
+    }
+    .stat-item+.stat-item::before{
+      content:'';position:absolute;left:0;top:20%;bottom:20%;
+      width:1px;background:var(--border-soft);
+    }
+    .stat-item__value{
+      font-size:26px;font-weight:900;letter-spacing:-0.01em;
+      color:var(--cyan);line-height:1;margin-bottom:4px;
+    }
+    .stat-item__label{
+      font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+      color:var(--label);
+    }
+
+    /* ============ SECTION WRAPPER ============ */
+    .section{
+      max-width:1200px;margin:0 auto;padding:64px 32px;
+    }
+    .section-head{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:28px;
+    }
+    .section-head__title{
+      font-size:22px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;
+      color:#fff;
+      display:flex;align-items:center;gap:10px;
+    }
+    .section-head__title::before{
+      content:'';display:block;width:4px;height:22px;
+      background:linear-gradient(180deg,var(--cyan) 0%,var(--blue) 100%);
+      border-radius:2px;
+    }
+    .section-head__link{
+      font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+      color:var(--blue);display:flex;align-items:center;gap:4px;
+      transition:color .18s;
+    }
+    .section-head__link:hover{color:var(--cyan);}
+    .section-head__link svg{width:10px;height:10px;}
+
+    /* ============ CASE GRID ============ */
+    .cases-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:12px;
+    }
+    .case-card{
+      display:flex;flex-direction:column;align-items:center;
+      padding:8px 8px 12px;
+      background:var(--bg-panel);
+      border:1px solid var(--border-soft);
+      border-radius:14px;
+      cursor:pointer;
+      transition:transform .18s,border-color .18s,box-shadow .18s;
+      position:relative;overflow:hidden;
+    }
+    .case-card::before{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse 80% 60% at 50% 0%,
+        color-mix(in srgb,var(--rarity-clr,#4b69ff) 14%,transparent) 0%,
+        transparent 70%);
+      pointer-events:none;
+    }
+    .case-card:hover{
+      transform:translateY(-4px);
+      border-color:color-mix(in srgb,var(--rarity-clr,#4b69ff) 60%,transparent);
+      box-shadow:0 8px 32px color-mix(in srgb,var(--rarity-clr,#4b69ff) 22%,transparent);
+    }
+    .case-card__art{
+      width:100%;aspect-ratio:1/0.85;
+      border-radius:10px;margin-bottom:8px;
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;position:relative;
+    }
+    .case-card__img-box{
+      width:80%;height:80%;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+      color:rgba(255,255,255,0.5);
+    }
+    .case-card__name{
+      font-size:12px;font-weight:600;text-align:center;
+      color:#cfd9e6;margin-bottom:8px;line-height:1.3;
+      min-height:30px;display:flex;align-items:center;
+    }
+    .case-card__price{
+      display:flex;align-items:center;gap:3px;
+      padding:4px 14px;
+      background:rgba(0,0,0,0.35);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:999px;
+      font-size:14px;font-weight:700;color:#fff;
+      margin-bottom:8px;
+    }
+    .case-card__price .cur{color:var(--red);font-weight:900;}
+    .btn-open{
+      width:100%;height:30px;
+      background:rgba(0,157,243,0.15);
+      border:1px solid rgba(0,157,243,0.4);
+      border-radius:8px;
+      font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;
+      color:var(--blue);
+      transition:background .18s,border-color .18s,color .18s;
+    }
+    .btn-open:hover{background:rgba(0,157,243,0.30);border-color:var(--cyan);color:var(--cyan);}
+
+    /* ============ GAME MODES ============ */
+    .modes-grid{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+    }
+    .mode-card{
+      position:relative;overflow:hidden;
+      padding:24px 20px 22px;
+      background:var(--bg-panel);
+      border:1px solid var(--border-soft);
+      border-radius:16px;
+      cursor:pointer;
+      transition:transform .18s,border-color .2s,box-shadow .2s;
+    }
+    .mode-card::after{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse 100% 50% at 50% 100%,
+        color-mix(in srgb,var(--mode-clr,var(--cyan)) 10%,transparent) 0%,
+        transparent 70%);
+      pointer-events:none;transition:opacity .2s;opacity:0.6;
+    }
+    .mode-card:hover{
+      transform:translateY(-3px);
+      border-color:color-mix(in srgb,var(--mode-clr,var(--cyan)) 50%,transparent);
+      box-shadow:0 8px 28px color-mix(in srgb,var(--mode-clr,var(--cyan)) 18%,transparent);
+    }
+    .mode-card:hover::after{opacity:1;}
+    .mode-card__icon{
+      width:48px;height:48px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:14px;
+      background:color-mix(in srgb,var(--mode-clr,var(--cyan)) 14%,transparent);
+      border:1px solid color-mix(in srgb,var(--mode-clr,var(--cyan)) 30%,transparent);
+    }
+    .mode-card__icon svg{
+      width:24px;height:24px;
+      color:var(--mode-clr,var(--cyan));
+    }
+    .mode-card__name{
+      font-size:15px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;
+      color:#fff;margin-bottom:7px;
+    }
+    .mode-card__desc{
+      font-size:12px;font-weight:400;color:var(--txt-mute);
+      line-height:1.55;margin-bottom:16px;
+    }
+    .mode-card__cta{
+      display:inline-flex;align-items:center;gap:5px;
+      font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;
+      color:var(--mode-clr,var(--cyan));
+    }
+    .mode-card__cta svg{width:10px;height:10px;transition:transform .18s;}
+    .mode-card:hover .mode-card__cta svg{transform:translateX(3px);}
+
+    /* ============ TRUST SECTION ============ */
+    .trust-section{
+      background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,14,30,0.6) 100%);
+      border-top:1px solid var(--border-soft);
+      border-bottom:1px solid var(--border-soft);
+    }
+    .trust-grid{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+      background:var(--border-soft);
+      border-radius:16px;overflow:hidden;
+    }
+    .trust-card{
+      background:var(--bg-panel);
+      padding:32px 24px;
+      display:flex;flex-direction:column;align-items:flex-start;gap:14px;
+      transition:background .2s;
+    }
+    .trust-card:hover{background:var(--bg-panel2);}
+    .trust-card__icon{
+      width:52px;height:52px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+    }
+    .trust-card__icon svg{width:26px;height:26px;}
+    .trust-card--fair .trust-card__icon{background:rgba(0,186,149,0.14);border:1px solid rgba(0,186,149,0.28);}
+    .trust-card--fair .trust-card__icon svg{color:var(--green);}
+    .trust-card--withdraw .trust-card__icon{background:rgba(0,210,255,0.12);border:1px solid rgba(0,210,255,0.25);}
+    .trust-card--withdraw .trust-card__icon svg{color:var(--cyan);}
+    .trust-card--free .trust-card__icon{background:rgba(114,44,255,0.14);border:1px solid rgba(114,44,255,0.28);}
+    .trust-card--free .trust-card__icon svg{color:var(--restricted);}
+    .trust-card--bonus .trust-card__icon{background:var(--gold-dim);border:1px solid rgba(255,197,58,0.28);}
+    .trust-card--bonus .trust-card__icon svg{color:var(--gold);}
+    .trust-card__title{
+      font-size:15px;font-weight:800;letter-spacing:0.02em;color:#fff;
+    }
+    .trust-card__body{
+      font-size:13px;font-weight:400;color:var(--txt-mute);line-height:1.6;
+    }
+
+    /* ============ REGISTRATION / JOIN SECTION ============ */
+    .join-section{
+      text-align:center;
+    }
+    .join-section__eyebrow{
+      display:inline-block;
+      font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;
+      color:var(--cyan);margin-bottom:14px;
+    }
+    .join-section__title{
+      font-size:clamp(28px,4vw,48px);font-weight:900;line-height:1.05;
+      margin-bottom:12px;
+    }
+    .join-section__title span{
+      background:linear-gradient(90deg,var(--gold) 0%,var(--cyan) 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .join-section__sub{
+      font-size:15px;color:var(--txt-mute);max-width:480px;margin:0 auto 36px;line-height:1.6;
+    }
+    .auth-buttons{
+      display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
+      margin-bottom:20px;
+    }
+    .btn-auth{
+      display:inline-flex;align-items:center;gap:9px;
+      height:50px;padding:0 24px;
+      border-radius:12px;
+      font-size:13px;font-weight:800;letter-spacing:0.04em;
+      transition:transform .15s,box-shadow .18s,opacity .18s;
+    }
+    .btn-auth:hover{transform:translateY(-2px);}
+    .btn-auth svg{width:20px;height:20px;flex-shrink:0;}
+    .btn-auth--steam{
+      background:#1b2838;border:1px solid #2e4a6a;color:#fff;
+      box-shadow:0 0 20px rgba(27,40,56,0.6);
+    }
+    .btn-auth--steam:hover{box-shadow:0 0 32px rgba(100,200,255,0.3);}
+    .btn-auth--google{background:#fff;color:#333;}
+    .btn-auth--discord{background:#5865f2;color:#fff;}
+    .btn-auth--facebook{background:#1877f2;color:#fff;}
+    .btn-auth--twitch{background:#9147ff;color:#fff;}
+    .join-section__free{
+      font-size:12px;color:var(--txt-mute);
+    }
+    .join-section__free strong{color:var(--gold);font-weight:700;}
+
+    /* ============ LIVE DROPS SIDEBAR ============ */
+    .live-drops-aside{
+      position:fixed;top:70px;right:16px;bottom:16px;
+      width:120px;z-index:90;
+      overflow-y:auto;overflow-x:hidden;
+      scrollbar-width:none;
+      -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
+      mask-image:linear-gradient(180deg,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
+      display:flex;flex-direction:column;gap:7px;
+      padding:8px 0;
+    }
+    .live-drops-aside::-webkit-scrollbar{display:none;}
+    .drop-card{
+      flex-shrink:0;
+      padding:6px 7px 8px;
+      border-radius:10px;
+      background:linear-gradient(180deg,rgba(18,28,44,0.94) 0%,rgba(12,20,32,0.94) 100%);
+      border:1px solid transparent;
+      background-clip:padding-box;
+      box-shadow:0 4px 12px rgba(0,0,0,0.4);
+      position:relative;
+      animation:dropIn .55s cubic-bezier(.16,1,.3,1) both;
+    }
+    .drop-card::before{
+      content:'';position:absolute;inset:-1px;border-radius:11px;z-index:-1;
+      background:linear-gradient(180deg,
+        color-mix(in srgb,var(--rc,#4b69ff) 70%,transparent) 0%,
+        color-mix(in srgb,var(--rc,#4b69ff) 25%,transparent) 40%,
+        rgba(79,129,180,0.15) 100%);
+    }
+    @keyframes dropIn{
+      0%{opacity:0;transform:translateY(-28px) scale(0.93);}
+      60%{opacity:1;}
+      100%{opacity:1;transform:translateY(0) scale(1);}
+    }
+    .drop-card.removing{
+      animation:dropOut .3s ease forwards;
+    }
+    @keyframes dropOut{
+      to{opacity:0;transform:translateY(16px) scale(0.94);}
+    }
+    .drop-card__art{
+      width:100%;aspect-ratio:1;border-radius:7px;
+      background:rgba(0,0,0,0.25);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:4px;overflow:hidden;
+    }
+    .drop-card__art-inner{
+      width:70%;height:70%;border-radius:4px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:7px;font-weight:700;letter-spacing:0.04em;
+      color:rgba(255,255,255,0.35);text-align:center;
+    }
+    .drop-card__weapon{
+      font-size:10px;font-weight:700;color:#fff;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      text-align:center;
+    }
+    .drop-card__skin{
+      font-size:9px;font-weight:500;
+      color:color-mix(in srgb,var(--rc,#4b69ff) 90%,#fff);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      text-align:center;
+    }
+
+    /* ============ FOOTER ============ */
+    .footer{
+      background:var(--bg-deep);
+      border-top:1px solid var(--border-soft);
+      padding:40px 32px;
+    }
+    .footer__inner{
+      max-width:1200px;margin:0 auto;
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;
+    }
+    .footer__logo{
+      font-size:18px;font-weight:900;letter-spacing:0.04em;text-transform:uppercase;
+      background:linear-gradient(90deg,#fff 0%,var(--cyan) 60%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .footer__links{
+      display:flex;gap:24px;flex-wrap:wrap;
+    }
+    .footer__links a{
+      font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+      color:var(--label);transition:color .18s;
+    }
+    .footer__links a:hover{color:var(--cyan);}
+    .footer__legal{
+      font-size:10px;color:var(--label);line-height:1.6;max-width:500px;
+    }
+
+    /* ============ RESPONSIVE (basic) ============ */
+    @media(max-width:1100px){
+      .cases-grid{grid-template-columns:repeat(4,1fr);}
+      .live-drops-aside{display:none;}
+    }
+    @media(max-width:768px){
+      .nav__links{display:none;}
+      .hero{padding:0 20px;min-height:auto;padding-top:120px;padding-bottom:60px;}
+      .hero__title{font-size:36px;}
+      .hero__bonus-badge{display:none;}
+      .stats-bar__inner{grid-template-columns:repeat(2,1fr);}
+      .cases-grid{grid-template-columns:repeat(3,1fr);}
+      .modes-grid{grid-template-columns:repeat(2,1fr);}
+      .trust-grid{grid-template-columns:repeat(2,1fr);}
+      .section{padding:40px 20px;}
+    }
+    @media(max-width:480px){
+      .cases-grid{grid-template-columns:repeat(2,1fr);}
+      .modes-grid{grid-template-columns:1fr;}
+      .trust-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== STICKY NAV ========== -->
+<nav class="nav">
+  <div class="nav__logo">
+    <img src="BloodyCase%20%E2%80%94%20Home_files/logo-bloodycase.svg" alt="BloodyCase" width="162" height="auto" style="width:140px;height:auto;display:block;" />
+  </div>
+  <div class="nav__links">
+    <a class="nav__link is-active" href="#">Cases</a>
+    <a class="nav__link" href="#">Case Battles</a>
+    <a class="nav__link" href="#">Sniper Battle</a>
+    <a class="nav__link" href="#">Upgrader</a>
+    <a class="nav__link" href="#">Giveaways</a>
+  </div>
+  <div class="nav__right">
+    <!-- Game selector tabs -->
+    <div class="game-tabs" role="group" aria-label="Game selector">
+      <button class="game-tab is-active" aria-pressed="true" title="CS2">
+        <span class="game-tab__icon"><img src="BloodyCase%20%E2%80%94%20Home_files/game-cs2.png" alt="CS2" /></span>
+        <span class="game-tab__label">CS2</span>
+      </button>
+      <button class="game-tab" aria-pressed="false" title="Rust">
+        <span class="game-tab__icon"><img src="BloodyCase%20%E2%80%94%20Home_files/game-rust.png" alt="Rust" /></span>
+        <span class="game-tab__label">Rust</span>
+      </button>
+      <button class="game-tab" aria-pressed="false" title="Dota 2">
+        <span class="game-tab__icon"><img src="BloodyCase%20%E2%80%94%20Home_files/game-dota.jpg" alt="Dota 2" /></span>
+        <span class="game-tab__label">Dota 2</span>
+      </button>
+    </div>
+    <!-- Currency selector -->
+    <div class="selector--compact" id="currencySelector" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="Select currency">
+      <span class="selector__value">USD</span>
+      <span class="selector__caret" aria-hidden="true"></span>
+      <div class="selector__menu" role="listbox">
+        <div class="selector__option is-active" role="option" aria-selected="true">USD</div>
+        <div class="selector__option" role="option" aria-selected="false">EUR</div>
+        <div class="selector__option" role="option" aria-selected="false">RUB</div>
+        <div class="selector__option" role="option" aria-selected="false">UAH</div>
+      </div>
+    </div>
+    <!-- Language selector -->
+    <div class="selector--compact" id="langSelector" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+      <span class="selector__value">EN</span>
+      <span class="selector__caret" aria-hidden="true"></span>
+      <div class="selector__menu" role="listbox">
+        <div class="selector__option is-active" role="option" aria-selected="true">EN</div>
+        <div class="selector__option" role="option" aria-selected="false">RU</div>
+        <div class="selector__option" role="option" aria-selected="false">UA</div>
+        <div class="selector__option" role="option" aria-selected="false">DE</div>
+      </div>
+    </div>
+    <div class="nav__online" id="navOnline">8,412 Online</div>
+    <button class="btn-nav-login">Sign In</button>
+    <button class="btn-nav-register">Register Free</button>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <!-- floating weapon FX -->
+  <div class="hero__weapon hero__weapon--ak">AK-47 Vulcan</div>
+  <div class="hero__weapon hero__weapon--awp">AWP Dragon Lore</div>
+  <div class="hero__weapon hero__weapon--knife">Karambit</div>
+
+  <!-- 25% bonus badge -->
+  <div class="hero__bonus-badge">
+    <div class="hero__bonus-badge__pct">+25%</div>
+    <div class="hero__bonus-badge__label">First<br/>Deposit</div>
+  </div>
+
+  <div class="hero__content">
+    <div class="hero__eyebrow">
+      <svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="5"/></svg>
+      8,412 players online right now
+    </div>
+
+    <h1 class="hero__title">
+      <span class="line1">Open CS2 Cases.</span>
+      <span class="line2">Win Real Skins.</span>
+    </h1>
+
+    <p class="hero__sub">
+      Open custom cases from <strong>$0.39</strong>. Win knives, AWPs, AK-47s and more —
+      then <strong>withdraw to Steam instantly</strong>. No waiting, no friction.
+    </p>
+
+    <div class="hero__cta-row">
+      <button class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Start Opening — It's Free
+      </button>
+      <button class="btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="10 15 15 12 10 9 10 15"/></svg>
+        Watch Live Drops
+      </button>
+    </div>
+
+    <div class="hero__trust">
+      <div class="trust-pill trust-pill--fair">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Provably Fair
+      </div>
+      <div class="trust-pill trust-pill--online">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 7.76a6 6 0 0 0 0 8.49M20.49 4.51a12 12 0 0 1 0 16.97M3.51 4.51a12 12 0 0 0 0 16.97"/></svg>
+        8,400+ Online Now
+      </div>
+      <div class="trust-pill trust-pill--withdraw">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        Instant Steam Withdrawal
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== LIVE WINS TICKER ========== -->
+<div class="ticker" id="ticker">
+  <div class="ticker__label">LIVE WINS</div>
+  <div class="ticker__track-wrap">
+    <div class="ticker__track" id="tickerTrack"></div>
+  </div>
+</div>
+
+<!-- ========== STATS BAR ========== -->
+<div class="stats-bar">
+  <div class="stats-bar__inner">
+    <div class="stat-item">
+      <div class="stat-item__value">2.3M+</div>
+      <div class="stat-item__label">Cases Opened</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-item__value">847K+</div>
+      <div class="stat-item__label">Registered Players</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-item__value">$12.4M+</div>
+      <div class="stat-item__label">Paid Out to Players</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-item__value">Since 2019</div>
+      <div class="stat-item__label">Established & Trusted</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FEATURED CASES ========== -->
+<div style="padding-right:148px;"><!-- offset for live-drops aside on desktop -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-head__title">Featured Cases</div>
+    <a class="section-head__link" href="#">
+      View All
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
+  </div>
+  <div class="cases-grid">
+
+    <div class="case-card" style="--rarity-clr:#e4ae39;">
+      <div class="case-card__art">
+        <div class="case-card__img-box" style="background:linear-gradient(135deg,rgba(228,174,57,0.35),rgba(228,174,57,0.10));border:1px solid rgba(228,174,57,0.3);">GOLD CASE</div>
+      </div>
+      <div class="case-card__name">Gradient Case</div>
+      <div class="case-card__price"><span class="cur">$</span>49.00</div>
+      <button class="btn-open">Open</button>
+    </div>
+
+    <div class="case-card" style="--rarity-clr:#4b69ff;">
+      <div class="case-card__art">
+        <div class="case-card__img-box" style="background:linear-gradient(135deg,rgba(75,105,255,0.30),rgba(75,105,255,0.08));border:1px solid rgba(75,105,255,0.28);">LOST WORLD</div>
+      </div>
+      <div class="case-card__name">Lost World Case</div>
+      <div class="case-card__price"><span class="cur">$</span>0.39</div>
+      <button class="btn-open">Open</button>
+    </div>
+
+    <div class="case-card" style="--rarity-clr:#eb4b4b;">
+      <div class="case-card__art">
+        <div class="case-card__img-box" style="background:linear-gradient(135deg,rgba(235,75,75,0.30),rgba(235,75,75,0.08));border:1px solid rgba(235,75,75,0.28);">SUN STRIKE</div>
+      </div>
+      <div class="case-card__name">Sun Strike Case</div>
+      <div class="case-card__price"><span class="cur">$</span>0.47</div>
+      <button class="btn-open">Open</button>
+    </div>
+
+    <div class="case-card" style="--rarity-clr:#00d2ff;">
+      <div class="case-card__art">
+        <div class="case-card__img-box" style="background:linear-gradient(135deg,rgba(0,210,255,0.25),rgba(0,210,255,0.07));border:1px solid rgba(0,210,255,0.25);">CS2 CASE</div>
+      </div>
+      <div class="case-card__name">CS2 Classic Case</div>
+      <div class="case-card__price"><span class="cur">$</span>0.49</div>
+      <button class="btn-open">Open</button>
+    </div>
+
+    <div class="case-card" style="--rarity-clr:#d32ce6;">
+      <div class="case-card__art">
+        <div class="case-card__img-box" style="background:linear-gradient(135deg,rgba(211,44,230,0.28),rgba(211,44,230,0.07));border:1px solid rgba(211,44,230,0.28);">HOT CASE</div>
+      </div>
+      <div class="case-card__name">The Hot Case</div>
+      <div class="case-card__price"><span class="cur">$</span>0.71</div>
+      <button class="btn-open">Open</button>
+    </div>
+
+    <div class="case-card" style="--rarity-clr:#722cff;">
+      <div class="case-card__art">
+        <div class="case-card__img-box" style="background:linear-gradient(135deg,rgba(114,44,255,0.30),rgba(114,44,255,0.08));border:1px solid rgba(114,44,255,0.28);">INFERNO</div>
+      </div>
+      <div class="case-card__name">Inferno Case</div>
+      <div class="case-card__price"><span class="cur">$</span>6.66</div>
+      <button class="btn-open">Open</button>
+    </div>
+
+    <div class="case-card" style="--rarity-clr:#e4ae39;">
+      <div class="case-card__art">
+        <div class="case-card__img-box" style="background:linear-gradient(135deg,rgba(228,174,57,0.30),rgba(211,44,230,0.12));border:1px solid rgba(228,174,57,0.25);">DREAMS</div>
+      </div>
+      <div class="case-card__name">Case of Your Dreams</div>
+      <div class="case-card__price"><span class="cur">$</span>49.00</div>
+      <button class="btn-open">Open</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== GAME MODES ========== -->
+<div class="section" style="padding-top:0;">
+  <div class="section-head">
+    <div class="section-head__title">More Ways to Win</div>
+  </div>
+  <div class="modes-grid">
+
+    <div class="mode-card" style="--mode-clr:#eb4b4b;">
+      <div class="mode-card__icon">
+        <!-- swords icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="14.5" y1="17.5" x2="3" y2="6"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="17" x2="20" y2="21"/><line x1="7" y1="4" x2="3" y2="8"/><polyline points="8 4 12 4 12 8"/><polyline points="20 16 20 20 16 20"/></svg>
+      </div>
+      <div class="mode-card__name">Case Battles</div>
+      <div class="mode-card__desc">Challenge other players. Open cases head-to-head. The highest total value takes everything.</div>
+      <div class="mode-card__cta">
+        Join a Battle
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+    <div class="mode-card" style="--mode-clr:#00d2ff;">
+      <div class="mode-card__icon">
+        <!-- target icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      </div>
+      <div class="mode-card__name">Sniper Battle</div>
+      <div class="mode-card__desc">Last shot wins it all. Join live arenas and compete for a shared prize pool.</div>
+      <div class="mode-card__cta">
+        Enter Arena
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+    <div class="mode-card" style="--mode-clr:#FFC53A;">
+      <div class="mode-card__icon">
+        <!-- trending up icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div class="mode-card__name">Upgrader</div>
+      <div class="mode-card__desc">Risk a skin for a shot at something rarer. Choose your upgrade target and spin.</div>
+      <div class="mode-card__cta">
+        Start Upgrade
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+    <div class="mode-card" style="--mode-clr:#722cff;">
+      <div class="mode-card__icon">
+        <!-- refresh icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </div>
+      <div class="mode-card__name">Trade-Up Contract</div>
+      <div class="mode-card__desc">Trade 10 skins for one higher-tier item. Turn commons into rares, strategically.</div>
+      <div class="mode-card__cta">
+        Trade Up
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== TRUST SECTION ========== -->
+<div class="trust-section">
+  <div class="section">
+    <div class="section-head">
+      <div class="section-head__title">Why Players Choose BloodyCase</div>
+    </div>
+    <div class="trust-grid">
+
+      <div class="trust-card trust-card--fair">
+        <div class="trust-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="trust-card__title">Provably Fair System</div>
+        <div class="trust-card__body">Every case opening is cryptographically verifiable. SHA-256 hashing — check any result yourself, any time.</div>
+      </div>
+
+      <div class="trust-card trust-card--withdraw">
+        <div class="trust-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div class="trust-card__title">Instant Steam Withdrawal</div>
+        <div class="trust-card__body">Won something? It hits your Steam inventory fast. No manual requests, no 24-hour delays.</div>
+      </div>
+
+      <div class="trust-card trust-card--free">
+        <div class="trust-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div class="trust-card__title">5 Free Cases on Signup</div>
+        <div class="trust-card__body">Register with Steam and claim 5 free cases immediately — no deposit needed. Real skins, zero risk.</div>
+      </div>
+
+      <div class="trust-card trust-card--bonus">
+        <div class="trust-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+        </div>
+        <div class="trust-card__title">25% First Deposit Bonus</div>
+        <div class="trust-card__body">Your first deposit gets an automatic 25% top-up. Deposit $20, play with $25. Min deposit just $5.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ========== JOIN / REGISTRATION ========== -->
+<div class="section join-section">
+  <div class="join-section__eyebrow">Get Started Free</div>
+  <h2 class="join-section__title">
+    Join <span>847,000+</span> Players
+  </h2>
+  <p class="join-section__sub">
+    Register in seconds with your Steam account. Claim 5 free cases instantly — no deposit required.
+  </p>
+  <div class="auth-buttons">
+    <button class="btn-auth btn-auth--steam">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29l3.37-6.98c-.37-.55-.57-1.21-.57-1.92 0-2.04 1.66-3.69 3.7-3.69s3.7 1.65 3.7 3.69c0 2.03-1.66 3.69-3.7 3.69-.14 0-.28-.01-.42-.03l-6.97 3.4C8.97 21.61 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
+      Sign in with Steam
+    </button>
+    <button class="btn-auth btn-auth--google">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Google
+    </button>
+    <button class="btn-auth btn-auth--discord">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+      Discord
+    </button>
+    <button class="btn-auth btn-auth--facebook">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Facebook
+    </button>
+    <button class="btn-auth btn-auth--twitch">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+      Twitch
+    </button>
+  </div>
+  <p class="join-section__free">
+    No deposit needed to start — get <strong>5 free cases</strong> just for signing up.
+  </p>
+</div>
+
+</div><!-- /aside-offset wrapper -->
+
+<!-- ========== LIVE DROPS SIDEBAR ========== -->
+<aside class="live-drops-aside" id="liveDropsAside"></aside>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__logo">
+      <img src="BloodyCase%20%E2%80%94%20Home_files/logo-bloodycase.svg" alt="BloodyCase" width="130" height="auto" style="width:130px;height:auto;display:block;opacity:0.85;" />
+    </div>
+    <div class="footer__links">
+      <a href="#">Provably Fair</a>
+      <a href="#">FAQ</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">About Us</a>
+      <a href="#">Affiliate Program</a>
+    </div>
+    <p class="footer__legal">
+      BloodyCase is a skin entertainment platform. All cases and items are virtual cosmetics only.
+      Players must be 18+ or the legal age of majority in their jurisdiction. Play responsibly.
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ===== TICKER ===== */
+(function(){
+  var WINS = [
+    {user:'xX_NoScope',skin:'AK-47 | Fire Serpent',val:'$487.00',r:'contraband',c:'#eb4b4b'},
+    {user:'Vladislav_K',skin:'AWP | Dragon Lore',val:'$1,240.00',r:'rare',c:'#e4ae39'},
+    {user:'csgofan99',skin:'Karambit | Fade',val:'$680.00',r:'rare',c:'#e4ae39'},
+    {user:'MrFlash',skin:'AK-47 | Vulcan',val:'$92.50',r:'restricted',c:'#722cff'},
+    {user:'SkinCollector',skin:'Butterfly Knife | Tiger Tooth',val:'$540.00',r:'rare',c:'#e4ae39'},
+    {user:'pro_trader_eu',skin:'AWP | Asiimov',val:'$74.20',r:'classified',c:'#d32ce6'},
+    {user:'NightOwl',skin:'M4A4 | Howl',val:'$1,800.00',r:'contraband',c:'#eb4b4b'},
+    {user:'caseking22',skin:'Glock-18 | Fade',val:'$220.00',r:'restricted',c:'#722cff'},
+    {user:'steammaster',skin:'Desert Eagle | Blaze',val:'$145.00',r:'restricted',c:'#722cff'},
+    {user:'quickdrop',skin:'USP-S | Dragon Tattoo',val:'$88.00',r:'classified',c:'#d32ce6'},
+    {user:'redline_fan',skin:'AK-47 | Redline',val:'$18.50',r:'classified',c:'#d32ce6'},
+    {user:'fragger_dk',skin:'AWP | Gungnir',val:'$960.00',r:'rare',c:'#e4ae39'},
+  ];
+
+  var track = document.getElementById('tickerTrack');
+  if(!track) return;
+
+  function makeItem(w){
+    var d = document.createElement('div');
+    d.className = 'ticker__item';
+    d.innerHTML =
+      '<div class="ticker__rarity-dot" style="background:'+w.c+';box-shadow:0 0 6px '+w.c+'40;"></div>'+
+      '<span class="ticker__user">'+w.user+'</span>'+
+      '<span class="ticker__action">won</span>'+
+      '<span class="ticker__skin">'+w.skin+'</span>'+
+      '<span class="ticker__value">'+w.val+'</span>';
+    return d;
+  }
+
+  // double the wins for seamless loop
+  var all = WINS.concat(WINS);
+  all.forEach(function(w){ track.appendChild(makeItem(w)); });
+})();
+
+/* ===== LIVE DROPS SIDEBAR ===== */
+(function(){
+  var aside = document.getElementById('liveDropsAside');
+  if(!aside) return;
+
+  var POOL = [
+    {w:'AK-47',s:'Vulcan',rc:'#eb4b4b'},
+    {w:'AK-47',s:'Redline',rc:'#d32ce6'},
+    {w:'AK-47',s:'Fire Serpent',rc:'#eb4b4b'},
+    {w:'AWP',s:'Asiimov',rc:'#d32ce6'},
+    {w:'AWP',s:'Dragon Lore',rc:'#e4ae39'},
+    {w:'AWP',s:'Gungnir',rc:'#e4ae39'},
+    {w:'Karambit',s:'Fade',rc:'#e4ae39'},
+    {w:'Butterfly',s:'Tiger Tooth',rc:'#e4ae39'},
+    {w:'Bayonet',s:'Doppler',rc:'#722cff'},
+    {w:'Desert Eagle',s:'Blaze',rc:'#722cff'},
+    {w:'M4A4',s:'Howl',rc:'#eb4b4b'},
+    {w:'Glock-18',s:'Fade',rc:'#722cff'},
+    {w:'USP-S',s:'Kill Confirmed',rc:'#d32ce6'},
+    {w:'M4A1-S',s:'Printstream',rc:'#d32ce6'},
+  ];
+
+  var CARD_H = 108;
+  function maxVisible(){
+    return Math.max(6, Math.floor((window.innerHeight - 70 - 16) / CARD_H));
+  }
+
+  function pick(){ return POOL[Math.floor(Math.random()*POOL.length)]; }
+
+  function makeCard(item){
+    var el = document.createElement('div');
+    el.className = 'drop-card';
+    el.style.setProperty('--rc', item.rc);
+    el.innerHTML =
+      '<div class="drop-card__art">'+
+        '<div class="drop-card__art-inner" style="background:linear-gradient(135deg,'+item.rc+'30,'+item.rc+'0a);border:1px solid '+item.rc+'40;">'+item.w.substring(0,4).toUpperCase()+'</div>'+
+      '</div>'+
+      '<div class="drop-card__weapon">'+item.w+'</div>'+
+      '<div class="drop-card__skin">'+item.s+'</div>';
+    return el;
+  }
+
+  // seed initial cards
+  var max = maxVisible();
+  for(var i=0;i<max;i++){
+    var c = makeCard(pick());
+    c.style.animation='none';
+    aside.appendChild(c);
+  }
+
+  function addCard(){
+    var el = makeCard(pick());
+    aside.insertBefore(el, aside.firstChild);
+    while(aside.children.length > maxVisible()){
+      var last = aside.lastChild;
+      if(!last.classList.contains('removing')){
+        last.classList.add('removing');
+        setTimeout(function(n){ return function(){ if(n.parentNode) n.parentNode.removeChild(n); }; }(last), 320);
+        break;
+      }
+    }
+    setTimeout(addCard, 2400 + Math.random()*2200);
+  }
+  setTimeout(addCard, 2800);
+
+  /* live online counter animation */
+  var navOnline = document.getElementById('navOnline');
+  setInterval(function(){
+    if(!navOnline) return;
+    var base = 8400 + Math.round(Math.random()*200 - 100);
+    navOnline.textContent = base.toLocaleString() + ' Online';
+  }, 7000);
+})();
+
+/* ===== GAME TABS ===== */
+(function(){
+  var tabs = document.querySelectorAll('.game-tab');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){
+        t.classList.remove('is-active');
+        t.setAttribute('aria-pressed','false');
+      });
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-pressed','true');
+    });
+  });
+})();
+
+/* ===== COMPACT SELECTORS (currency / language) ===== */
+(function(){
+  var selectors = document.querySelectorAll('.selector--compact');
+  selectors.forEach(function(sel){
+    sel.addEventListener('click', function(e){
+      var isOpen = sel.classList.contains('is-open');
+      // close all others first
+      selectors.forEach(function(s){ s.classList.remove('is-open'); s.setAttribute('aria-expanded','false'); });
+      if(!isOpen){
+        sel.classList.add('is-open');
+        sel.setAttribute('aria-expanded','true');
+      }
+      e.stopPropagation();
+    });
+    var options = sel.querySelectorAll('.selector__option');
+    options.forEach(function(opt){
+      opt.addEventListener('click', function(e){
+        options.forEach(function(o){ o.classList.remove('is-active'); o.setAttribute('aria-selected','false'); });
+        opt.classList.add('is-active');
+        opt.setAttribute('aria-selected','true');
+        var valEl = sel.querySelector('.selector__value');
+        if(valEl) valEl.textContent = opt.textContent.trim();
+        sel.classList.remove('is-open');
+        sel.setAttribute('aria-expanded','false');
+        e.stopPropagation();
+      });
+    });
+    // keyboard support
+    sel.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); sel.click(); }
+      if(e.key === 'Escape'){ sel.classList.remove('is-open'); sel.setAttribute('aria-expanded','false'); }
+    });
+  });
+  // close on outside click
+  document.addEventListener('click', function(){
+    selectors.forEach(function(s){ s.classList.remove('is-open'); s.setAttribute('aria-expanded','false'); });
+  });
+})();
+</script>
+
+</body>
+</html>
