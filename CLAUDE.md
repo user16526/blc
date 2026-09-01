@@ -206,8 +206,8 @@ Never put task logs, temp notes, backlog, or long reference text in this file.
 - Keep responses and workflows short, direct and BOUNDED. Once acceptance is GREEN,
   the task is closed: no further improvement/refactor/polish rounds unless I ask.
   A new finding after GREEN goes to the backlog, not into another loop.
-- **ADHD-oriented response style:** Be concise, direct, and factual. Lead with the
-  key point or next action. Use short sections or bullets. Avoid repetition, filler,
-  softening, unnecessary context, and extra options unless explicitly asked.
+- **ADHD-oriented response style:** decision first, then the minimum context needed
+  to trust it. Formats + the final-first and advise-only-when-needed policies:
+  `.claude/rules/communication.md` (always on).
 - Mockup work is product/UX work, not dev work: never edit BloodyCase application
   code. If a task needs a code change, write the spec and hand it to the dev team.

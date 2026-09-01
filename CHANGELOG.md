@@ -1,5 +1,67 @@
 # Template Changelog
 
+## v8.3.16 — hybrid execution state: continuous, deterministic patches (2026-09-01)
+SKILL.state (arXiv:2608.26263) adapted, NOT copied: warm short transcript for
+in-context synthesis + AUTHORITATIVE structured state maintained during work,
+so the transcript is droppable at any moment. Handoff becomes a snapshot built
+FROM state; Context Guard demotes to last safety net. LLM proposes patches,
+a deterministic script validates and merges — never the reverse.
+ADD: scripts/state-patch.py (validator+merge+atomic write+render, --self-test
+GREEN, invariants I1-I5 incl. failed_rejected never shrinks silently);
+.agent/state/state-schema.json (one schema per project, unknown keys rejected);
+.claude/skills/state-patch/SKILL.md (semantic-event cadence — never per-command).
+MODIFY: context-hygiene.md (+hybrid runtime), handoff SKILL (+built-from-state),
+cross-review SKILL (+reviewer package = task+state+diff+evidence, NO transcript;
+finding open->resolved only after gate), state-freshness.sh (+section 4: patch
+older than HEAD => loud reminder), context-index.md (current.json authoritative).
+DELETE: nothing. Suite re-run at release: PASS 146 / FAIL 0.
+
+## v8.3.15 — versioning simplified: number only, suffix retired (2026-09-01)
+Owner decision. Artifact name = TEMPLATE_VERSION, nothing else (`v8_3_15.zip`);
+each release bumps the last number by 1. The runtime-derived -cgN suffix is
+retired: in practice it produced two artifacts of the SAME version with
+different names (v8_3_14-cg4 vs v8_3_14-cg5) — a fork, the exact failure the
+pipeline exists to prevent. CG runtime pairing now lives only where it is
+enforced: `.claude/context-guard/config.json` min_runtime (still 4.2.0 — no
+CG 5.x source has been verified into the canon), the `runtime_version` line
+`build-release.py` prints, and the release's CHANGELOG entry. Content is
+otherwise identical to v8.3.14 plus the hermipro-staged additions:
+`.claude/rules/communication.md` (final-first / advise-only-when-needed) with
+the CLAUDE.md MY RULES bullet pointing at it, and `START-HERE.md`.
+Full suite re-run at release: PASS 146 / FAIL 0.
+
+## v8.3.14 — BLC findings D1/D2 fixed at the source, CODE release (2026-09-01)
+Artifact suffix at the time: derived -cgN. Retired in v8.3.15 (see above); the
+"CG runtime 5.x on the fleet" wording that briefly appeared here was never
+verified by mechanism and is struck.
+`build-release.py` derives the suffix from `.claude/context-guard/config.json`
+min_runtime instead of a literal; the stale "-cg4" literal was itself a D-class
+bug of the kind BLC just reported. NOTE for the owner: `min_runtime` in that
+config still says 4.2.0 — bump it to the CG5 floor you actually require, per
+project, when CG5 is verified there (compatibility is your call, not mine).
+Reported by BLC with write-up docs/template-defects-owed-upstream_2026-09-01_v1.md;
+fixed at the canonical tree, every project upgrades (D1 blocked every NEW v8
+project's first commit).
+
+- **D1 (blocking)**: the pre-commit secret scan now excludes exactly ONE path,
+  `scripts/test-hooks.sh` — the suite legitimately carries synthetic secrets as
+  negative controls, so scanning it blocked the first commit of any project
+  that stages the suite. Narrowness is itself asserted: a synthetic secret in
+  any OTHER file must still block (new suite control).
+- **D2**: the gate's verdict extraction reads the "## Verdict" header line AND
+  the next line, so a report written exactly to the shipped
+  RUN_REPORT_TEMPLATE.md parses; the template's example now also shows the
+  same-line form. Both styles are valid; the contract is stated in both files.
+- Three new suite assertions (146/0 here): first-commit-with-suite allowed;
+  D1 exclusion narrow; template-style verdict parses.
+- For BLC on upgrade: its local D1 workaround and D2 report-format workaround
+  are SUPERSEDED — the 3-way merge should take the template versions, and risk
+  R1 (a mechanical merge reverting the workaround) dissolves with them.
+- Canonicity, recorded: releases are payload builds of the maintainer's
+  canonical working tree; the shared releases folder is the single
+  distribution point. `build-release.py` remains the reproducible path for
+  machines holding the full source tree with `context-guard/`.
+
 ## v8.3.13 — sheriff round 10: the fd8 control rebuilt, CODE release (2026-09-01)
 One file changed: test-hooks §8 (91 → 102 assertions; suite here: 143/0).
 Wrapper and live canary are UNCHANGED and were not re-shipped — the round-10

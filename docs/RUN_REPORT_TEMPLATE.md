@@ -6,8 +6,9 @@ every pipeline run. This file is the single source of truth for the run — not 
 ```markdown
 # {Pipeline} run — {YYYY-MM-DD HH:MM}
 
-## Verdict
-GREEN ✅ / YELLOW 🟡 / RED 🔴   — one word + emoji
+## Verdict: GREEN ✅
+<!-- one of: GREEN ✅ / YELLOW 🟡 / RED 🔴 — on the header line or the next;
+     the gate reads both (D2 fix, 2026-09-01) -->
 
 ## Inputs
 - Spec: {path, version}

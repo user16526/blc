@@ -21,11 +21,10 @@ root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 if [ -f "$root/scripts/secret-patterns.sh" ]; then . "$root/scripts/secret-patterns.sh"; else
   SECRET_REGEX='(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'
 fi
-# BLC divergence from the template: scripts/test-hooks.sh is exempt from the
-# secret scan. It MUST contain synthetic secret fixtures (sk-…, ghp_…, xoxb-…)
-# as negative controls proving guard.sh returns exit 2; without this exclusion
-# the template's own test suite can never be committed. Every other file is
-# scanned exactly as before.
+# EXCLUSION, exactly one path (BLC finding D1, 2026-09-01): scripts/test-hooks.sh
+# carries SYNTHETIC secrets as negative controls, so scanning it blocked every
+# v8 project's FIRST commit. The suite itself asserts this exclusion stays
+# narrow: a synthetic secret in any OTHER file must still block.
 if git diff --cached -U0 -- . ':(exclude)scripts/test-hooks.sh' | grep -Eq "^\+.*$SECRET_REGEX"; then
   echo "✋ COMMIT BLOCKED: a hardcoded secret appears in staged changes." >&2
   echo "Move it to .env (gitignored) and use an env var instead." >&2

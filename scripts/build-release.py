@@ -138,7 +138,14 @@ def main():
         tv_path = os.path.join(ROOT, "TEMPLATE_VERSION")
         if os.path.isfile(tv_path):
             tv = open(tv_path).read().strip()
-            a.template_name = "%s-cg4.zip" % tv.replace(".", "_")
+            # Versioning policy (owner decision, 2026-09-01, v8.3.15): the artifact
+            # name is the TEMPLATE_VERSION and nothing else — bump the last number
+            # by 1 each release. No runtime suffix: the cg4/cg5 suffix scheme
+            # produced two same-version artifacts with different names (a fork).
+            # CG runtime pairing is recorded where it is enforced instead:
+            # config.json min_runtime + the "runtime_version" line this build prints
+            # + the CHANGELOG entry of the release.
+            a.template_name = "%s.zip" % tv.replace(".", "_")
         else:
             a.template_name = "%s.zip" % PREFIX.replace(".", "_")
     tpl_out = os.path.join(a.out_dir, a.template_name)

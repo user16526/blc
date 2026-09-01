@@ -32,7 +32,7 @@ If a coherent task outgrows the window, `/compact` (summarize, keep the thread) 
 hard `/clear`. Use `/clear` at true boundaries. (Project-root CLAUDE.md and these rules
 survive `/compact` — they're re-read from disk — so the discipline stays active.)
 
-## Context Guard owns the thresholds (v8.2.0, runtime 4.2.4)
+## Context Guard owns the thresholds (runtime version: .claude/context-guard/config.json)
 **Where it lives:** ONE shared runtime at `~/.claude/context-guard/`, registered once
 in `~/.claude/settings.json`. This project owns exactly one Context Guard file —
 `.claude/context-guard/config.json`, the opt-in switch and the threshold source. A
@@ -52,3 +52,13 @@ Thresholds are a starting point, not truth: run
 `python3 ~/.claude/context-guard/analyze-telemetry.py` after ~10-20 long tasks and
 move them where the success/rework data says. Recurring/monitoring work has its
 own economics: `.claude/rules/loops-and-watchers.md`.
+
+## Hybrid state runtime (v8.3.16): warm transcript + authoritative state
+The rules above govern WHEN to drop the transcript. What makes the drop safe at
+ANY moment is the continuous execution state: `.agent/state/current.json`,
+merged only via `scripts/state-patch.py` at semantic events (skill
+`state-patch`). State maintenance is no longer an end-of-session emergency —
+the handoff is built FROM the state at rotation points, and Context Guard's
+ladder becomes the LAST safety net, not the primary economy mechanism. The
+warm-cache guidance stands: short coherent stretches stay conversational;
+the state runs alongside, not instead.
