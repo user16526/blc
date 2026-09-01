@@ -105,3 +105,13 @@ line; this skill never changes.
   instead, never on the judge.
 - If author and sheriff ever land on the same vendor, rotate one —
   cross-vendor is the entire point.
+
+## Reviewer package = state, not transcript (v8.3.16)
+The reviewer (Codex/sheriff) receives: original task + `.agent/state/current.json`
++ git diff + relevant files + tests/gate evidence — and NEVER the Claude
+transcript, so it inherits no stale reasoning or failed hypotheses (that
+independence is where the accuracy gain lives). Findings do not touch the state
+directly: reviewer emits a finding → Claude fixes → the GATE confirms → only
+then `state-patch` flips it open → resolved. Transcript fragments stay
+available on-demand from `_reports/` for arbitration/postmortem — the one case
+where history itself is the subject — never by default.

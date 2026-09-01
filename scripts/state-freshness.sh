@@ -85,4 +85,24 @@ else
     fi
   fi
 fi
+
+
+# (4) Execution-state staleness (v8.3.16, deterministic, zero network).
+#     The state must live DURING work, not appear at the end. If commits exist
+#     newer than the last merged patch, the discipline slipped — say so loudly.
+sj=".agent/state/current.json"
+if [ -f "$sj" ]; then
+  lp="$(grep -oE '"last_patch"[[:space:]]*:[[:space:]]*"[^"]*"' "$sj" | head -1 \
+        | sed -E 's/.*"([0-9T:-]+)"/\1/')"
+  lc="$(git log -1 --format=%cI 2>/dev/null | cut -c1-19)"
+  if [ -n "$lp" ] && [ -n "$lc" ] && [ "$(printf '%s' "$lp" | cut -c1-19)" \< "$lc" ]; then
+    echo "⚑ state-patch: last merged patch ($lp) is OLDER than HEAD ($lc)."
+    echo "  Semantic events since then owe a patch — see skill state-patch."
+  else
+    echo "[state-freshness] execution state: last patch $lp — current."
+  fi
+else
+  echo "[state-freshness] execution state not started yet (first patch creates it):"
+  echo "                  python3 scripts/state-patch.py --patch '{\"set\":{\"goal\":\"...\",\"next\":\"...\"}}'"
+fi
 exit 0

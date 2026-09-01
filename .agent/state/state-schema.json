@@ -1,0 +1,15 @@
+{
+  "_comment": "Execution-state schema (SKILL.state hybrid, v8.3.16). ONE schema per project, edited rarely and deliberately. scripts/state-patch.py validates every patch against it; unknown top-level keys are rejected, so schema growth is an explicit decision, not drift. Field kinds: string | list | object.",
+  "fields": {
+    "goal": "string",
+    "constraints": "list",
+    "verified": "object",
+    "working_set": "list",
+    "decisions": "list",
+    "failed_rejected": "list",
+    "open_loops": "list",
+    "latest_evidence": "string",
+    "next": "string",
+    "meta": "object"
+  }
+}

@@ -149,6 +149,29 @@ if git commit -qm "clean commit" >/dev/null 2>&1; then
 else
   no "pre-commit blocked a clean commit"
 fi
+# BLC finding D1 (2026-09-01): the suite carries synthetic secrets as negative
+# controls, so a project's FIRST commit — which stages this very file — must
+# not be blocked by the secret scan. And the exclusion must stay NARROW.
+git add -f scripts/test-hooks.sh 2>/dev/null
+if git commit -qm "first commit incl. the suite" >/dev/null 2>&1; then
+  ok "pre-commit allows committing test-hooks.sh (synthetic secrets are negative controls)"
+else
+  no "D1 regressed: the suite's own synthetic secrets block the first commit"
+fi
+printf 'key = "sk-%s"\n' "0123456789abcdefghijklmnop" > leak.py; git add leak.py 2>/dev/null
+if git commit -qm "should be blocked" >/dev/null 2>&1; then
+  no "D1 exclusion is NOT narrow: a synthetic secret outside the suite slipped through"
+else
+  ok "the D1 exclusion is narrow: a secret in any OTHER file still blocks"
+fi
+git rm -q --cached leak.py >/dev/null 2>&1; rm -f leak.py
+# BLC finding D2 (2026-09-01): a report written exactly to the shipped template
+# (verdict on the line AFTER "## Verdict") must yield a parsable verdict.
+printf '## Verdict\nGREEN ✅\n## Inputs\nx\n## Findings\nx\n## Artifacts\nx\n' > d2-report.md
+rv=$(grep -iEA1 -m1 'verdict' d2-report.md | grep -oEi 'GREEN|YELLOW|RED' | head -1)
+[ "$rv" = "GREEN" ] && ok "verdict parses from the line after the header (gate's own extraction)" \
+                    || no "D2 regressed: template-style report has no parsable verdict"
+rm -f d2-report.md
 
 # ── 7. quality-gate.sh — smoke + ADVERSARIAL (fake proof must NOT pass) ──
 echo "── 7. quality-gate.sh ──"
