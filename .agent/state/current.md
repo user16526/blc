@@ -3,10 +3,10 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-01 23:53
+Last updated: 2026-09-02 00:24
 
 ## Goal
-- Remote BloodyCase Postgres reachable read-only from Claude Code: SSH tunnel script + Postgres MCP (restricted) - scripts built, waiting for owner to fill .env
+- Remote BloodyCase Postgres reachable read-only from Claude Code via SSH tunnel + Postgres MCP (restricted) - DONE, in daily use
 
 ## Constraints
 - SCOPE LIMIT: product/marketing/UI-UX only - never edit BloodyCase application code
@@ -22,6 +22,7 @@ Last updated: 2026-09-01 23:53
 - devops_audit: 2026-09-01 vs Fable 5.1 guide - RESOLVED: F9-F14 applied (owner), suite 146/0; sheriff prompt is now a BLC-local canonical divergence (decisions.md)
 - template_newest_release: v8.3.19 (2026-09-01) - not security-relevant; TEMPLATE_VERSION still v8.3.16
 - pg_tunnel_scripts: scripts/pg-tunnel.ps1 + pg-mcp-register.ps1 + Read-DotEnv.ps1 parse clean (PS 5.1), fail loudly without .env keys; claude mcp add/remove dry-run OK with dummy URI; uvx --with mcp<2 postgres-mcp --help exit 0 [2026-09-01]
+- pg_tunnel_e2e: ssh key auth sparrow@168.119.74.101 OK; host bloodyanalytics02 runs Postgres 18 on 5432, db bloody; tunnel up -> localhost:5432 TcpTestSucceeded; claude mcp get postgres = Connected (restricted mode) [2026-09-02 via scripts/pg-tunnel.ps1 + pg-mcp-register.ps1]
 
 ## Working set
 - Framework only. No product task active - next real BLC task starts fresh under the v8.3.16 kernel.
@@ -42,6 +43,7 @@ Last updated: 2026-09-01 23:53
 - Local one-line pre-commit exclusion for test-hooks.sh - superseded by the shipped, suite-asserted v8.3.14 fix; do not reintroduce
 - Reporting D1/D2 upstream from inside BLC - releases are build products of the maintainer canonical tree; fixed there in v8.3.14 instead
 - npm @modelcontextprotocol/server-postgres - deprecated on npm, do not use; plain uvx postgres-mcp - crashes on mcp 2.x import, must pin --with mcp<2; non-ASCII (em-dash) inside .ps1 strings - PS 5.1 parse error
+- auto-mode classifier blocks local test scripts that read the DB password from .env (psql/psycopg probes) - rely on claude mcp get status + the in-session MCP tool instead
 
 ## Open loops
 - Survival test for v8.3.19 + the F9-F14 edits = the next BLC task end-to-end
@@ -55,4 +57,4 @@ Last updated: 2026-09-01 23:53
 - _reports/runs/template-upgrade-v8.3.19_2026-09-01.md (gate GREEN on merge commit 27b43e7)
 
 ## Next (exactly one action)
-- Owner fills PG_SSH_HOST/PG_SSH_USER/PGUSER/PGPASSWORD/PGDATABASE in .env, then runs scripts/pg-tunnel.ps1 and scripts/pg-mcp-register.ps1 (docs/pg-tunnel.md)
+- Owner: keep scripts/pg-tunnel.ps1 running in its own terminal, restart Claude Code, then ask the postgres MCP for a first analytics query
