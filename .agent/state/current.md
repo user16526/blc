@@ -21,9 +21,10 @@ Last updated: 2026-09-01
   (`.agent/capsules/mockups-design-system.md`).
 
 ## Don't forget / pending my approval
-- Context Guard is NOT yet opted in for this project (`.claude/context-guard/config.json`
-  is shipped but the installer has not been run here). Run
-  `python3 <context-guard release>/scripts/install-context-guard.py --project .`
-  when you want it active, then `verify-install.py --project .` → GREEN.
+- Context Guard IS active here: `.claude/context-guard/config.json` (schema 1,
+  min_runtime 4.2.0) is the opt-in switch, and the shared runtime at
+  `~/.claude/context-guard/` is 4.2.4. Verified 2026-09-01:
+  `python3 ~/.claude/context-guard/verify-install.py --project .` → GREEN.
+  No runtime is copied into this project, and none must be.
 - The state of `mockups/main002/index4.html` vs. what the client last saw is not
   recorded anywhere — confirm before iterating further.

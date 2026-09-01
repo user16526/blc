@@ -7,6 +7,5 @@
 - [ ] Confirm `model: sonnet` for `gaming-product-owner` / `gaming-ux-strategist`
       (left untouched per `.claude/rules/model-selection.md`).
 - [ ] Decide whether to trim the two ~230-line gaming agent personas (proposed, not taken).
-- [ ] Decide whether to opt this project into Context Guard (config shipped, installer not run).
 - [ ] Drop the `scripts/pre-commit` divergence once the template fixes the
       test-hooks.sh secret-scan self-conflict upstream.

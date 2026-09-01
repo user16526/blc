@@ -67,7 +67,6 @@
 - [ ] Confirm the trust-pill price ("From $0.06" vs "From $0.39").
 - [ ] Confirm `model: sonnet` on both gaming agents.
 - [ ] Decide on trimming the two ~230-line agent personas.
-- [ ] Decide on Context Guard opt-in for this project.
 - [ ] Merge `template-upgrade-v8.3.13` into `main` (owner's call).
 
 ## Artifacts
@@ -87,4 +86,6 @@ curl :8099/index_files/fantaicon.woff2?v=1 → HTTP 200, 38796 bytes
 playwright 1440×900 screenshot    → renders: fantaicon nav glyphs, logo SVG, real
                                     weapon/case art, "DEPOSIT +25%", trust pills
 pre-commit negative control       → planted sk-proj-… in temp/ still BLOCKED (rc=1)
+verify-install.py --project .     → GREEN, Context Guard 4.2.4 (config schema 1,
+                                    min_runtime 4.2.0; no runtime copied into the project)
 ```
