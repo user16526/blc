@@ -17,7 +17,7 @@
       the owner's, and the wrapper folder now diffs EMPTY against it (108 == 108,
       no `.env`, no `handoffs/`).
 
-- [ ] **Take template v8.3.19 on the normal cadence** (was v8.3.17; v8.3.18 docs-only,
+- [x] **Take template v8.3.19** — DONE 2026-09-01, merge commit 27b43e7, gate GREEN (was: (was v8.3.17; v8.3.18 docs-only,
       v8.3.19 adds `scripts/release-check.sh`; none security-relevant — audit 2026-09-01) (owner: no urgency — our
       v8.3.16 tree is functionally unaffected by both fixes). Merge is scoped and
       near-trivial, measured not guessed: the only template-owned deltas are
