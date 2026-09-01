@@ -33,6 +33,16 @@ view, keeps the "Last updated:" line other hooks grep). Schema:
 """
 import argparse, json, os, sys, tempfile, datetime
 
+# BLC finding D3 (2026-09-01): under a cp1252 console the "\u2713" marks killed
+# --self-test with UnicodeEncodeError at the first assertion — the release's own
+# stated verification step was unusable on Windows. Same fix build-release.py
+# already carries: force utf-8 with replacement, never crash on printing.
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE = os.path.join(ROOT, ".agent", "state", "current.json")
 VIEW = os.path.join(ROOT, ".agent", "state", "current.md")

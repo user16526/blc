@@ -1,9 +1,10 @@
 # START HERE — stand up a new project from this template
 
-Canonical source: `v8_3_15.zip` (TEMPLATE_VERSION `v8.3.15`; artifact name =
-version, no suffix — see CHANGELOG v8.3.15). This directory is the v8.3.14
-content plus ONE addition carried over from `hermipro-vps` (see
-`TEMPLATE-DELTA.md`), released as v8.3.15.
+Canonical source: the release zip whose name matches `TEMPLATE_VERSION` in
+this folder (`v8_3_N.zip`, artifact name = version, no suffix — no version
+literal is written here on purpose, so this line cannot rot). Lineage and
+per-release changes: `CHANGELOG.md`; the one addition carried over from a
+field project at staging time: `TEMPLATE-DELTA.md`.
 
 This tree is BLANK on purpose: every `.agent/state/*`, `tasks/*`, `_reports/*`
 file is a stub, and `CLAUDE.md` still holds its FIRST RUN placeholders. Nothing

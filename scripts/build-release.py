@@ -24,6 +24,9 @@ Two files are in BOTH, and they are what keeps the split maintainable:
 `.claude/settings.json` (the suite asserts it registers no Context Guard) and
 `.claude/context-guard/config.json` (the project opt-in the installer copies).
 
+Release gate: after building, run scripts/release-check.sh — it verifies the
+UNPACKED artifact (never the tree). Green there is the only "ship" signal.
+
 Reproducible: entries are sorted, every timestamp is pinned to SOURCE_DATE_EPOCH
 (default 2026-08-27T00:00:00Z), compression is fixed. Same tree in, same sha256
 out — so the hash in a report actually identifies a tree.

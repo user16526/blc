@@ -1,5 +1,41 @@
 # Template Changelog
 
+## v8.3.19 — release gate: verify from the artifact, never the tree (2026-09-01)
+Owner decision after two same-day escapes (D4 stray .env, rotted START-HERE
+literal) that passed working-tree checks. ADD scripts/release-check.sh — builds
+via build-release.py, unpacks the RESULT, and inside it checks: no stray or
+runtime files, no Context Guard release-file leak, no rot-able version literals
+outside CHANGELOG/TEMPLATE-DELTA, CHANGELOG top entry == TEMPLATE_VERSION,
+setup.sh restores exec bits, test-hooks 146/0, state-patch self-test under
+utf-8 AND cp1252 (D3 regression), sha256 companion; optional --wrapper asserts
+an all-in-one folder == artifact. Exit 0 ship / 1 do not ship / 2 not the
+canonical tree. Lesson recorded in tasks/lessons.md [release]; UPGRADE.md and
+build-release.py docstring point at it. Zero network.
+
+## v8.3.18 — START-HERE version literal de-rotted (2026-09-01)
+Found on the release re-check: START-HERE.md still pointed new projects at
+`v8_3_15.zip` — a hard-coded version literal that had silently rotted through
+two releases (the exact class the suffix retirement in v8.3.15 was about).
+The line now refers to TEMPLATE_VERSION instead of naming a version, so it
+cannot rot again. Docs-only; no code changed. Suite: PASS 146 / FAIL 0.
+
+## v8.3.17 — BLC upgrade-run findings D3/D4 closed at the source (2026-09-01)
+Reported by BLC on its v8.3.13 -> v8.3.16 upgrade (second defect report from
+the field that came back as a fix — the pipeline working as designed).
+- D3: scripts/state-patch.py --self-test died with UnicodeEncodeError printing
+  its check marks under a cp1252 console. Fixed at source with the same
+  stdout/stderr utf-8 reconfigure build-release.py already carries; verified
+  here under PYTHONIOENCODING=cp1252: 9/9, no crash.
+- D4: the v8.3.16 ALL-IN-ONE wrapper shipped a stray .env (byte-identical to
+  .env.example, seeded by a setup.sh run in the working tree) and an empty
+  .claude/handoffs/ — runtime artifacts of verification, cp -r'd into the
+  release folder. The canonical zip was clean (its exclude list caught .env);
+  the wrapper folder was not. CLASS fix in the release flow: the wrapper's
+  template folder is now unpacked FROM the canonical artifact, and packaging
+  asserts folder == artifact content (empty diff) before zipping. Lesson:
+  never cp a worked-in tree into a release; verify from the artifact.
+No template code changed beyond state-patch.py. Suite: PASS 146 / FAIL 0.
+
 ## v8.3.16 — hybrid execution state: continuous, deterministic patches (2026-09-01)
 SKILL.state (arXiv:2608.26263) adapted, NOT copied: warm short transcript for
 in-context synthesis + AUTHORITATIVE structured state maintained during work,
