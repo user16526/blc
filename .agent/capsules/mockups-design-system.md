@@ -42,6 +42,9 @@ Apply to every future BLC HTML mockup.
   Pulsing deposit badge: `badge-pulse` keyframe, 96px circle, hero top-right.
 - **Trust signals (approved copy)** — "Provably Fair" | "Instant Withdrawal" |
   "From $0.06" — three inline pills inside the hero below the CTAs.
+  ⚠ UNRESOLVED (2026-09-01): `index4.html` actually ships "From $0.39". Either the
+  approved copy is stale or index4 diverged — confirm the real minimum case price
+  with the owner before the next mockup iteration. Do not silently pick one.
 - **Glassmorphism header** — `backdrop-filter: blur(12px);`
   `box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.3);`
 - **Header accent strip** — `.page-header::before { height: 2px; background:

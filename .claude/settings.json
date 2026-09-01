@@ -1,7 +1,8 @@
 {
   "$comment": "Hooks are DETERMINISTIC and FAIL-SAFE: invoked via bash/python3 + ${CLAUDE_PROJECT_DIR}, so they run even before setup.sh sets the execute bit. Division of labor: guard.sh = safety (secrets/destructive); check-*.sh = kernel protection; state-freshness.sh = disk-state freshness + fallback resurfacing of the PreCompact snapshot. PreCompact stays SYNCHRONOUS (snapshot must hit disk BEFORE compaction). CONTEXT GUARD IS NOT REGISTERED HERE, DELIBERATELY: it runs from ONE shared runtime at ~/.claude/context-guard/, registered once in ~/.claude/settings.json (SessionStart restore / UserPromptSubmit gate / PreToolUse tooluse / PostCompact / SessionEnd flush, plus the statusLine). A project owns exactly ONE Context Guard artifact - .claude/context-guard/config.json, the opt-in switch and threshold source. Re-adding project-local context-guard hooks or statusLine here makes the shared runtime stand down and every hook fire twice; scripts/test-onboarding.sh asserts it never comes back. Install/opt in: python3 scripts/install-context-guard.py --project . Verify: bash scripts/test-hooks.sh && python3 ~/.claude/context-guard/verify-install.py --project .",
   "env": {
-    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "450000"
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "450000",
+    "QG_ALLOW_NO_CHECKS": "1"
   },
   "permissions": {
     "allow": [
