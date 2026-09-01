@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "$comment": "Codex adapter: registers the SAME policy scripts as .claude/settings.json (one implementation, two adapters). Current Codex schema requires this top-level 'hooks' wrapper. HONEST LIMITS: (1) project-local hooks load only for TRUSTED projects, and each command hook must be reviewed & trusted by hash — a new/changed hook is SKIPPED until trusted; (2) some Codex builds need `[features] codex_hooks = true` in .codex/config.toml; (3) on several Codex versions PreToolUse/PostToolUse fire for Bash ONLY, so the Write|Edit matchers below may never run there. Therefore treat these as best-effort guardrails and VERIFY at session start that they actually fire; the guaranteed, agent-agnostic enforcement is the git pre-commit hook (scripts/install-git-hooks.sh). Script logic itself is proven by: bash scripts/test-hooks.sh",
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "bash scripts/state-freshness.sh" } ] }
+    ],
+    "PreCompact": [
+      { "matcher": "auto", "hooks": [ { "type": "command", "command": "bash scripts/precompact-snapshot.sh" } ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash|Write|Edit", "hooks": [ { "type": "command", "command": "bash scripts/guard.sh" } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Write|Edit", "hooks": [
+        { "type": "command", "command": "bash scripts/check-claude-md-size.sh" },
+        { "type": "command", "command": "bash scripts/check-core.sh" }
+      ] }
+    ]
+  }
+}

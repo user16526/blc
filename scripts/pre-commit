@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Git pre-commit hook: last line of defense. Blocks committing a real .env or any
+# staged secret — even when committing by hand, outside Claude Code.
+# Install once: ./scripts/install-git-hooks.sh
+set -euo pipefail
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+
+# 1) Block a real .env (allow .env.example)
+bad_env=$(echo "$staged" | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example' || true)
+if [ -n "$bad_env" ]; then
+  echo "✋ COMMIT BLOCKED: a real .env file is staged:" >&2
+  echo "$bad_env" >&2
+  echo "Unstage it:  git restore --staged $bad_env" >&2
+  echo "It must stay gitignored. Commit .env.example instead." >&2
+  exit 1
+fi
+
+# 2) Block obvious secrets inside staged content (patterns: scripts/secret-patterns.sh)
+root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+if [ -f "$root/scripts/secret-patterns.sh" ]; then . "$root/scripts/secret-patterns.sh"; else
+  SECRET_REGEX='(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'
+fi
+# BLC divergence from the template: scripts/test-hooks.sh is exempt from the
+# secret scan. It MUST contain synthetic secret fixtures (sk-…, ghp_…, xoxb-…)
+# as negative controls proving guard.sh returns exit 2; without this exclusion
+# the template's own test suite can never be committed. Every other file is
+# scanned exactly as before.
+if git diff --cached -U0 -- . ':(exclude)scripts/test-hooks.sh' | grep -Eq "^\+.*$SECRET_REGEX"; then
+  echo "✋ COMMIT BLOCKED: a hardcoded secret appears in staged changes." >&2
+  echo "Move it to .env (gitignored) and use an env var instead." >&2
+  exit 1
+fi
+
+exit 0

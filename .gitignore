@@ -1,34 +1,38 @@
-# Logs (always local)
-.claude/logs/
-
-# Secrets
-.env*
-*.key
+# Secrets — never commit
+.env
+.env.*
+!.env.example
 *.pem
+*.key
 *.p12
+*.pfx
+id_rsa
+id_ed25519
+credentials.json
+service-account*.json
+secrets.*
+*.tfvars
 
-# Databases
-*.db
-*.sqlite
-
-# Dependencies
-node_modules/
-venv/
-.venv/
-
-# Build outputs
-dist/
-build/
-__pycache__/
-*.pyc
-
-# Framework files (uncomment for public/private-shared mode)
-# .claude/rules/
-# .claude/skills/
-# .claude/hooks/
-# .claude/agents/
-# .claude/SNAPSHOT.md
-
-# Upgrade scratch
+# Scratch / build
 temp/
+*.log
+node_modules/
+dist/
+.DS_Store
+
+# Auto-regenerated working state (machine-local; rewritten on each auto-compaction)
+.agent/state/handoff.md
+
+# Machine-readable run state: written AFTER the commit it points to (head_sha =
+# that commit), so it can never be tracked+committed+current at once — gitignored
+# by design. The human-readable proof (_reports/runs/*.md) stays tracked.
+_reports/runs/latest.json
+
+# Context Guard v4: task handoffs, telemetry, compact-log (machine-local, ephemeral)
+.claude/handoffs/
+
+# --- BLC project-owned additions ---
+# LibreOffice/Excel lock files next to the client .xlsx/.docx
 .~lock.*#
+# Playwright MCP scratch output
+.playwright-mcp/

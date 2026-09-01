@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "min_runtime": "4.2.0",
+  "profiles": {
+    "1m":      { "soft_limit": 200000, "checkpoint_limit": 300000, "high_limit": 400000 },
+    "default": { "soft_limit": 90000,  "checkpoint_limit": 120000, "high_limit": 150000 }
+  },
+  "auto_compact_window": 450000,
+  "runaway_limit": 600000,
+  "runaway_enabled": true,
+  "state_stale_seconds": 900,
+  "_comment": "Context Guard v4. Профіль обирається автоматично: context_window_size >= 600000 -> '1m', інакше 'default'. Усі рівні драбини (soft/checkpoint/high) — ЛИШЕ одноразові підказки, нічого не блокується. Жорстка стеля — авто-компакція: auto_compact_window тут документує значення і МУСИТЬ збігатися з env CLAUDE_CODE_AUTO_COMPACT_WINDOW у .claude/settings.json (перевіряється scripts/test-context-guard.sh; на моделях з меншим вікном Claude Code сам обрізає його до вікна моделі). runaway_limit — аварійний запобіжник ПОЗА робочою драбиною: спрацьовує лише якщо авто-компакція фізично не відбулась (env не застосувався тощо); runaway_enabled=false вимикає. Старі плоскі ключі (soft_limit/handoff_limit/hard_limit на верхньому рівні) читаються як override для всіх вікон: handoff_limit -> checkpoint_limit, hard_limit -> high_limit. Числа 200/300/400/450k — початкова робоча точка, НЕ пороги коректності; фінальні значення дає власна телеметрія (analyze-telemetry.py після ~10-20 довгих задач)."
+}

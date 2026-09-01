@@ -1,57 +1,82 @@
 {
+  "$comment": "Hooks are DETERMINISTIC and FAIL-SAFE: invoked via bash/python3 + ${CLAUDE_PROJECT_DIR}, so they run even before setup.sh sets the execute bit. Division of labor: guard.sh = safety (secrets/destructive); check-*.sh = kernel protection; state-freshness.sh = disk-state freshness + fallback resurfacing of the PreCompact snapshot. PreCompact stays SYNCHRONOUS (snapshot must hit disk BEFORE compaction). CONTEXT GUARD IS NOT REGISTERED HERE, DELIBERATELY: it runs from ONE shared runtime at ~/.claude/context-guard/, registered once in ~/.claude/settings.json (SessionStart restore / UserPromptSubmit gate / PreToolUse tooluse / PostCompact / SessionEnd flush, plus the statusLine). A project owns exactly ONE Context Guard artifact - .claude/context-guard/config.json, the opt-in switch and threshold source. Re-adding project-local context-guard hooks or statusLine here makes the shared runtime stand down and every hook fire twice; scripts/test-onboarding.sh asserts it never comes back. Install/opt in: python3 scripts/install-context-guard.py --project . Verify: bash scripts/test-hooks.sh && python3 ~/.claude/context-guard/verify-install.py --project .",
+  "env": {
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "450000"
+  },
   "permissions": {
     "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run build)",
+      "Bash(npm test)",
+      "Bash(npm run typecheck)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm build)",
+      "Bash(pnpm test)",
+      "Bash(pytest)",
+      "Bash(ruff check *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git log *)",
+      "Bash(docker compose config)",
+      "Bash(docker compose ps)",
+      "Bash(docker compose logs *)",
+      "Bash(systemctl status *)",
+      "WebFetch",
+      "WebSearch",
       "Read",
       "Edit",
       "Write",
       "Glob",
       "Grep",
-      "Bash(*)",
-      "WebSearch",
-      "WebFetch"
+      "Bash(*)"
     ]
   },
   "hooks": {
-    "PreCompact": [
+    "SessionStart": [
       {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/pre-compact.sh"
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/scripts/state-freshness.sh\""
           }
         ]
       }
     ],
-    "PostCompact": [
+    "PreCompact": [
       {
-        "matcher": "",
+        "matcher": "auto",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/post-compact.sh"
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/scripts/precompact-snapshot.sh\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/scripts/guard.sh\""
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/post-tool-checkpoint.sh"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "",
-        "hooks": [
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/scripts/check-claude-md-size.sh\""
+          },
           {
             "type": "command",
-            "command": "bash .claude/hooks/subagent-done.sh"
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/scripts/check-core.sh\""
           }
         ]
       }

@@ -1,0 +1,8 @@
+# Line-ending policy. Earned 2026-08-30: a sheriff-mechanism export left a
+# Windows machine with CRLF endings and every sheriff assertion failed rc=2 on a
+# Linux shell — working code, red gate. Executables must ship LF everywhere.
+*.sh          text eol=lf
+scripts/pre-commit text eol=lf
+*.py          text eol=lf
+# Everything else: git's default text auto-detection.
+* text=auto
