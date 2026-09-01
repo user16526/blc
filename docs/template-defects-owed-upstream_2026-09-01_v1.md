@@ -1,5 +1,12 @@
 # Template defects found during the BLC pre-v8 → v8.3.13 upgrade
 
+> **STATUS 2026-09-01 — CLOSED. Both D1 and D2 were fixed at the canonical template
+> tree and shipped in v8.3.14; BLC took the upstream versions during the v8.3.13 →
+> v8.3.16 upgrade and deleted both local workarounds. Risk R1 is resolved. Kept as
+> the record of the report; the new finding D3 is tracked in `.agent/state/open-loops.md`
+> and `_reports/runs/template-upgrade-v8.3.16_2026-09-01.md`.**
+
+
 Found: 2026-09-01, during the transplant documented in
 `_reports/runs/template-upgrade-run_2026-09-01_1330.md`.
 Both are defects in the **template**, not in BLC. Releases are build products — the

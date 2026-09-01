@@ -1,38 +1,47 @@
 # Current State
-<!-- The ONLY human-readable "what's true now". Mutable. Keep ≤250 lines. -->
-<!-- Compact aggressively: stale lines move to decisions.md / lessons.md / _reports. -->
-<!-- LIVE-SYSTEM FACTS DECAY. Notes here are POINTERS, not evidence. Before acting on any
-     live fact (deployed/published version, external API, provider/cloud config), re-pull it
-     live (scripts/check_live_state.py) and tag it [verified <date> via <tool>]. Newest dated
-     entry wins. See .claude/rules/verify-external-state.md. -->
+<!-- RENDERED VIEW. Authoritative state: current.json, merged only via
+     scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
+     are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-01
+Last updated: 2026-09-01 20:21
 
-## Now working on
-- Nothing active. The project was migrated from its pre-v8 framework to template
-  v8.3.13 (transplant route) and every open decision from that upgrade is closed.
-  Next real task starts fresh under the v8 kernel.
+## Goal
+- Template upgrade BLC v8.3.13 -> v8.3.16 (merge route), verified GREEN and merged to main
 
-## Recently decided (1-liners; full reasoning → decisions.md)
-- 2026-09-01 — migrated pre-v8 → v8.3.13 by transplant; old rules/hooks/skills
-  retired wholesale, project knowledge moved into `.agent/` capsules + state.
-- 2026-09-01 — `git init` done here for the first time; branch `main` holds the
-  pre-upgrade baseline (863ef05) as the rollback.
-- 2026-09-01 — trust-pill price is live data, not a design token; `index4.html` is
-  correct as-is and no mockup was edited.
-- 2026-09-01 — both gaming agents: model sonnet → opus; personas trimmed ~55% by
-  cutting a dead agent-memory instruction block.
-- 2026-05-18 — approved design system for all BLC mockups locked in
-  (`.agent/capsules/mockups-design-system.md`).
+## Constraints
+- SCOPE LIMIT: product/marketing/UI-UX only - never edit BloodyCase application code
+- Upgrades are HIGH-row: checkpoint branch first, rollback = git checkout main
 
-## Don't forget / pending my approval
-- Context Guard IS active here: `.claude/context-guard/config.json` (schema 1,
-  min_runtime 4.2.0) is the opt-in switch, and the shared runtime at
-  `~/.claude/context-guard/` is 4.2.4. Verified 2026-09-01:
-  `python3 ~/.claude/context-guard/verify-install.py --project .` → GREEN.
-  No runtime is copied into this project, and none must be.
-- The state of `mockups/main002/index4.html` vs. what the client last saw is not
-  recorded anywhere — confirm before iterating further.
-- Two template (not BLC) defects are owed upstream:
-  `docs/template-defects-owed-upstream_2026-09-01_v1.md`. One of them is why
-  `scripts/pre-commit` here diverges by one line (risk R1).
+## Verified (evidence, not memory)
+- template_version: v8.3.16
+- core_sha: unchanged ec9f3774 - no kernel change, no re-baseline
+- test_hooks: 146/0 GREEN
+- state_patch_self_test: 9/9 GREEN (needs PYTHONIOENCODING=utf-8 on Windows)
+- sheriff_probe: OK - automation available (toggle off)
+- release_zip_sha256: b967869d... matches shipped .sha256
+
+## Working set
+- Framework only. No product task active - next real BLC task starts fresh under the v8.3.16 kernel.
+- Approved mockup design system locked 2026-05-18: .agent/capsules/mockups-design-system.md
+- Product/domain facts: .agent/capsules/bloodycase-product.md
+
+## Decisions (1-liners; reasoning -> decisions.md)
+- v8.3.13 -> v8.3.16 taken by merge route: same major, CORE byte-identical
+- Local D1 pre-commit divergence and D2 report-format workaround dropped for the shipped fixes (v8.3.14 fixed both at source)
+- Kept ours where the template part was unchanged and only BLC lines were added: .gitignore, docs/ROLES.md, .claude/settings.json
+- D1/D2 are CLOSED upstream in v8.3.14; risk R1 dissolves - no BLC-local template patching
+
+## Failed / rejected (do NOT retry)
+- Local one-line pre-commit exclusion for test-hooks.sh - superseded by the shipped, suite-asserted v8.3.14 fix; do not reintroduce
+- Reporting D1/D2 upstream from inside BLC - releases are build products of the maintainer canonical tree; fixed there in v8.3.14 instead
+
+## Open loops
+- Whether mockups/main002/index4.html matches what the client last saw is unrecorded - confirm before iterating
+- Context Guard: config.json is the opt-in switch (schema 1, min_runtime 4.2.0), shared runtime 4.2.4 - POINTER, re-verify before relying on it
+- D3 owed upstream: state-patch.py --self-test crashes on a default Windows cp1252 console (UnicodeEncodeError on the check-mark)
+
+## Latest evidence
+- _reports/runs/template-upgrade-v8.3.16_2026-09-01.md
+
+## Next (exactly one action)
+- run quality-gate.sh on the upgrade branch

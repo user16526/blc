@@ -93,3 +93,37 @@
   (memory-router targets, the decay rule, and the hard scope limit). All domain
   expertise, the operating framework, the output format and the self-verification
   checklist were kept verbatim — that is the knowledge the transplant exists to carry.
+
+## 2026-09-01 — upgraded template v8.3.13 → v8.3.16 (merge route)
+Artifact `template-v8.3.16-all-in-one.zip`; canonical build `release/v8_3_16.zip`
+sha256-verified against its shipped `.sha256`. Route = merge (§2–5), not transplant:
+same major, every v8 marker present, and `.claude/core.sha` byte-identical between
+FROM and TO — so **no CORE change, no Kernel Change Rationale, no re-baseline**.
+
+**Notable merges/vetoes**
+- *Dropped both BLC workarounds.* v8.3.14 fixed the D1/D2 defects this project
+  reported, at the source. `scripts/pre-commit` and `scripts/quality-gate.sh` are now
+  byte-identical to the template again; **risk R1 is resolved**, not merely mitigated.
+  Proof the D1 fix works: this branch's first commit staged `scripts/test-hooks.sh`
+  with its synthetic secrets and was allowed.
+- *Kept ours* on `.gitignore`, `docs/ROLES.md`, `.claude/settings.json` — in each the
+  template's own content is unchanged and only BLC lines were added, so taking the
+  template would have silently deleted project content, not "updated" the file.
+- *Hand-merged two.* `CLAUDE.md`: the MY RULES ADHD bullet now points at the new
+  `.claude/rules/communication.md` (the template moved the formats into a
+  path-scoped rule; the kernel stays at 213 lines). `.agent/state/context-index.md`:
+  took the `current.json`-authoritative + `state-schema.json` lines, kept the BLC
+  capsule/mockup/client-material pointers.
+- *Adopted, not just installed, the v8.3.16 execution state.* `.agent/state/current.md`
+  is now a RENDERED VIEW of `current.json` — hand-edits there are lost on the next
+  render. Two patches seeded the state from the old `current.md` first, so nothing
+  was dropped in the conversion.
+- *Survival test waived* under §5: the upgrade changes zero BloodyCase deliverable
+  bytes; the 146-assertion suite and the gate run on the post-merge tree instead.
+- *`devops` audit (step 4) deliberately not folded in.* It is overdue on its own
+  35-day cadence, but it is a model/vendor-guide audit, not part of this file merge —
+  it stays a separate task rather than a silent rider on an upgrade.
+
+**New upstream findings** (D3: `state-patch.py --self-test` dies on a Windows cp1252
+console; plus a stray `.env` in the shipped folder, absent from the canonical zip) —
+see `_reports/runs/template-upgrade-v8.3.16_2026-09-01.md`.
