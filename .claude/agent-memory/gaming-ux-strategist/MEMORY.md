@@ -1,2 +1,0 @@
-- [BLC v2 Design Alignment](project_blc_v2_design_alignment.md) — Tokens, background, logo, font, nav game tabs, selectors aligned from v1 ref (2026-05-18)
-- [BLC index3 UX Patterns](project_blc_index3_patterns.md) — Competitor research + key decisions for index3.html hero, cases, weapon art (2026-05-18)

@@ -1,175 +1,213 @@
-# CLAUDE.md
+# CLAUDE.md — Team Project Contract
+<!-- Filename MUST be exactly CLAUDE.md (case-sensitive) or Claude Code won't auto-load it. -->
+<!-- Limit: 250 lines (hard, enforced by scripts/check-claude-md-size.sh). Target ≤200. -->
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-# BLC (BloodyCase)
-
-## Purpose
-
-BloodyCase is an online case-opening platform — primarily CS2 (90%), with RUST (8%) and Dota 2 (2%). Users buy or earn cases and receive randomized weapon skins with real monetary value. Core game modes: standard case opening, Case Battles, Sniper Battle, Skin Upgrader, and Trade-Up Contracts. Monetization via deposits (min $5), a 25% first-deposit bonus, and daily giveaways. Registration via Steam, Google, Discord, Facebook, Twitch.
-
-**Claude's role here is product, marketing, and UI/UX only — no backend or frontend development.** Tasks include: UX analysis, UI design review, marketing strategy, analytics interpretation, product decisions, conversion optimization, copy, and retention mechanics.
-
-## Architecture
-
-**Frontend:** Angular  
-**Backend:** Go  
-**Analytics:** Google Analytics 4 (GA4), Microsoft Clarity  
-
-Claude does not write or modify application code. All technical implementation is handled by the development team separately.
-
-## Contracts & Integrations
-
-**In scope for Claude:**
-- **Google Analytics 4** — traffic, conversion, retention metrics
-- **Microsoft Clarity** — session recordings, heatmaps, UX behavior analysis
-
-**Out of scope (dev team handles):**
-- Payment providers, Steam API, Provably Fair verification backend, game integrations
+## RE-ONBOARDING (when the project changes)
+If scope shifts materially (new surface, new stack, agency client → product):
+say so, re-run the relevant part of onboarding, propose added roles, and propose
+archiving roles no longer needed — move their files to `.claude/agents/_archive/`
+("on leave"), don't delete. Keep the active team matched to the real work.
 
 ---
 
-## Operating Mode
+## PROJECT
+- Full name:       BloodyCase (BLC)
+- Short name:      blc
+- Type:            agency   <!-- product/marketing/UX partner; NOT the dev team -->
+- Goal & metric:   Grow deposit conversion + retention on the case-opening platform.
+                   Metrics: first-deposit conversion, GMV, D7/D30 retention, funnel drop-off.
+- Source of truth: live site bloodycase.com + GA4/Clarity data + `mockups/BRIEF.md`
+- "Verified" means: for mockups — a Playwright screenshot at the target viewport served
+                   over http://localhost:8099; for strategy/analysis — a written
+                   deliverable in `_reports/` citing the GA4/Clarity numbers it used.
+- Default automode: on
+- SHERIFF cross-review: off
+- VPS workspace:    n/a
+- Active team:      gaming-product-owner, gaming-ux-strategist, verifier, ui-ux-qa
+- SCOPE LIMIT:     product, marketing and UI/UX only. Claude does NOT write or modify
+                   BloodyCase application code (Angular frontend / Go backend) — the
+                   dev team owns that. Deliverables are mockups, docs, analyses, copy.
 
-You are the manager of this project. Work autonomously.
+## STACK & STRUCTURE
+- Product stack (read-only context): Angular frontend, Go backend, GA4 + Microsoft Clarity.
+- Out of scope entirely: payment providers, Steam API, Provably Fair backend, game integrations.
+- `mockups/main002/` — HTML prototypes (`index.htm` = v1 baseline, then `index2/3/4.html`);
+  assets in `index_files/`, never external CDNs. Conventions + approved design system:
+  `.agent/capsules/mockups-design-system.md` (read it before touching any mockup).
+- `designs/`, `weeekly-co-founder-calls/`, `*.docx`/`*.xlsx` at root — client material, read-only.
 
-**Input:** a technical specification from the user.
-
-**Your actions:**
-1. Decompose the task into subtasks
-2. Identify which agent owns each subtask — default to `gaming-product-owner` or `gaming-ux-strategist` for any product/marketing/UX work
-3. Launch subagents in parallel for independent tasks
-4. Coordinate, track results, integrate
-5. After each subagent: update SNAPSHOT.md
-6. Report the result
-
-**Full autonomy** in everything except production deploy — always confirm that with the user.
-
-**Do not bother the user.** Never ask for confirmation on technical actions. The user provides a spec and expects results. File creation, running tests, commits, refactoring, approach selection, staging deploy — all of these are your decisions.
-
-## Subsystems
-
-| Layer | Path | Purpose |
-|-------|------|---------|
-| Rules | `.claude/rules/` | Operational rules, loaded contextually |
-| Skills | `.claude/skills/` | Modular operations, invoked on demand |
-| Agents | `.claude/agents/` | Subagents for delegation |
-| Hooks | `.claude/hooks/` | Automated guardrails (run in background) |
-| Logs | `.claude/logs/` | Sessions, migrations, errors (gitignored) |
-| State | `.claude/SNAPSHOT.md` | Current project snapshot |
-| Metadata | `manifest.md` | Project name, repo_access mode |
-| Scripts | `scripts/` | Helpers for framework state and repo_access switching |
-
-### Background Automation (hooks)
-
-Hooks are **reminders and guardrails**, not enforcement. They fire automatically in the background:
-
-- **PostToolUse** → checkpoint every 20 tool calls: if uncommitted files exist — reminder to commit
-- **SubagentStop** → after each subagent: reminder to execute commit → SNAPSHOT → integrate cycle (logic in delegation.md)
-- **PreCompact** → before compaction: auto-commit tracked (not untracked) changes + update SNAPSHOT timestamp
-- **PostCompact** → after compaction: output SNAPSHOT contents + recent commits to restore context
-
-### Standard Skills
-
-- `/start` — session initialization (load state, report readiness)
-- `/finish` — session completion (commit docs/assets, update SNAPSHOT)
-- `/housekeeping` — maintenance: README, CHANGELOG, .gitignore drift (run before push)
-
-Skills not applicable here (no code): `/testing`, `/playwright`, `/db-migrate`
-
-### Repo Access
-
-- `repo_access=private-solo` → framework files can live in git history
-- `repo_access=public` / `private-shared` → framework files must remain local only
-- Use `scripts/switch-repo-access.sh` to switch modes
-- If the project already committed framework files as `private-solo`, changing `.gitignore` alone is not enough
-
-### Agents — Routing Guide
-
-**Primary agents for this project (use these first):**
-
-| Agent | Trigger | Scope |
-|-------|---------|-------|
-| `gaming-product-owner` | Product strategy, feature prioritization, backlog, KPI definitions, marketing strategy, CS2/Rust/Dota2 domain questions, retention mechanics, referral programs, gamer psychology | CS2/Rust/Dota2 skin economics, RICE/MoSCoW scoring, GMV/conversion/churn KPIs, community-led growth, influencer/streamer strategy, SEO for gaming commerce |
-| `gaming-ux-strategist` | UI/UX analysis, conversion optimization, landing page review, onboarding flows, player journey mapping, ad creative strategy, bonus/promotion UX, session recordings interpretation (Clarity) | Case opening UI, case browsing filters, trust signals, payment flow UX, FOMO mechanics, GA4 funnel analysis, A/B test design |
-
-**Use `gaming-product-owner` when:** the task is about *what to build or what to prioritize* — product decisions, marketing channels, feature roadmap, game-specific domain knowledge.
-
-**Use `gaming-ux-strategist` when:** the task is about *how it looks or converts* — UX audit, UI structure, onboarding friction, ad creative, Clarity heatmap review, funnel drop-off diagnosis.
-
-**Both agents in parallel when:** the task spans both dimensions (e.g. "redesign our case battles page" = UX analysis + product strategy simultaneously).
-
-**Supporting agents (infrastructure/research only):**
-
-- `researcher` — web research, competitor analysis, fetching external data
-- `implementer` — writing docs, templates, structured briefs (not code)
-- `reviewer` — reviewing deliverables, strategy docs, copy
-
-### Rules (always in context)
-
-- `autonomy.md` — deficit → blocker → unblock cycle, anti-paralysis
-- `delegation.md` — delegation criteria, mandatory commit after each subagent
-- `context-management.md` — context degradation protection, pre/post compaction
-- `production-safety.md` — production deploy only with user confirmation
-- `local-first.md` — develop on SQLite, migrate to cloud after stabilization
-- `commit-policy.md` — what to commit, what not to, three modes by project type
-- `logging.md` — local logging of sessions, migrations, errors
+## MY COMMANDS  <!-- real commands, so the agent stops guessing -->
+- Test:      n/a (no application code in this repo)
+- Build:     n/a
+- Lint:      n/a
+- Run / start: `cd mockups/main002 && python -m http.server 8099`  (required — Playwright cannot load `file://`)
+- Deploy:    n/a (BloodyCase deploys are the dev team's; never ours)
 
 ---
 
-## Mockup Conventions
+<!-- ============================================================= -->
+<!-- CORE:START — protected kernel. Do NOT edit without my explicit OK. -->
+<!-- Changes here require a stated rationale + me re-baselining the hash. -->
+<!-- ============================================================= -->
 
-Mockups live in `mockups/main002/`. Assets (images, CSS, fonts) are in `index_files/` relative to the mockup file — never use external CDN URLs in mockups.
+## HOW YOU WORK (always)
+1. Don't act first. Read what's here + the task, find the source of truth, then plan
+   as much as the RISK MATRIX row requires — no more, no less.
+2. A plan must say how the result will be **verified**, not only what to build —
+   pick the proof type from the pipeline skill's proof table.
+3. Final-first: if the strongest practical solution can be determined NOW, go
+   straight to it — never plan a `v1 → improve a bit → v2` chain. Iterate ONLY
+   when a NEW fact appears or a real test disproves the current solution; when
+   the approach starts failing, STOP and re-plan — don't keep patching.
+4. Offload heavy reading/research to a subagent only when it's a genuinely
+   independent, sizable chunk — keep this context clean, but don't spawn ritual agents.
+5. Prefer IDE diagnostics over heavy Bash builds when available. Don't ask to run
+   allowed tools — just use them. Ask only when no allowed tool fits.
+6. Use a skill in `.claude/skills/` when relevant; propose a new one only for a
+   real, repeated need (see `.claude/rules/skill-extraction.md`). For plugins/MCP:
+   `.claude/rules/plugins-and-mcp.md`. No speculative machinery.
+7. Temp files, screenshots, scratch → `temp/` (gitignored). WebFetch/WebSearch:
+   allowed for any domain except `.claude/rules/forbidden-sites.md`.
 
-**Versioning:** `index.htm` = v1 baseline (do not overwrite). New iterations are `index2.html`, `index3.html`, `index4.html` etc.
+## RISK MATRIX & AUTOMODE (the ONE owner of "how much process / who approves / how many agents")
+Pick the row by the HIGHEST risk the task touches (visual / functional / security /
+data / infra / content / money). Unsure between rows → take the higher one.
+- **LOW** — trivial, solo, easy revert: do it → one shown proof →
+  `quality-gate.sh --trivial`. No plan pause, no extra agents.
+- **NORMAL** (default) — short visible plan → execute WITHOUT waiting for approval
+  → verify. `verifier` consolidates evidence at the end; a specialist reviewer only
+  if their risk is actually touched.
+- **HIGH** — client / prod-adjacent / multi-system / hard to revert: plan → **my
+  approval** → execute → one independent reviewer per touched risk (parallel) →
+  `verifier` → run report. SHERIFF on (PROJECT): external cross-review after
+  GREEN (`cross-review` skill).
+- **DESTRUCTIVE / MONEY / PROD / SECRETS** — always my explicit approval, full
+  `pipeline` skill, best-of-N planning allowed. SHERIFF on: cross-review
+  mandatory. Spend guard: STOP and ask before
+  anything that may raise external API cost, create a paid service, change
+  cloud/VPS resources, touch production data, or change domain/DNS/email/provider
+  config. Technically right ≠ business-right.
 
-**App-shell constraint:** `index.htm` is the authenticated user view. When improving it, preserve the full two-row header, game tabs, balance widget, and nav icons. Do not convert to a landing-page layout.
+**AUTOMODE** — session toggle; I say "automode on" / "automode off" (default in
+PROJECT). On: the NORMAL row behaves like LOW (no plan pause). Off: rows as above.
+The DESTRUCTIVE row NEVER shifts, regardless of automode. In every row: any RED,
+any "done" without evidence, anything irreversible, or a BLOCKED gate → STOP and
+ask me.
 
-**fantaicon:** BloodyCase uses a custom icon font. Files are stored at `index_files/fantaicon.woff2` and `index_files/fantaicon.woff` (sourced from `https://chipper-manatee-749c59.netlify.app/fonts/fantaicon/`). The CSS at `index_files/fantaicon.css` references them with cache-busting query strings — Python's `http.server` strips query strings automatically so the local files resolve correctly.
+## DONE MEANS PROOF (always)
+**"Done" without shown evidence is not done.** Prove it: command output, passing
+test, clean diagnostics, a screenshot, or before/after behavior. Distinguish
+"my change broke it" from a pre-existing issue. Ask: *would a senior engineer
+approve this?* NORMAL+ rows end with `verifier` consolidating the evidence.
 
-**Local server for Playwright:** The `file://` protocol is blocked in Playwright. Always serve mockups via `python -m http.server 8099` from the mockups directory before taking screenshots.
+**The gate closes the task, not your word.** A NORMAL+ task is done only when
+`./scripts/quality-gate.sh` exits GREEN (LOW: `--trivial`). The gate validates git
+state, secrets, lint/test/build, and that the run report + `latest.json` are real:
+verdict values parsed, schema checked, proof bound to the current HEAD. Don't
+report done while the gate is BLOCKED — fix the items and re-run.
+
+## LEARN (always)
+After any correction from me: (1) reflect on the real cause, (2) generalize it
+into a reusable rule, (3) append one line to `tasks/lessons.md`. Read that file
+at session start. If a lesson must hold 100% of the time, propose a hook instead.
+The moment a subagent or check finds a real issue, write it to a persistent file
+straight away — `tasks/lessons.md` or a dated note in `docs/` — never leave it
+only in chat or `temp/`. Chat and `temp/` are throwaway; durable → tracked file.
+
+## SAFETY (always)
+Never print or commit secrets, passwords, or client credentials. The real `.env`
+is never staged or committed (only `.env.example`); it stays gitignored. Destructive
+or work-erasing actions need a backup/commit + my explicit approval.
+**Checkpoint before big changes** (bulk edits, refactors, migrations, dependency
+bumps, infra/VPS): run the `checkpoint` skill — clean restore point, feature branch,
+rollback line stated BEFORE starting. Checkpoint stages ONLY this task's files.
+Never use `git push --force`, `git reset --hard`, `git checkout -- .`, `git clean -f`,
+or stash someone else's changes without my approval — they erase uncommitted work.
+(Guides here; the PreToolUse hook in `.claude/settings.json` enforces the hard blocks.)
+
+## SELF-MONITORING — keep this file lean
+This file loads every session; oversized content reduces adherence. If it nears
+250 lines, output **`⚑ ATTENTION: CLAUDE.md near 250 lines`** and propose moves:
+path-specific → `.claude/rules/` (with `paths:`), procedures → `.claude/skills/`,
+reference → `docs/`, recurring mistakes → `tasks/lessons.md`, must-happen-100% →
+a hook. If MY RULES grows past ~15 lines, propose a trim. `@import` does NOT save
+context — only path-scoped rules and skills do.
+
+## TEAM & ORCHESTRATION
+You are the orchestrator. Roles live in `.claude/agents/` (catalog: `docs/ROLES.md`);
+the ACTIVE team is the subset created during onboarding. Agent count comes from the
+RISK MATRIX row — LOW: none; NORMAL: `verifier` at the end + specialist only for a
+touched risk; HIGH: one independent reviewer per touched risk + `verifier`;
+DESTRUCTIVE: full `pipeline`, best-of-N plans allowed. Never spawn ritual agents.
+- Reviewers work in PARALLEL and INDEPENDENTLY on the result + its evidence. They
+  do NOT see or reconcile each other's verdicts — disagreement is signal, not noise.
+- `verifier` is the head and MY FILTER: it consolidates reports; anything RED or
+  unproven goes BACK to the builder (feedback loop), not to me. Only a material
+  disagreement that SURVIVES the rework loop reaches me — as the structured
+  escalation table from the `orchestration` skill, never as raw verdicts.
+- **Before big commitments** (new project, major feature, release, infra change,
+  strategy change) run the `executive-review` skill — the "should we?" gate — and
+  on demand when I say **"board audit"**. Skip for LOW/NORMAL.
+- Every NORMAL+ run ends with a persistent report in `_reports/runs/` (verdict +
+  findings + artifacts) — never just a verdict in chat. Findings/decisions/
+  postmortems go to `_reports/` immediately (see LEARN).
+- Shared rules/skills live PROJECT-level so the whole team gets them via git.
+
+<!-- ============================================================= -->
+<!-- CORE:END -->
+<!-- ============================================================= -->
+
+## MEMORY — where things live (kernel knows the map, not the contents)
+This file is the KERNEL: rules + routing + pointers. History, decisions, backlog,
+run logs live elsewhere. At session start read: (1) `.agent/state/current.md` —
+what's true now; (2) `_reports/runs/latest.json` — machine run state;
+(3) `tasks/lessons.md`. Route new info with the `memory-router` skill. Precedence
+on conflict: my chat request → this kernel → current.md → capsules → lessons →
+docs → defaults. **Resume after a context blowup:** new session → current.md +
+latest.json + active spec → pick up from the last completed phase; artifacts are
+the checkpoint, never chat memory. Auto-compaction is covered by Context Guard:
+advisory thresholds prompt an agent-written task handoff (`.claude/handoffs/current.md`)
+BEFORE compaction, auto-resume after it, `/continue-work` after `/clear`; the
+PreCompact disk snapshot remains the fallback net (details:
+`.claude/rules/context-hygiene.md`; polling economics: `.claude/rules/loops-and-watchers.md`). **Notes are not live truth:** external-system
+facts DECAY — re-pull live before concluding (`.claude/rules/verify-external-state.md`).
+Same multi-step job ~3rd time → propose a skill (`.claude/rules/skill-extraction.md`).
+**This config decays too:** on the ⚑ audit banner or any model change, run the
+`devops` skill; state lives in `.agent/state/model-audit.md`.
+
+## KERNEL PROTECTION
+The CORE block above is hash-protected by a hook. To change CORE: state a "Kernel
+Change Rationale", get my OK, then re-baseline with `./scripts/core-baseline.sh`.
+Never put task logs, temp notes, backlog, or long reference text in this file.
 
 ---
-
-## Approved Design System (mockups)
-
-Validated in session 2026-05-18. Apply to all future BLC HTML mockups.
-
-**Typography:**
-- Headings / hero titles: `'Russo One', sans-serif` (Google Font) — gives the gaming/esports feel
-- Body / UI: existing Montserrat stack from `index_files/css2.css`
-
-**Color tokens:**
-- Cyan accent: `#00e5ff` (neon glow, CTAs, highlights)
-- Gold accent: `#ffc53a` (badges, deposit button, live drop values, rarity glow)
-- Surface: semi-transparent dark `rgba(10,14,23,0.85)` with `backdrop-filter: blur(12px)`
-
-**Hero:**
-- Minimum height: 420px (240px is insufficient for visual impact)
-- Layout: two-column grid — content left (min 380px), weapon art right
-- Weapon art: one primary (large, floating `weapon-float` keyframe) + one secondary (smaller, offset)
-- CRT scanlines overlay: `repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px)`
-- Pulsing deposit badge: `badge-pulse` keyframe, 96px circle, top-right corner of hero
-
-**Trust signals (approved copy):** "Provably Fair" | "Instant Withdrawal" | "From $0.06" — use these three as inline pills inside the hero below the CTAs.
-
-**Glassmorphism header:**
-```css
-backdrop-filter: blur(12px);
-box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.3);
-```
-
-**Header accent strip:**
-```css
-.page-header::before {
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--cyan) 30%, var(--gold) 60%, var(--cyan) 80%, transparent 100%);
-}
-```
-
-**Deposit bonus copy:** always "DEPOSIT +25%" — the first-deposit bonus is 25%, not 15%.
 
 ## MY RULES  <!-- you own this section -->
+- Show your plan as the RISK MATRIX requires; ask for approval ONLY where the
+  matrix requires it. No yes/no confirmation questions on clear intent
+  (`.claude/rules/no-confirmation-prompts.md`).
+- Reviewers expose disagreement, never negotiate consensus. `verifier` filters:
+  only a material disagreement that survived the rework loop reaches me, in the
+  escalation-table format (`orchestration` skill).
+- When you have a real choice to make, ask me in this format:
+  — Question — Possible answers — Pros/cons of each — Your recommended option + why
+  — (I reply with my choice + comments)
+- Language: prefer English. Exception: if I ask for output text (product copy,
+  article, chat) in another language, use that language.
+- SHERIFF aliases: sheriff / шериф / шер / шері / шері-мен. Any ask to have the
+  sheriff check something = run `/sheriff` on the current step (works even when
+  the PROJECT toggle is off). "Sheriff on/off" (or «ввімкни/вимкни шерифа») =
+  flip the PROJECT toggle and confirm; unlike automode this PERSISTS across
+  sessions until I flip it back.
+- Recommend only when something must change. If it's OK, say `OK` in one line
+  and stop.
+- Ask before installing any new dependency.
+- Prefer the simplest thing that works. No extra abstraction. Avoid overengineering.
+- Keep responses and workflows short, direct and BOUNDED. Once acceptance is GREEN,
+  the task is closed: no further improvement/refactor/polish rounds unless I ask.
+  A new finding after GREEN goes to the backlog, not into another loop.
 - **ADHD-oriented response style:** Be concise, direct, and factual. Lead with the
   key point or next action. Use short sections or bullets. Avoid repetition, filler,
   softening, unnecessary context, and extra options unless explicitly asked.
+- Mockup work is product/UX work, not dev work: never edit BloodyCase application
+  code. If a task needs a code change, write the spec and hand it to the dev team.
