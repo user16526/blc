@@ -3,10 +3,10 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-01 20:21
+Last updated: 2026-09-01 20:26
 
 ## Goal
-- Template upgrade BLC v8.3.13 -> v8.3.16 (merge route), verified GREEN and merged to main
+- BLC framework is on template v8.3.16; no product task active
 
 ## Constraints
 - SCOPE LIMIT: product/marketing/UI-UX only - never edit BloodyCase application code
@@ -30,6 +30,7 @@ Last updated: 2026-09-01 20:21
 - Local D1 pre-commit divergence and D2 report-format workaround dropped for the shipped fixes (v8.3.14 fixed both at source)
 - Kept ours where the template part was unchanged and only BLC lines were added: .gitignore, docs/ROLES.md, .claude/settings.json
 - D1/D2 are CLOSED upstream in v8.3.14; risk R1 dissolves - no BLC-local template patching
+- Merged to main as 659e4fe; gate GREEN on the merged tree
 
 ## Failed / rejected (do NOT retry)
 - Local one-line pre-commit exclusion for test-hooks.sh - superseded by the shipped, suite-asserted v8.3.14 fix; do not reintroduce
@@ -41,7 +42,7 @@ Last updated: 2026-09-01 20:21
 - D3 owed upstream: state-patch.py --self-test crashes on a default Windows cp1252 console (UnicodeEncodeError on the check-mark)
 
 ## Latest evidence
-- _reports/runs/template-upgrade-v8.3.16_2026-09-01.md
+- _reports/runs/template-upgrade-v8.3.16_2026-09-01.md (gate GREEN on merge commit 659e4fe)
 
 ## Next (exactly one action)
-- run quality-gate.sh on the upgrade branch
+- Start the next BLC product/UX task, or run the overdue devops audit
