@@ -17,7 +17,8 @@
       the owner's, and the wrapper folder now diffs EMPTY against it (108 == 108,
       no `.env`, no `handoffs/`).
 
-- [ ] **Take template v8.3.17 on the normal cadence** (owner: no urgency — our
+- [ ] **Take template v8.3.19 on the normal cadence** (was v8.3.17; v8.3.18 docs-only,
+      v8.3.19 adds `scripts/release-check.sh`; none security-relevant — audit 2026-09-01) (owner: no urgency — our
       v8.3.16 tree is functionally unaffected by both fixes). Merge is scoped and
       near-trivial, measured not guessed: the only template-owned deltas are
       `scripts/state-patch.py` (a 10-line utf-8 header), `CHANGELOG.md` and
@@ -26,9 +27,11 @@
       NOTE until then: on THIS tree `--self-test` still needs `PYTHONIOENCODING=utf-8`
       — the fix ships in v8.3.17, which we have not taken yet.
 
-- [ ] `devops` audit is overdue (35d cadence, flagged by the SessionStart hook).
-      Deliberately NOT folded into this upgrade — it is a model/vendor-guide audit,
-      not a file merge. State: `.agent/state/model-audit.md`.
+- [x] `devops` audit — DONE 2026-09-01 (Fable 5.1 guide + template freshness).
+      YELLOW, six proposed edits F9-F14 (none CORE) await the owner's apply/veto:
+      `docs/model-audit-recommendations_2026-09-01_2301_v1.md`.
+- [ ] Resolve F9-F14 (apply or veto with reason) — the audit rule says a YELLOW
+      must end in a resolution decision, never only a doc.
 
 - [ ] Confirm whether `mockups/main002/index4.html` matches what the client last saw
       before iterating on it — unrecorded anywhere.

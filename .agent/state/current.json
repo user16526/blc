@@ -10,7 +10,9 @@
     "test_hooks": "146/0 GREEN",
     "state_patch_self_test": "9/9 GREEN (needs PYTHONIOENCODING=utf-8 on Windows)",
     "sheriff_probe": "OK - automation available (toggle off)",
-    "release_zip_sha256": "b967869d... matches shipped .sha256"
+    "release_zip_sha256": "b967869d... matches shipped .sha256",
+    "devops_audit": "2026-09-01 vs Fable 5.1 guide - YELLOW, F9-F14 proposed, none CORE; harness 146/0, gate GREEN at 3a84df6",
+    "template_newest_release": "v8.3.19 (2026-09-01) - not security-relevant; TEMPLATE_VERSION still v8.3.16"
   },
   "working_set": [
     "Framework only. No product task active - next real BLC task starts fresh under the v8.3.16 kernel.",
@@ -23,22 +25,23 @@
     "Kept ours where the template part was unchanged and only BLC lines were added: .gitignore, docs/ROLES.md, .claude/settings.json",
     "D1/D2 are CLOSED upstream in v8.3.14; risk R1 dissolves - no BLC-local template patching",
     "Merged to main as 659e4fe; gate GREEN on the merged tree",
-    "D3/D4 SHIPPED UPSTREAM in v8.3.17 (canonical zip sha256 415594db, verified here against the artifact); upgrade queued not taken - owner set normal cadence"
+    "D3/D4 SHIPPED UPSTREAM in v8.3.17 (canonical zip sha256 415594db, verified here against the artifact); upgrade queued not taken - owner set normal cadence",
+    "Devops audit 2026-09-01: lineup moved Fable 5 -> Fable 5.1; F5 (opus/sonnet cost table) closed - aliases and prices still valid, effort is the cheaper lever"
   ],
   "failed_rejected": [
     "Local one-line pre-commit exclusion for test-hooks.sh - superseded by the shipped, suite-asserted v8.3.14 fix; do not reintroduce",
     "Reporting D1/D2 upstream from inside BLC - releases are build products of the maintainer canonical tree; fixed there in v8.3.14 instead"
   ],
   "open_loops": [
-    "Take template v8.3.17 on the normal cadence - near-trivial merge, scope measured: state-patch.py header + CHANGELOG.md + TEMPLATE_VERSION",
-    "devops audit is PAST cadence - owner asked for it before the next long job (.agent/state/model-audit.md)",
+    "Resolve audit findings F9-F14: owner apply/veto per line (docs/model-audit-recommendations_2026-09-01_2301_v1.md)",
+    "Take template v8.3.19 on the normal cadence (supersedes v8.3.17) - HIGH row, own task, checkpoint first",
     "Confirm whether mockups/main002/index4.html matches what the client last saw before iterating",
     "Context Guard: config.json is the opt-in switch, shared runtime 4.2.4 - POINTER, re-pull before relying on it"
   ],
-  "latest_evidence": "_reports/runs/template-upgrade-v8.3.16_2026-09-01.md (gate GREEN on merge commit 659e4fe)",
-  "next": "Run the overdue devops audit before the next long job (owner: past cadence)",
+  "latest_evidence": "docs/model-audit-recommendations_2026-09-01_2301_v1.md (audit YELLOW, awaiting resolution)",
+  "next": "Owner resolves F9-F14 (apply/veto); then apply the approved edits and run the v8.3.19 upgrade as the survival test",
   "meta": {
-    "last_patch": "2026-09-01T20:38:41",
-    "patch_count": 4
+    "last_patch": "2026-09-01T23:04:13",
+    "patch_count": 5
   }
 }
