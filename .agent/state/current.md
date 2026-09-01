@@ -3,10 +3,10 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-02 00:36
+Last updated: 2026-09-02 00:44
 
 ## Goal
-- Remote BloodyCase Postgres reachable read-only from Claude Code via SSH tunnel + Postgres MCP (restricted) - DONE, in daily use
+- Happy Hour A/B test (BloodyCase) resumed in BLC: design + blockers restored from the remote host's Claude memory into .agent/capsules/happy-hour-ab-test.md; next step is the owner's pick among the 6 open blockers
 
 ## Constraints
 - SCOPE LIMIT: product/marketing/UI-UX only - never edit BloodyCase application code
@@ -24,6 +24,7 @@ Last updated: 2026-09-02 00:36
 - pg_tunnel_scripts: scripts/pg-tunnel.ps1 + pg-mcp-register.ps1 + Read-DotEnv.ps1 parse clean (PS 5.1), fail loudly without .env keys; claude mcp add/remove dry-run OK with dummy URI; uvx --with mcp<2 postgres-mcp --help exit 0 [2026-09-01]
 - pg_tunnel_e2e: ssh key auth sparrow@168.119.74.101 OK; host bloodyanalytics02 runs Postgres 18 on 5432, db bloody; tunnel up -> localhost:5432 TcpTestSucceeded; claude mcp get postgres = Connected (restricted mode) [2026-09-02 via scripts/pg-tunnel.ps1 + pg-mcp-register.ps1]
 - mcpb_command: .claude/commands/mcpb.md registered as /mcpb; scripts/pg-tunnel-ensure.ps1 starts the tunnel in a minimized window when 5432 is closed and reports UP when it is [2026-09-02]
+- happy_hour_restore: remote memory happy_hour_ab_test.md (last real work 2026-08-27) + docs/features/happy-hour-backend.md pulled read-only from sparrow@168.119.74.101; host sessions 2026-08-31 and 2026-09-01 were restores only, no new decisions [2026-09-02]
 
 ## Working set
 - Framework only. No product task active - next real BLC task starts fresh under the v8.3.16 kernel.
@@ -54,9 +55,10 @@ Last updated: 2026-09-02 00:36
 - Context Guard: config.json is the opt-in switch, shared runtime 4.2.4 - POINTER, re-pull before relying on it
 - Postgres MCP: ask dev team for a read-only DB role (claude_ro) instead of the app user - SQL in docs/pg-tunnel.md
 - /mcpb first live run owed: MCP tools were not loaded in the session that built it (server registered after launch); schema capsule not yet written
+- Happy Hour blockers 1-6 listed in .agent/capsules/happy-hour-ab-test.md; #1 (standing first-deposit bonus %) gates the prize design; #3 (prize_cost logging semantics) gates the metric
 
 ## Latest evidence
 - _reports/runs/template-upgrade-v8.3.19_2026-09-01.md (gate GREEN on merge commit 27b43e7)
 
 ## Next (exactly one action)
-- Owner: restart Claude Code (or /mcp -> reconnect postgres), then run /mcpb schema to build .agent/capsules/blc-db-schema.md
+- Owner picks the Happy Hour blocker to work first (recommended: #1 obtain the standing first-deposit bonus % - it decides whether Deposit Bonus is a no-op for new clients)
