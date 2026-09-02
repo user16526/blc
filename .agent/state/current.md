@@ -3,7 +3,7 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-02 02:26
+Last updated: 2026-09-02 08:47
 
 ## Goal
 - Happy Hour A/B test (BloodyCase) resumed in BLC: design + blockers restored from the remote host's Claude memory into .agent/capsules/happy-hour-ab-test.md; next step is the owner's pick among the 6 open blockers
@@ -18,7 +18,7 @@ Last updated: 2026-09-02 02:26
 - test_hooks: 146/0 GREEN on the v8.3.21 tree [2026-09-02]
 - state_patch_self_test: GREEN under default console, utf-8 and cp1252 - D3 closed on this tree
 - sheriff_probe: OK - automation available (toggle off)
-- release_zip_sha256: v8_3_21.zip sha256 c93041a8... computed here - NO .sha256 companion shipped, unverified against a published value
+- release_zip_sha256: v8_3_21.zip sha256 c93041a8... - companion v8_3_21.sha256 generated LOCALLY 2026-09-02 (tamper-evidence, not canonical provenance)
 - devops_audit: 2026-09-01 vs Fable 5.1 guide - RESOLVED: F9-F14 applied (owner), suite 146/0; sheriff prompt is now a BLC-local canonical divergence (decisions.md)
 - template_newest_release: v8.3.21 (2026-09-02) - docs/comment-only gap from v8.3.19; TAKEN, TEMPLATE_VERSION = v8.3.21
 - pg_tunnel_scripts: scripts/pg-tunnel.ps1 + pg-mcp-register.ps1 + Read-DotEnv.ps1 parse clean (PS 5.1), fail loudly without .env keys; claude mcp add/remove dry-run OK with dummy URI; uvx --with mcp<2 postgres-mcp --help exit 0 [2026-09-01]
@@ -52,7 +52,6 @@ Last updated: 2026-09-02 02:26
 
 ## Open loops
 - Survival test for v8.3.19 + the F9-F14 edits = the next BLC task end-to-end
-- Owner deletes temp/template-new and temp/template-old (guard blocks recursive deletes from the agent)
 - Confirm whether mockups/main002/index4.html matches what the client last saw - not derivable from the repo (only in baseline commit 863ef05, no call note names it); owner must say
 - Sheriff prompt divergence (no severity floor, sentinel No findings.) owed upstream at the next template build
 - Context Guard: config.json is the opt-in switch, shared runtime 4.2.4 - POINTER, re-pull before relying on it
@@ -61,7 +60,6 @@ Last updated: 2026-09-02 02:26
 - Happy Hour blockers 1-6 listed in .agent/capsules/happy-hour-ab-test.md; #1 (standing first-deposit bonus %) gates the prize design; #3 (prize_cost logging semantics) gates the metric
 - Happy Hour: reply to eugene_s owed (logged-in-only OK; tracking additions; prod switch date; day-21 stop)
 - /mcpb first live run DONE 2026-09-02; schema capsule .agent/capsules/blc-db-schema.md started (deposits only) - extend on next query
-- v8_3_21.zip shipped without a .sha256 companion - owner publishes/compares one (hash in run report); decisions.md 2026-08-30 seed line still names a field project (template aliased it to A) - project-owned, owner decides
 
 ## Latest evidence
 - _reports/runs/template-upgrade-v8.3.19_2026-09-01.md (gate GREEN on merge commit 27b43e7)

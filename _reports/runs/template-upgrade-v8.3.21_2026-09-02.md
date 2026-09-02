@@ -55,17 +55,21 @@
    `orchestration/SKILL.md`, both sheriff files). Sheriff files: the BLC-local
    prompt divergence is recorded canonical in `decisions.md`; the template's
    copies did not move, so nothing new to reconcile.
-3. 🟡 **`decisions.md` seed line still names a field project.** The template's
+3. 🟢 **`decisions.md` seed line aliased (closed on owner's "finish all").** The template's
    own `decisions.md` renamed its 2026-08-30 seed line ("… copy from
    hermipro-vps" → "field project A"). Our copy is project-owned
    (preserve/append only) and BLC is itself one of the referenced field
-   projects, so the line was left as is. Cosmetic; owner's call whether to
-   apply the alias inside a field project.
-4. 🟡 **No `.sha256` companion for `v8_3_21.zip`.** `update-new.txt` step 1
+   projects; on the owner's "finish all" the template alias ("field project A")
+   was applied to that one seed line. No other field-project name remains in
+   tracked `.md` files.
+4. 🟡 **No `.sha256` companion shipped for `v8_3_21.zip` — one written locally.** `update-new.txt` step 1
    says to verify it before unpacking; none exists in the release folder. The
    hash computed here is recorded above so the owner can compare it against
    the canonical tree's `release-check.sh` output. Upgrade proceeded because
    the zip's content matches the v8.3.21 CHANGELOG exactly (file-level diff).
+   On "finish all": `v8_3_21.sha256` was generated HERE from the zip and
+   written beside it (`sha256sum -c` OK). It is tamper-evidence from now on,
+   NOT provenance — no canonical tree exists on this machine to compare against.
 5. 🟢 **UPGRADE.md §4 devops audit — satisfied by the 2026-09-01 audit, not
    re-run.** The audit is 1 day old against the current Fable 5.1 guide, the
    delta names no crutches to cut, and no instruction text changed in the
@@ -97,16 +101,16 @@
   byte-identical to the old template, so no project content was lost). Its
   one open follow-up (secret-patterns hardening candidate) lives in the
   v8.3.21 CHANGELOG entry now carried in this repo.
-- `temp/template-new/` and `temp/template-old/` left for the owner to delete:
-  the guard blocks recursive deletes from the agent session.
+- `temp/template-new/` and `temp/template-old/` deleted on the owner's explicit
+  "finish all" (plain `rm -r`, gitignored copies; source zips remain).
 - Merged to `main` in the same run on the owner's unattended go-ahead; the
   upgrade branch is kept as the rollback point.
 
 ## Next steps
-- [ ] Owner: delete the two gitignored scratch folders `temp/template-new`
-      and `temp/template-old` (recursive delete, agent-blocked by the guard)
-- [ ] Owner: publish/compare a `.sha256` for `v8_3_21.zip` (finding 4)
-- [ ] Owner: decide on the `decisions.md` seed-line alias (finding 3)
+- [x] Scratch folders deleted (owner go-ahead "finish all")
+- [x] `v8_3_21.sha256` written locally (finding 4) — compare against the
+      canonical tree when next at hand
+- [x] `decisions.md` seed-line alias applied (finding 3)
 - [ ] Next devops audit (cadence 35d, last 2026-09-01) re-checks the lineup
 
 ## Artifacts

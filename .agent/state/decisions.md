@@ -18,7 +18,7 @@
   re-check this mapping at each devops audit (model-selection.md). To save tokens
   or on a lineup change, edit THIS line only — e.g. ARBITER = Opus 5.
 
-- 2026-08-30 — canonical sheriff wrapper = the field-proven copy from hermipro-vps
+- 2026-08-30 — canonical sheriff wrapper = the field-proven copy from field project A
   (4 review rounds, 9 findings, 0 disputes; exit contract 0/1/3/4/5/6; --author
   API, stdin package). Template converged on it in v8.3.4; provenance:
   docs/sheriff-provenance_2026-08-30_v1.md. Template deltas vs the export: the
@@ -195,3 +195,4 @@ the next template build (field report, not a local patch elsewhere).
   recorded in the run report); the 2026-08-30 sheriff seed line here still names a
   field project (project-owned, left as is). Run report:
   `_reports/runs/template-upgrade-v8.3.21_2026-09-02.md`.
+- 2026-09-02 — "finish all": v8.3.21 owed items closed — scratch template copies deleted (owner go-ahead), `v8_3_21.sha256` generated locally beside the zip (tamper-evidence only; no canonical tree on this machine), the 2026-08-30 seed line above aliased to "field project A" to match the template.
