@@ -119,3 +119,6 @@
 - `.agent/state/current.json` / `current.md` (state patch)
 - `TEMPLATE_VERSION` = v8.3.21
 - `CHANGELOG.md` (v8.3.20 + v8.3.21 entries now in-repo)
+
+## Cross-review
+`cross_review: closed` — SHERIFF (Codex, via `scripts/sheriff-review.sh --author claude`, 2026-09-02) returned 1 finding: [1] Medium — `current.json` `latest_evidence` still pointed at the v8.3.19 report / merge 27b43e7 after v8.3.21 was recorded installed → ✅ fixed by state-patch #16 (now the v8.3.21 report + gated HEAD). No ❌, no arbiter. Wrapper stderr carried a codex-side MCP auth error (GitHub Copilot MCP transport, unrelated to the review); findings were produced normally.

@@ -3,7 +3,7 @@
      scripts/state-patch.py (LLM proposes, script merges). Hand-edits here
      are lost on the next render — patch instead. -->
 
-Last updated: 2026-09-02 08:47
+Last updated: 2026-09-02 09:34
 
 ## Goal
 - Happy Hour A/B test (BloodyCase) resumed in BLC: design + blockers restored from the remote host's Claude memory into .agent/capsules/happy-hour-ab-test.md; next step is the owner's pick among the 6 open blockers
@@ -62,7 +62,7 @@ Last updated: 2026-09-02 08:47
 - /mcpb first live run DONE 2026-09-02; schema capsule .agent/capsules/blc-db-schema.md started (deposits only) - extend on next query
 
 ## Latest evidence
-- _reports/runs/template-upgrade-v8.3.19_2026-09-01.md (gate GREEN on merge commit 27b43e7)
+- template v8.3.21 installed: run report _reports/runs/template-upgrade-v8.3.21_2026-09-02.md, gate GREEN at 1c04166 (main), cross_review closed 2026-09-02 [1 finding, fixed]
 
 ## Next (exactly one action)
 - Owner decides Happy Hour prize design given the 20/25% standing bonus: slots 30%+ for all, or Free Ticket/Coins for new clients + Deposit Bonus for returning; then send the reply to eugene_s
