@@ -43,11 +43,19 @@ it with `python3 ~/.claude/context-guard/verify-install.py --project .`.
 
 The judgment above stays yours; the NUMBERS are automated. Context Guard's
 advisory ladder (1M profile: 200k "work compactly" → 300k write/update the task
-handoff → 400k final handoff refresh → ~450k auto-compaction → automatic resume
+handoff → 400k final handoff refresh → 437k auto-compaction → automatic resume
 from the handoff) fires as one-shot hints; nothing blocks. After `/clear` the
 active handoff is only announced — restoring it requires an explicit
 `/continue-work` (a `/clear` may mean "different task now"). A RUNAWAY backstop
 (~600k) exists solely for the case where auto-compaction physically failed.
+The 437k is not a round number and not ours: compaction fires at the effective
+window minus a 13k reserve, and the effective window is the smaller of
+`CLAUDE_CODE_AUTO_COMPACT_WINDOW` (set in `.claude/settings.json`) and the model
+window.
+The statusline shows USED against that ceiling and marks it `AC` — a denominator
+WITHOUT `AC` is the model window, which means no cap is configured and the real
+trigger is unknown here. Until runtime 4.2.5 the gauge divided by the MODEL
+window instead, so a session at 88% of the real trigger rendered as 38%.
 Thresholds are a starting point, not truth: run
 `python3 ~/.claude/context-guard/analyze-telemetry.py` after ~10-20 long tasks and
 move them where the success/rework data says. Recurring/monitoring work has its
