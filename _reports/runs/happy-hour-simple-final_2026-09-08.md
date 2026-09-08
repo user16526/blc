@@ -16,6 +16,18 @@ Deliverable written, reviewed by three independent passes, all findings closed.
 - `.agent/state/current.json` / `current.md` — patch #22.
 - `tasks/lessons.md` — one lesson (size a test on REACH, not on arm size).
 
+## Inputs
+- Owner request (2026-09-08): "take the SMM/CMO CS2 marketer + data analyst skills, think
+  with the sheriff, write me a very simple final variant"; owner's design: case in the
+  02-05 UTC range, deposit bonus in the 18-21 UTC range, compare deposits.
+- `.agent/capsules/happy-hour-ab-test.md` (design history, backend mechanics, admin-panel
+  prize types verified by screenshot 2026-08-27).
+- `docs/happy-hour-final_2026-09-02_v1.md` (the two-run plan being superseded).
+- `_reports/blc-data_2026-09-02_1830_v1.md` (power/MDE), `_reports/blc-data_2026-09-02_0030_v1.md`
+  (standing deposit bonus tiers), `_reports/happy-hour-test-design-options_2026-09-02_v1.md`.
+- Live DB `bloody` via /mcpb (read-only): `public.client_login_records`, `public.deposits`.
+- `.agent/capsules/blc-db-schema.md` (table map, query constraints).
+
 ## Reviewers (parallel, independent)
 | reviewer | verdict | material contribution |
 |---|---|---|
@@ -45,6 +57,15 @@ The 2026-08-27 admin-panel screenshot already records that the planner offers
 cannot be a prize today. The doc originally treated this as an open question; it is now
 an explicit ⚠ section with three ranked G2 options (Coins > Free Ticket > PromoCode+dev)
 and a go/no-go to eugene_s. Without G2 there is nothing to compare the bonus against.
+
+## Artifacts
+- `docs/happy-hour-simple-final_2026-09-08_v1.md` — the plan (UA), owner-facing.
+- `_reports/blc-data_2026-09-08_reach_v1.md` — reach + exposed-subset power, with SQL.
+- `_reports/runs/happy-hour-simple-final_2026-09-08.md` — this report.
+- `.agent/capsules/happy-hour-ab-test.md` — SUPERSEDING FINAL section.
+- `.agent/state/current.json` + `current.md` — patch #22.
+- `tasks/lessons.md` — one lesson appended.
+- Commit `cabed04` (also lands the four uncommitted 2026-09-02 happy-hour artifacts).
 
 ## Evidence
 - Live DB pulls this run (read-only, via /mcpb): window reach 21 d; depositor cut;
