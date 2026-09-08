@@ -1,5 +1,5 @@
 # Capsule: Happy Hour A/B test (BloodyCase)
-Last updated: 2026-09-02 (dev update from eugene_s added; earlier: restored from the remote host's Claude memory
+Last updated: 2026-09-08 (SUPERSEDING FINAL section below is the current plan; earlier: reply draft for eugene_s: docs/happy-hour-reply-eugene_2026-09-02_v1.md; dev update from eugene_s added; earlier: restored from the remote host's Claude memory
 `~/.claude/projects/-home-sparrow/memory/happy_hour_ab_test.md`, last real work 2026-08-27;
 sessions 2026-08-31 and 2026-09-01 on the host were restores only, no new decisions)
 Owner lens: Product / Growth
@@ -69,12 +69,50 @@ every hour → time of day is not a lever for new vs returning.
    beats the standing bonus for returning clients. Decision still owed: slots 30 %+ or a different prize
    type for new clients (see #2).
 2. Follow-on: give NEW clients Free Ticket / Coins and reserve Deposit Bonus for RETURNING clients?
-3. Unverified with dev: what `prize_won` / `prize_cost` actually log (nominal roll vs applied %).
+3. PARTLY ANSWERED from the backend doc (2026-09-02): `client_happy_hours.prize_won` JSONB stores the NOMINAL
+   roll only (type/weight/amount/case_id); there is no prize-cost column at all. Applied % exists only in
+   `public.deposits.bonus_amount`. Ask dev for a `happy_hour_prize_applied` event or confirm the join path
+   (prize_won + deposits.bonus_amount by client_id/time) and that `group` is persisted in DB.
 4. Habituation: one static prize × 21 days may decay by week 2–3. Proposed: 3–5 bonus % slots now,
    vary composition by WEEK (not day), keep H1/H2 symmetric. Not decided with manager.
 5. No planner end date → manual stop or dev ticket.
 6. CLOSED 2026-09-01: dev implemented the split for logged-in users (see Dev update). Still to confirm: assignment persisted in DB and joinable to deposits by client_id.
 Dev tickets identified: real `Weight` selection; re-enable spin-once check; planner end-date field.
+
+## SUPERSEDING FINAL 2026-09-08 (docs/happy-hour-simple-final_2026-09-08_v1.md)
+The two-run plan below (Run 1 prize + Run 2 timing) is SUPERSEDED. One run only:
+21 days, ONE window **17:00-22:00 UTC** (duration 300, cyclic), three arms
+G0 control / G1 Deposit Bonus 50 % cap $100 (single slot) / G2 one free case $5-10.
+Start >= 2026-09-10, manual stop day 22.
+**Why the timing question is dead, not deferred:** 21-day reach of a window
+(live DB 2026-09-08, `_reports/blc-data_2026-09-08_reach_v1.md`): 02-05 UTC reaches
+7.0 % of 26 551 logged-in clients, 18-21 UTC 20.3 %, 17-22 UTC 32.1 %, 16-23 UTC 42.6 %.
+The 02-05 arm would need ~+79 net-new depositors where its window yields ~37 depositors
+of any kind per 21 days. No prize strength rescues it.
+**Primary metric changed:** depositor rate on the IN-WINDOW EXPOSED subset in all three
+arms (n = 2 843/arm, base 6.62 %, MDE 27.9 % rel / 30.7 % with multiplicity), with the
+arm-level ITT reported alongside as the shipping number. This REQUIRES
+`happy_hour_gate_shown` to fire for the CONTROL arm on the same in-window trigger —
+hard blocker. Guardrail needs no new events: arm differences on capped revenue minus
+arm differences on `deposits.bonus_amount` minus (cases awarded x fixed case cost).
+**Rejected 2026-09-08:** the mixed-pool single-planner fallback — the prize is rolled
+AFTER the qualifying deposit, so it cannot explain that deposit, and one client can draw
+both prizes. If group -> planner routing is impossible, that is a stop-and-replan.
+Reviewed independently by a CS2-CMO agent, a data-analyst agent and SHERIFF (codex);
+5 sheriff findings, all closed in the doc.
+
+## FINAL 2026-09-02 (docs/happy-hour-final_2026-09-02_v1.md): two runs — Run 1 prize test at 18 UTC
+(control / DB 30-40-50 % / case), 3 wk; 1 wk pause; Run 2 timing test with the winner, re-randomized, 3 wk.
+Primary metric = depositor rate + deposits per logged-in client (MDE ~19 % at 3 wk); capped revenue = guardrail.
+Needs dev: group → planner routing at one cron. Reply to eugene_s written in RU in the same file.
+
+## Pending owner decisions (2026-09-02, from the Ukrainian session — resolved by FINAL above unless owner objects)
+D1 prize design: A = Deposit Bonus 30/40/50 % all; B = segmented new/returning (needs dev condition type);
+C = mixed pool for all (DB 30/40/50 % + 1 Free Ticket slot, identical H1/H2) - RECOMMENDED, no dev work.
+D2 prod start after 2026-09-09 (deposit_promotions case 776 ends 09-09). D3 events: prize_won + prize_applied
+with applied_pct and prize_cost delta. D4 habituation: no weekly rotation in run 1.
+Owner's own framing (2026-09-02): 'no Deposit Bonus in one mode, free case in another' - valid only if mode =
+client type (new/returning), NEVER H1 vs H2 (would break the timing isolation).
 
 ## Read when
 - happy hour, HH, deposit bonus, A/B test, H0/H1/H2, planner, prize pool, anti-farm, cannibalization,
