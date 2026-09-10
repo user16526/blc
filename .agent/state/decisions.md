@@ -196,3 +196,13 @@ the next template build (field report, not a local patch elsewhere).
   field project (project-owned, left as is). Run report:
   `_reports/runs/template-upgrade-v8.3.21_2026-09-02.md`.
 - 2026-09-02 — "finish all": v8.3.21 owed items closed — scratch template copies deleted (owner go-ahead), `v8_3_21.sha256` generated locally beside the zip (tamper-evidence only; no canonical tree on this machine), the 2026-08-30 seed line above aliased to "field project A" to match the template.
+
+## 2026-09-10 — Template upgraded v8.3.21 -> v8.3.25 (attended fan-out)
+From devops-local on the owner's instruction ("do not wait for me"). The uncommitted capsule edit
+(`.agent/capsules/blc-db-schema.md`, 2026-09-09: clients/balances/client_items mapped) was parked on
+`wip/2026-09-10` (1f85c21) — NOT on main; merge it when wanted. The two 2026-09-09 reports in
+`_reports/` stay untracked in the checkout. Branch `template-upgrade-v8.3.25` (212d386) cut from main
+aa3b34b: CRLF-normalised 3-way merge, CLAUDE.md FIRST RUN/PROJECT conflicts resolved --ours, CORE
+byte-identical to v8.3.25 (core.sha 96ebc17f…). Gate --trivial GREEN (run in a clean worktree at
+212d386, because the checkout keeps the untracked reports), test-hooks 260/0. No git remote exists,
+so nothing was pushed. — supersedes none.
