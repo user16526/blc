@@ -59,5 +59,6 @@ canonical tree, builds, unpacks the RESULT and proves everything inside that
 unpack — no strays, no Context Guard leak, no rot-able literals, no field-project
 names in entry docs, CHANGELOG == TEMPLATE_VERSION, exec bits via `setup.sh`,
 `test-hooks.sh`, `state-patch.py --self-test` (utf-8 and cp1252), sha256
-companion. The counts live in this version's CHANGELOG entry, not here — a
+companion, and that no artifact reuses an already-published name with different
+bytes. The counts live in this version's CHANGELOG entry, not here — a
 number written here would rot.

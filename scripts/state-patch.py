@@ -46,6 +46,8 @@ for _s in (sys.stdout, sys.stderr):
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE = os.path.join(ROOT, ".agent", "state", "current.json")
 VIEW = os.path.join(ROOT, ".agent", "state", "current.md")
+VIEW_ALT = os.path.join(ROOT, ".agent", "state", "state-view.md")
+RENDER_MARK = "RENDERED VIEW"
 SCHEMA = os.path.join(ROOT, ".agent", "state", "state-schema.json")
 
 FALLBACK_SCHEMA = {
@@ -67,12 +69,24 @@ def load_schema():
         return dict(FALLBACK_SCHEMA)
 
 
-def load_state():
+class StateUnreadable(Exception):
+    """current.json exists but is not a readable JSON object (sheriff [1],
+    2026-09-02): the old code returned EMPTY here, so the next valid patch would
+    have atomically overwritten the authoritative state. Only a MISSING file
+    starts empty; anything else is refused without writing."""
+
+
+def load_state(path=STATE):
     try:
-        with open(STATE, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+    except FileNotFoundError:
         return json.loads(json.dumps(EMPTY))
+    except (OSError, ValueError) as ex:
+        raise StateUnreadable("%s exists but cannot be read as JSON (%s)" % (path, ex))
+    if not isinstance(d, dict):
+        raise StateUnreadable("%s is not a JSON object" % path)
+    return d
 
 
 def type_ok(kind, v):
@@ -81,7 +95,7 @@ def type_ok(kind, v):
             "object": lambda x: isinstance(x, dict)}.get(kind, lambda x: False)(v)
 
 
-def walk_set(state, schema, path, value, errors):
+def walk_set(state, schema, path, value, errors, allow_forget=False):
     parts = [p for p in path.split(".") if p != ""]
     if not parts:
         errors.append("I5: empty path — whole-state replacement is not a patch")
@@ -94,9 +108,15 @@ def walk_set(state, schema, path, value, errors):
         if top == "failed_rejected" and not isinstance(value, list):
             errors.append("failed_rejected is a list; use append")
             return
-        if top == "failed_rejected" and len(value) < len(state.get(top, [])):
-            errors.append("I3: shrinking failed_rejected needs --allow-forget")
-            return
+        if top == "failed_rejected" and not allow_forget:
+            # sheriff [2] (2026-09-02): a length check let an equal-length or longer
+            # list REPLACE every entry. Every existing entry must survive the set.
+            lost = [x for x in state.get(top, []) if x not in value]
+            if lost:
+                errors.append("I3: set on failed_rejected drops %d existing entr%s "
+                              "(%r) — needs --allow-forget"
+                              % (len(lost), "y" if len(lost) == 1 else "ies", lost[0]))
+                return
         if not type_ok(schema[top], value):
             errors.append("I4: %r must be %s" % (top, schema[top]))
             return
@@ -142,7 +162,7 @@ def apply_patch(state, patch, schema, allow_forget=False):
         if k not in ("set", "append", "delete"):
             errors.append("unknown patch section %r" % k)
     for path, value in (patch.get("set") or {}).items():
-        walk_set(state, schema, path, value, errors)
+        walk_set(state, schema, path, value, errors, allow_forget)
     for path, value in (patch.get("append") or {}).items():
         top = path.split(".")[0]
         if top not in schema or schema[top] != "list":
@@ -192,6 +212,21 @@ def render(state):
     return "\n".join(L)
 
 
+def view_target(view=VIEW, alt=VIEW_ALT):
+    """Never overwrite a hand-maintained current.md (field project B, 2026-09-02: the first
+    patch in an EXISTING project replaced a 656-line narrative with a 34-line
+    render). A file without the render marker is the owner's; render beside it."""
+    if os.path.isfile(view):
+        try:
+            with open(view, encoding="utf-8", errors="replace") as f:
+                head = f.read(600)
+        except OSError:
+            return alt
+        if RENDER_MARK not in head:
+            return alt
+    return view
+
+
 def self_test():
     import copy
     schema = dict(FALLBACK_SCHEMA)
@@ -215,6 +250,26 @@ def self_test():
     e = apply_patch(s2, {"append": {"failed_rejected": "approach B"},
                          "set": {"next": "try C"}}, schema)
     t("append to failed_rejected merges", not e and len(s2["failed_rejected"]) == 2)
+    s3 = copy.deepcopy(s2)
+    e = apply_patch(s3, {"set": {"failed_rejected": ["approach X", "approach Y"],
+                                 "next": "x"}}, schema)
+    t("I3 equal-length REPLACE of failed_rejected rejected",
+      any("I3" in x for x in e) and s3["failed_rejected"] == ["approach A", "approach B"])
+    e = apply_patch(s3, {"set": {"failed_rejected": ["approach B", "approach A", "approach C"],
+                                 "next": "x"}}, schema)
+    t("set that keeps every failed_rejected entry merges", not e and len(s3["failed_rejected"]) == 3)
+    e = apply_patch(copy.deepcopy(s2), {"set": {"failed_rejected": ["approach A"],
+                                                "next": "x"}}, schema, allow_forget=True)
+    t("--allow-forget permits a deliberate drop", not e)
+    bad = os.path.join(tempfile.mkdtemp(), "current.json")
+    with open(bad, "w", encoding="utf-8") as f:
+        f.write("{ truncated")
+    try:
+        load_state(bad); corrupt_refused = False
+    except StateUnreadable:
+        corrupt_refused = True
+    t("corrupt current.json is REFUSED, never read as empty", corrupt_refused)
+    t("missing current.json starts empty", load_state(bad + ".missing")["goal"] == "")
     e = apply_patch(copy.deepcopy(s), {"set": {"constraints": "not-a-list",
                                                "next": "x"}}, schema)
     t("I4 type mismatch rejected", any("I4" in x for x in e))
@@ -225,6 +280,15 @@ def self_test():
     t("nested set into object works", not e)
     txt = render(s)
     t("render keeps 'Last updated:' line", "Last updated:" in txt)
+    d = tempfile.mkdtemp()
+    v, alt = os.path.join(d, "current.md"), os.path.join(d, "state-view.md")
+    t("view: absent current.md -> render in place", view_target(v, alt) == v)
+    with open(v, "w", encoding="utf-8") as f:
+        f.write("# Current State\n\nLast updated: hand-written narrative\n")
+    t("view: hand-maintained current.md is NEVER overwritten", view_target(v, alt) == alt)
+    with open(v, "w", encoding="utf-8") as f:
+        f.write(txt)
+    t("view: a rendered current.md is re-rendered in place", view_target(v, alt) == v)
     print("state-patch self-test: %s" % ("GREEN" if ok[0] == 0 else "RED"))
     return ok[0]
 
@@ -239,8 +303,12 @@ def main():
     a = ap.parse_args()
     if a.self_test:
         sys.exit(self_test())
+    try:
+        state = load_state()
+    except StateUnreadable as ex:
+        sys.exit("REJECTED: %s. State untouched — repair or move it aside first." % ex)
     if a.show:
-        print(json.dumps(load_state(), indent=2, ensure_ascii=False)); return
+        print(json.dumps(state, indent=2, ensure_ascii=False)); return
     raw = a.patch or (open(a.patch_file, encoding="utf-8").read()
                       if a.patch_file else None)
     if not raw:
@@ -249,7 +317,7 @@ def main():
         patch = json.loads(raw)
     except json.JSONDecodeError as ex:
         sys.exit("REJECTED: patch is not valid JSON (%s). State untouched." % ex)
-    schema, state = load_schema(), load_state()
+    schema = load_schema()
     errors = apply_patch(state, patch, schema, a.allow_forget)
     if errors:
         sys.exit("REJECTED (state untouched):\n  - " + "\n  - ".join(errors))
@@ -257,10 +325,11 @@ def main():
     state["meta"]["last_patch"] = datetime.datetime.now().isoformat(timespec="seconds")
     state["meta"]["patch_count"] = int(state["meta"].get("patch_count", 0)) + 1
     atomic_write(STATE, json.dumps(state, indent=2, ensure_ascii=False) + "\n")
-    atomic_write(VIEW, render(state))
+    view = view_target()
+    atomic_write(view, render(state))
     print("merged: patch #%d -> %s (+ rendered %s)"
           % (state["meta"]["patch_count"], os.path.relpath(STATE, ROOT),
-             os.path.relpath(VIEW, ROOT)))
+             os.path.relpath(view, ROOT)))
 
 
 if __name__ == "__main__":

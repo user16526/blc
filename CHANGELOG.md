@@ -1,5 +1,326 @@
 # Template Changelog
 
+## v8.3.25 — a stop that has to be judged is not a stop (2026-09-10)
+**This is a CORE release.** Two things change inside the hash-protected block — the
+AUTOMODE paragraph and one SAFETY line — so every project takes it ATTENDED: Kernel
+Change Rationale, the owner's OK for that project, then `./scripts/core-baseline.sh`.
+One OK per project, never batched: a baseline is the attestation that a human approved
+the kernel, and N projects re-baselined under one approval attest to nothing. The
+template's own shipped `.claude/core.sha` is re-baselined here, so a project stood up
+from v8.3.25 starts GREEN.
+
+- **AUTOMODE advances the board, and points at its stop list instead of copying it.**
+  With automode on, after a GREEN gate the orchestrator takes the next eligible
+  `[todo]` item without asking. The kernel carries no stop list of its own any more:
+  eligibility, the claim, the budget and THE stop list live once in
+  `.claude/rules/automode-queue.md`, so the two can never drift apart. That list is
+  now the union of the queue's hard stops and the stops the v8.3.24 kernel proposal
+  named (end of the board, a HIGH item, no done-criteria, the DESTRUCTIVE row, an
+  orchestration stop), plus two new ones: a role that is not on the active roster, and
+  a go-ahead that was given to another session. The review findings on the v8.3.24
+  wording are answered rather than carried: "not marked Owner" is gone (eligibility is
+  the opt-in `@auto` tag), and the question sentence now governs plan pauses only — a
+  genuine blocker may always be asked, so the kernel no longer contradicts the rule
+  file beneath it. The template default stays `automode: off`.
+- **Orchestration step 0: read the TARGET project's roster before any dispatch.** A
+  field run was dispatched with another project's builder and reviewer names — roles
+  that project keeps in `_archive/` — and nothing caught it until the gate, after two
+  full review rounds. Roster names only; a name that resolves only to `_archive/` is a
+  stop-and-ask, never a substitution. The AUTOMODE paragraph names the step too.
+- **The gate resolves `builder` against the roster as well** (backstop for step 0).
+  Reviewers always were; the builder only had to be non-empty, so a run built by an
+  archived agent was certified whenever its reviewers were real. Invented, archived
+  and pseudo builders (`self`, `none`, …) now BLOCK; `orchestrator` — the main session,
+  which legitimately builds — is the one name outside the roster that passes.
+- **`.claude/rules/go-ahead-scope.md` (new, always on): a go-ahead binds only the
+  session it was addressed to.** Not another session, not another project, not a wider
+  scope, not a new session after `/clear`; it does carry through a compaction of the
+  same conversation.
+- **Forced push, wherever the flag sits.** SAFETY now names `--force-with-lease`, and
+  `guard.sh` blocks it explicitly — it was caught only as a prefix of `--force`, and
+  only directly after `push`, so a force flag written after the remote and branch
+  slipped through. A `+refspec` push is blocked too. Ordinary pushes (`--follow-tags`,
+  `-u`, a branch whose name contains "force") stay allowed and are pinned in the suite.
+  `git -C <dir> push` and `git -c <k=v> push` are covered too; it is still a text match,
+  so a quoted flag is not recognised.
+- **A commit message is prose.** `guard.sh` no longer scans the body of a commit or tag
+  message fed from a heredoc with a QUOTED delimiter. It blocked a commit whose message
+  honestly described an earlier, correctly-blocked `.env` staging, and the only repair
+  on offer was rewording until the guard stopped recognising it. The exemption is
+  deliberately narrow, because the first cut was not: the cross-vendor-style security
+  review found six inputs that ran a destructive command through it. The hook input is
+  now JSON-DECODED (python3, only when the input holds both `git commit|tag` and `<<`)
+  instead of split on the text `\n`; the command's first line must START with
+  `git commit`/`git tag`, with no quote, `#`, `$`, `(`, backslash or redirection before
+  the message source; the quoted delimiter must END that line; and anything that is not
+  exactly this shape is scanned raw, as in v8.3.24 — continuation lines included. All
+  six review inputs, plus an open-quote and a comment variant, are regression tests.
+- **`quality-gate.sh`:** each step writes its own log (a shared `/tmp/qg.out` let the
+  next step overwrite a failing step's evidence, and concurrent gates raced on it); a
+  missing `CLAUDE.md` is a visible BLOCK instead of an awk crash on stderr and a
+  silently skipped CORE check; a missing `latest.json` names its cause (gitignored run
+  state, absent in every fresh clone) instead of reading like lost proof. The header
+  now carries the convention for **project-local blocks: scope them to a marker path**
+  that only the real project has, fail closed inside it, and announce the skip outside
+  it — a local block that fail-closes in the suite's sandbox blocked every sandboxed
+  run and turned the expected-BLOCK assertions into vacuous passes. Stated as a limit,
+  not hidden: a marker makes a skipped guard visible, it does not enforce it; a
+  committed opt-in file the guard owns is the stronger shape, and it is deferred by owner
+  ruling: it needs a new file plus a rewrite of every project's local block, while the
+  marker convention already closes the defect that was actually observed.
+- **`install-git-hooks.sh` asks git where hooks live.** With `core.hooksPath` set, git
+  never ran the `.git/hooks/pre-commit` it wrote, so the `.env`/secret blocker was off
+  with no error anywhere; it now refuses, writes nothing, and says how to chain the hook
+  from the project's own. It also works in a worktree, where `.git` is a file. And it no
+  longer overwrites a `pre-commit` that is not its own (husky, the pre-commit framework,
+  a hand-written one) — that switched the other hook off silently; its own older copy
+  is still replaced.
+- **`state-patch.py` is field project B's implementation, upstream.** v8.3.24's view
+  guard ran AFTER `atomic_write(STATE, …)` and then exited "REJECTED": `current.json`
+  was advanced, the view was not, and the message denied a write that had happened.
+  The adopted `view_target()` renders beside a hand-maintained `current.md` (into
+  `.agent/state/state-view.md`) — no flag, no refusal, nothing half-written — so
+  `--adopt-view` is gone. `load_state(path)` separates a missing file (start empty)
+  from an unreadable one (refuse) instead of catching bare `Exception`.
+- **A published name is a promise about its bytes.** `build-release.py
+  --published-root <shared folder>` refuses, and deletes, any artifact whose NAME is
+  already published there with different bytes — and an `--out-dir` inside that root
+  before anything is written, because a build replaces its output before it can compare
+  (the review reproduced a published artifact overwritten, then deleted). A refused build
+  also removes any earlier bundle left in the out-dir. `release-check.sh` requires the
+  root (a check that did not run is a FAIL) and proves both refusals with negative
+  controls that must fail for the right reason, not merely exit non-zero.
+  This is why Context Guard is **4.2.7** below. The handover is still ONE bundle —
+  `release_<version>.zip` = both artifacts + `SHA256SUMS`, verified by the gate.
+- **The build never excluded the PreCompact snapshot.** `.agent/state/handoff.md` (and
+  `_reports/runs/latest.json`) are gitignored machine-local files, but `build-release.py`
+  shipped whatever was on disk: a session compacting while it worked in the canonical
+  tree wrote its own transcript path into the next artifact. Both are now excluded, and
+  the gate's stray-file check names them. No published zip carried either file (checked,
+  2026-09-10, every zip under the releases folder).
+- **`UPGRADE.md` ships the procedure fixes learned on the v8.3.24 fan-out:** CRLF
+  normalisation applies to the MERGE, not only the comparison; §2b's three conflict
+  classes, now with an explicit FIRST RUN sentence (a project that deleted the block
+  DROPS the template's hunk — the onboarding interview is never resurrected) and the
+  marker-path line; hash CORE in both templates BEFORE invoking the ceremony, and
+  v8.3.25 is the release where the hashes differ; `--trivial` is the acceptance form
+  and a missing `latest.json` is not an upgrade regression.
+
+Upgrading a project: CORE ceremony per project as above. The stale `latest.json` of a
+project upgraded from before v8.3.23 stays as it is — never backfill reviewer names —
+and the project's next NORMAL run is its first gated one.
+
+## v8.3.24 — a guard that blocks safe commands is not a guard (2026-09-09)
+**The theme is case.** Three separate defects in this release are the same defect: a
+pattern whose danger depends on a letter's case, matched case-insensitively.
+
+- **`scripts/guard.sh` blocked the SAFE branch delete.** The whole block list ran
+  through one case-insensitive grep, so the force-delete pattern also matched its
+  lower-case sibling — the merged-only delete that refuses to destroy unmerged work.
+  Routine post-merge tidy-up hit "destructive/work-erasing command", and the only ways
+  out were to run it by hand or to reword it until the guard stopped recognising it.
+  The second is the real damage: a guard people learn to phrase around has stopped
+  being a guard. Two more of the same shape were in the list — the firewall flush flag
+  (lower-case is `--fragment`, harmless) and the recursive-permission flag. And a
+  fourth, found while writing this release: the two-letter raw disk-copy command,
+  case-folded, matches the upper-case day field of an ISO date placeholder, so writing
+  a dated document through a heredoc was refused as destructive.
+  The list is now two: `DESTRUCTIVE_CI` for patterns where case carries no meaning
+  (SQL keywords, command names) and `DESTRUCTIVE_CS` for flag-bearing ones. **The split
+  is the dangerous part of this release**: moving the whole list to a case-sensitive
+  grep would silently un-block the upper-case spelling of recursive remove and every
+  lower-case SQL statement. `test-hooks.sh` now asserts both polarities, including four
+  negative controls that fail if a future edit widens the case-sensitive group.
+  The cross-vendor review caught a real regression in the first cut of this split, and
+  it is worth recording because it is subtle: delete-plus-force can also be written as a
+  short option cluster, or as the short delete flag beside the long force flag. Both
+  force-delete an unmerged branch, and the OLD case-folded pattern caught them purely by
+  accident, because folding made it match their lower-case delete letter. Removing the
+  fold removed that accident. Those spellings are now named explicitly, and a further
+  regression test checks the guard still allows a safe delete of a branch whose name
+  begins with the force letter.
+  Two further review rounds killed the enumeration approach outright, and that is the
+  more useful lesson: the two flags can be clustered in either order, separated, written
+  long, or abbreviated, and every round of patching the alternatives left another
+  ordering uncovered. The branch rule no longer models "delete combined with force" at
+  all. A delete WITHOUT force is safe by definition, because git refuses it unless the
+  branch is merged — so the guard blocks FORCE in any spelling on any branch command and
+  lets everything else through. One property, order-independent. Thirteen dangerous
+  spellings and nine safe ones are now pinned in the suite, the safe ones included
+  because this release exists to stop the guard blocking safe work.
+  **Accepted, not fixed:** the guard matches command text and does not parse shell tokens
+  or git options, so a destructive command quoted in a commit message still matches, and
+  git semantics remain richer than any regex — the reviewer's closing case was deleting
+  two branches whose upstreams are each other, which can strand commits with no force
+  flag present. Closing that needs argument parsing. The guard's header now says plainly
+  that "it did not block" means "it did not recognise", never "this is safe".
+  Also unfixed and on the backlog: a dry-run preview that carries a force letter in the
+  same cluster is still blocked.
+- **`scripts/core-baseline.sh` ignored every argument.** It parsed nothing and
+  re-baselined unconditionally, so a session that ran it with `--check` expecting a dry
+  run rewrote the baseline instead — over a kernel edit that had not been approved yet.
+  The hash then matched, `check-core.sh` went green, and the protection was gone with
+  no error anywhere. A flag that is ignored is worse than one that does not exist,
+  because it reads as a promise. There is now a real `--check` (compares, never writes,
+  never creates a missing baseline, exit 1 on mismatch) and an unknown argument is
+  fatal with exit 2.
+- **The shipped run-state skeleton did not satisfy the gate.** v8.3.23 made the gate
+  require `row` and `builder` in `_reports/runs/latest.json`, but
+  `_reports/runs/latest.json.template` was never updated, so a project that used the
+  skeleton exactly as intended got a BLOCK it had done nothing to earn. Every test in
+  the suite wrote its own JSON by hand, which is why 180-odd green assertions never
+  noticed. `test-hooks.sh` now fills the SHIPPED skeleton and runs it past the
+  validator, replacing only keys the skeleton already declares — so a field added to
+  the gate and forgotten in the skeleton fails here from now on.
+  `docs/RUN_REPORT_TEMPLATE.md` gains the matching Row / Builder / Reviewers lines,
+  and says plainly that the gate reads the JSON and never the prose.
+
+**One file to hand over.** `scripts/build-release.py` now also writes a `SHA256SUMS`
+over exactly the two artifacts and bundles both plus that manifest into a single
+`release_<version>.zip` with one outer `.sha256`. The manifest names the two artifacts
+explicitly and is never globbed — a glob evaluated after the bundle exists would list
+the bundle inside its own manifest, which cannot be verified. The bundle name
+deliberately does not match the shape the workspace rule uses to find "the current
+template", so publishing it can never turn a wrapper into the template. `release-check.sh`
+verifies the bundle it just built: outer hash, inner manifest, byte-identity against the
+artifact the rest of the gate inspected, and exactly three members. Build products are
+now excluded from the payload, so a build run with `--out-dir` inside the tree cannot
+make the next build ship a release artifact as its own content.
+
+**Autonomy, two additions.** The shipped permission allow-list contained none of the
+commands the contract itself mandates — the gate, the hook suite, the state patcher,
+`setup.sh` — so every project was hand-patching the same hole locally, and those
+patches never flowed back. Seven entries added, all read-only or verification.
+`./scripts/core-baseline.sh --check` is allowed; the bare re-baselining form is
+deliberately NOT, because that write is the kernel attestation and it stays a decision.
+
+`.claude/rules/automode-queue.md` (new) defines what automode may start on its own.
+Eligibility is opt-in — a `[todo]` line must additionally carry `@auto` and a `DoD:`
+clause — so an untagged board is an empty queue, which is the correct default. It adds
+a claim step (`[doing]` plus a one-line commit) so two concurrent sessions cannot take
+the same item, a 3-item budget, hard stops for deploys and live-box writes and money
+and ambiguity, and a statement that automode never restarts itself after a pause,
+`/clear` or a compaction. The kernel's AUTOMODE paragraph leans on the words
+*eligible*, *done-criteria* and *Owner*; a stop condition that has to be judged is not
+a stop condition, so those words are defined once, here, outside the hash-protected
+block where they would be expensive to correct.
+
+`.claude/rules/pause-and-resume.md` (new) covers what "remember this, continue later"
+means: persist state, stop the observers, leave deliberately-detached jobs running, stop
+interacting. It exists because of a real incident — the agent persisted state correctly
+and correctly left a box job running, then kept a monitor armed, kept emitting progress
+events and ETAs, and promised to interrupt the human the moment the job finished, which
+is a promise a closed session cannot keep. The handoff skill gains a `PAUSED` task
+status that suppresses auto-resume (otherwise a compaction restarts work the human
+explicitly paused) and a section 9 for still-running detached work: unit name, how to
+check it, logs, results, cleanup owed, and what must not be changed while it runs.
+
+**NOT in this release: the AUTOMODE board-advance paragraph.** The kernel's AUTOMODE
+text is unchanged here, and the template default stays `off`. The queue rule above ships
+ready for it, and is inert until a project turns automode on. Shipping the paragraph
+edits a hash-protected block in every repo that takes the upgrade, and an independent
+review of the proposed wording returned blocking findings — the stop list leans on board
+conventions (`@auto`, `DoD:`, an Owner marker) that no board implements yet, and it
+carried no concurrency claim and no budget. `automode-queue.md` supplies exactly those
+three, so the paragraph should go upstream only after a project has actually run the
+loop against this rule file.
+
+**Also:** the precedence chain in the kernel's MEMORY section now names `.claude/rules/`
+explicitly. It listed chat, kernel, current.md, capsules, lessons, docs and defaults —
+never the always-on rules — which left a permissive kernel line and an unconditional
+rule as a conflict an agent could resolve the wrong way.
+
+## v8.3.23 — the independent review is a gate, not a hope (2026-09-08)
+**What the postmortem found.** Field project A ran ~20 NORMAL+ tasks in the week of
+2026-09-01. Exactly one dispatched the reviewers + `verifier` the kernel requires; the
+other ~19 were self-review plus the external SHERIFF (which logged two consecutive
+0-finding passes), and `latest.json` listed the builder's own operator agent as the
+"reviewer". Nothing in the harness could see it: `quality-gate.sh` checked the verdict,
+the report and the HEAD binding — never WHO reviewed. The kernel's "NORMAL+ ends with
+`verifier`" was a hope. Per the LEARN rule (a rule that must hold 100% becomes a hook):
+
+- **F2 — `quality-gate.sh` enforces the review.** `latest.json` gains three honest
+  fields: `row` (LOW/NORMAL/HIGH/DESTRUCTIVE, default NORMAL), `builder` (the agent
+  that produced the change) and the existing `reviewers` / `risks`. NORMAL+ BLOCKS on:
+  empty `reviewers`, missing `builder`, a reviewer equal to the builder, or a
+  pseudo-reviewer (`self`, `orchestrator`, …). HIGH/DESTRUCTIVE additionally BLOCK
+  unless there is one DISTINCT reviewer per entry in `risks`. Twenty-two assertions in `test-hooks.sh` §7e–7w: no reviewers, builder-as-reviewer, no
+  builder, fewer reviewers than risks, no risks on HIGH, pseudo-reviewer, unknown row,
+  LOW row, type confusion — plus the positive controls.
+- **F2 hardened by an adversarial functional pass before release.** A list/dict-typed
+  `builder` str()'d to a token no reviewer matched, so the builder reviewing itself
+  passed as "independent" (F-1); junk reviewer tokens (`(pending)`, numbers) counted as
+  distinct reviewers on HIGH (F-2); duplicate `risks` entries inflated the requirement
+  (F-3); `row: LOW` wrongly demanded reviewers; a bullet-prefixed entry was misread.
+  A second adversarial pass then showed the self-review match losing to a
+  space-vs-hyphen spelling ("block executor" vs `block-executor`) and the per-risk count
+  being satisfiable by invented words. Reviewer entries are now canonicalised to slugs
+  and resolved against the ACTIVE roster in `.claude/agents/*.md` (agents on leave in
+  `_archive/` do not count; an empty roster blocks). All
+  closed; regression cases §7i–7w added. A self-declared `row: LOW` on a non-trivial
+  gate run BLOCKS too (LOW means `--trivial`; otherwise it is the cheapest escape).
+  SHERIFF (cross-vendor) then found two more: an EMPTY active roster degraded to a
+  shape-only check (now BLOCKS — nobody could have reviewed), and a missing `python3`
+  skipped the whole validator with an OK line (now BLOCKS — a validator that did not run
+  is not a pass).
+- **Orchestration table gains the row F2 would otherwise block on every infra project:**
+  "VPS / service / unit / deploy-config change" — builder `devops-operator`, reviewer
+  `infra-security-reviewer` (or `security-reviewer` where infra is merged into it) +
+  `verifier`, never the operator that made the change. Projects that archived
+  `infra-security-reviewer` re-activate it via `team-proposal` when they upgrade.
+- **`scripts/state-patch.py` carries two field fixes upstream (field-first rule).**
+  SHERIFF found both on 2026-09-08 in the copy a project had taken VERBATIM from
+  v8.3.21: (1) `load_state()` fell back to an EMPTY state when `current.json` existed
+  but was unreadable, so the next patch would have overwritten it — now `StateUnreadable`
+  refuses with the state untouched; (2) `render()` overwrote a hand-maintained
+  `current.md` unconditionally (reproduced: 237 lines → 33) — now a `RENDERED VIEW`
+  marker guards it and `--adopt-view` is the explicit migration; and the I3
+  "failures are never deleted or overwritten" invariant was a LENGTH check, so an
+  equal-or-longer list of different entries wiped the memory — now membership.
+  Self-test extended; it fails on the pre-fix code.
+
+- **`release-check.sh` accepts a relative `--out-dir`.** Its unpack step `cd`s into a
+  temp dir, so the README's own `../$V-build` recipe failed with "artifact does not
+  unzip" on a good artifact. The path is absolutized once, up front.
+
+Upgrading a project: after the merge, the FIRST `quality-gate.sh` run BLOCKS until the
+next run writes `row` + `builder` + a real `reviewers` list — that is the point. Write
+them honestly; the builder listing itself as reviewer is exactly the failure this closes.
+
+## v8.3.22 — the context gauge told the truth about the wrong number (2026-09-08)
+Documentation only in the template itself; the behaviour lives in the shared
+Context Guard runtime, which every project picks up at once (see the two
+Context Guard entries below). `.claude/rules/context-hygiene.md` stopped saying
+`~450k auto-compaction` and now says **437k**, with the arithmetic that produces
+it. The old number was a guess at a threshold the CLI computes exactly:
+effective window (the smaller of `CLAUDE_CODE_AUTO_COMPACT_WINDOW` and the model
+window) minus a **13,000-token reserve**. A rule that documents a safety
+threshold to the nearest round number teaches the reader the wrong mental model
+of when they will be cut off.
+
+
+**The blankness rule shipped broken, and this release is the first to prove it.**
+v8.3.21 declared that no field project is named in ANY shipped file and pointed the
+proof at `release-blocklist.txt` on the canonical tree. That file had never been
+authored. `release-check.sh` therefore scored the blankness check RED — but nobody saw
+it, because the gate needs a canonical tree (`context-guard/version.json` present) and
+no such tree existed on this machine: the gate exited **2, "not applicable"**, and the
+release was hand-verified instead. A gate that cannot run is not a gate that passed.
+
+Closed here, permanently:
+- `release-blocklist.txt` is authored, with word boundaries on every name — a
+  short unanchored name can match inside an ordinary English word and make the
+  gate fail on itself.
+- The canonical tree is now **reproducible on any machine** from the two shipped
+  artifacts (unpack `v8_3_NN.zip`, overlay `context-guard-<runtime>.zip`), so
+  "the canonical tree isn't here" can never again downgrade a release to hand checks.
+- With the gate finally executing, it immediately found what it was built to find:
+  **v8.3.21 shipped a field project's name in three places** — `CLAUDE.md` twice (the
+  FIRST RUN VPS question and the PROJECT "VPS workspace" hint, both hard-coding an
+  absolute `D:\claude\<name>` path) and once in `CHANGELOG.md`. All three now name the
+  role, not the project: *"ask me for the path of our VPS-hub project"*. Both edits are
+  **outside** the CORE block, so the kernel hash is untouched.
+
 ## v8.3.21 — clean template: no field project named anywhere (2026-09-02)
 No code changes in behavior: every touched script line is a comment (diff it),
 plus the release-side gate and one build exclude. Owner decision: the template
@@ -545,6 +866,78 @@ Three agents, the third almost never fires. Off by default.
   files are template-owned bucket-1, the CLAUDE.md/AGENTS.md lines merge per
   step 3 (CORE line needs Kernel Change Rationale + re-baseline). Enable per
   project by setting the PROJECT toggle to `on` — no other edits.
+
+## Context Guard 4.2.7 — a new name for new bytes (2026-09-10)
+Runtime `4.2.7`, schema **`1` — unchanged**. **No runtime code change.** The Context
+Guard artifact also carries the template's `.claude/settings.json` (shared by design:
+the suite asserts it registers no Context Guard), and v8.3.24 added seven permission
+entries to it — so the artifact built alongside every template since then no longer
+matched the published `context-guard-4.2.6.zip` byte for byte, while claiming its name.
+From v8.3.25 the release build refuses exactly that, so the bytes get the next version
+number. Installing 4.2.7 over a 4.2.6 runtime changes no behaviour; `verify-install.py`
+stays the proof.
+
+## Context Guard 4.2.6 — a cosmetic env var could disarm the ladder (2026-09-08)
+Runtime `4.2.6`, schema **`1` — unchanged**. One finding from the cross-vendor
+review of 4.2.5, reproduced by the reviewer with an executed proof.
+
+`CLAUDE_CODE_AUTO_COMPACT_WINDOW=nan` (also `inf`, `1e309`) parses as a float
+and then makes `int()` **raise** — `ValueError` on NaN, `OverflowError` on the
+infinities. `parse_window_value`'s entire contract is that it never raises, and
+4.2.5 broke it. The raise did not stay cosmetic: `auto_compact_env_matches` is
+called inside the statusline's config-validity `try`, so the exception was
+caught by the **CONFIG INVALID** handler. A perfectly valid project config then
+rendered `⚠ CONTEXT GUARD CONFIG INVALID`, and that path `exit 0`s **before the
+state write** — so every hook lost its ladder for new sessions, and for existing
+ones as soon as the state went stale. A display-only feature reached a policy
+verdict through an exception path.
+
+Closed twice, deliberately: `parse_window_value` now rejects non-finite values
+(`math.isfinite`) so it cannot raise, and the statusline wraps the drift check
+in its own `try` that degrades to "no drift to report". Root cause plus
+containment, because the containment is what makes the next helper safe too.
+Regression: 6 assertions in `scripts/test-context-guard.sh` §2b, including the
+one that matters — **the state file is still written under a bogus env**, with
+`max` still the model window.
+
+**Lesson.** A cosmetic feature that shares a `try` with a policy decision is not
+cosmetic. Give display helpers their own exception boundary, or a typo in an
+environment variable silently disables the mechanism it decorates.
+
+## Context Guard 4.2.5 — the statusline reported a fake ceiling (2026-09-07)
+Runtime `4.2.5`, schema **`1` — unchanged**. Display-only; no policy, no config
+field, no state-format change.
+
+The statusline divided USED by `context_window_size` — the **model** window.
+But Claude Code auto-compacts at `min(CLAUDE_CODE_AUTO_COMPACT_WINDOW, model
+window) − 13000`. Measured in field project A: a session at **384,909** tokens
+rendered `CTX 384k / 1.0M (38%)` while it was actually at **88%** of the 437k
+point where compaction fires. The operator read "plenty of room" off a gauge
+that was 50 points optimistic, and the report that started this was "auto-compact
+is not turning on" — the mechanism was fine, the instrument was lying.
+
+Now: `CTX 384k / 437k AC (88%)`. Four design calls worth keeping:
+- **Env only.** `auto_compact_window` in `config.json` *documents* the env; it
+  does not control compaction. Deriving the ceiling from it could display a
+  number nothing enforces. When the two disagree the statusline shows a quiet
+  `⚠cfg` marker — never a block.
+- **`auto` stays unknown.** With no explicit cap the model table decides, and
+  that table is not readable from here, so the honest wide number (the model
+  window) is shown with **no `AC` marker**. An invented narrow ceiling would be
+  the same class of bug in the other direction.
+- **The ceiling never enters the state file.** `state.max` keeps the MODEL
+  window. This is load-bearing: hook profile selection is
+  `context_window_size >= 600000 -> 1m`, and `437000 < 600000`, so leaking the
+  derived ceiling into state would have silently flipped every hook from the 1M
+  ladder (200k/300k/400k) to the 200k one (90k/120k/150k). There is a test
+  asserting `state.max == 1000000` for exactly this.
+- **Every render path gets it**, INVALID and INCOMPATIBLE included: an
+  unreadable project config must not also cost the operator an honest gauge.
+
+**Lesson.** A progress indicator must be measured against the limit that
+ACTUALLY fires. When a gauge and a mechanism disagree about the denominator, the
+gauge is the bug — and a gauge that reads 38% at 88% is worse than no gauge,
+because it is trusted.
 
 ## Context Guard 4.2.4 — unknown policy keys (2026-08-28)
 Runtime `4.2.4`, schema **`1` — unchanged**. Scope is exactly one class: a
@@ -1255,7 +1648,7 @@ all reproduced experimentally, all fixed, all now covered by tests (37 total).
   family, prose false-positive check, GREEN-on-RED replay, stale-HEAD proof,
   legitimate-GREEN pass.
 - Onboarding: FIRST RUN now asks "is this project on our VPS?" → read
-  `D:\claude\core-vps\CLAUDE.md` + `PROJECT_TEMPLATE.md`, create `<short-name>-vps`
+  the VPS-hub project's `CLAUDE.md` + `PROJECT_TEMPLATE.md`, create `<short-name>-vps`
   workspace from the template, append to `REGISTRY.md`; new PROJECT field
   "VPS workspace". README version header fixed (said v8.1.8).
 - CORE hash unchanged (all fixes are scripts/settings — outside the kernel).

@@ -36,6 +36,8 @@ I1 schema-listed keys only · I2 `next` = exactly one action, one line ·
 I3 `failed_rejected` never shrinks without --allow-forget · I4 types ·
 I5 no whole-state replacement. `--show` prints state; `--self-test` proves the
 merge engine.
+A hand-maintained `current.md` (no `RENDERED VIEW` marker) is never rendered over:
+the patch still merges, and the view goes to `.agent/state/state-view.md` beside it.
 
 ## Division of labor with the rest of the template
 - current.json/current.md = Σ (what's true NOW). Compact. Not a ledger.
