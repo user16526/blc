@@ -8,6 +8,18 @@ description: How the orchestrator picks reviewers and runs the self-checking loo
 The goal: results come back already verified, so I don't have to chase "did QA
 check this, did someone check QA". You (orchestrator) own that chain.
 
+## Step 0 — Read the TARGET project's roster before any dispatch
+Before any agent is spawned, list the `.claude/agents/*.md` of the project the work
+lands in — not the project this session started in, and not the names a brief, a
+handoff or another project's run happens to use. **Roster names only**, for the
+builder and for every reviewer.
+A role that exists only in `.claude/agents/_archive/` is on leave: **stop and ask**.
+Re-activating it is a `team-proposal` decision; substituting a similar-sounding role,
+or dispatching it anyway and letting the gate find out, are both wrong. (Observed: a
+run dispatched with another project's builder and reviewer names was caught only by
+the gate, after two full review rounds.) The gate checks `builder` and `reviewers`
+against the same roster — this step is the fix, the gate is the backstop.
+
 ## Step 1 — Map the risk of the change
 Before assigning reviewers, name which risk types the change actually touches:
 - **visual** — UI appearance, layout, responsive, states
@@ -22,6 +34,11 @@ LOW: no reviewers. NORMAL: `verifier` at the end; a specialist ONLY if their ris
 is touched. HIGH: one independent reviewer per touched risk + `verifier`.
 DESTRUCTIVE: full pipeline, best-of-N planning allowed. Never review risks the
 change doesn't touch; never spawn ritual agents.
+**The gate enforces this (v8.3.23), it is not a hope:** `quality-gate.sh` BLOCKS a
+NORMAL+ run whose `latest.json` has an empty `reviewers`, no `builder`, or a reviewer
+equal to the builder; HIGH/DESTRUCTIVE additionally need one DISTINCT reviewer per
+entry in `risks`. Write `row`, `builder`, `reviewers`, `risks` honestly — the builder
+listing itself as reviewer is exactly the failure this closes.
 
 | Task example | Risks | Reviewers (typical) |
 |---|---|---|
@@ -31,6 +48,11 @@ change doesn't touch; never spawn ritual agents.
 | Auth / payments / migration | security + data + functional | `security-reviewer` + `functional-verifier` + `architect` (3) |
 | Marketing landing + tracking | visual + content + functional | `ui-ux-qa` + `functional-verifier` (+content check) |
 | Release / deploy | whatever shipped + infra | 3, always incl. `security-reviewer` |
+| VPS / service / unit / deploy-config change (builder: `devops-operator`) | infra (+security) | `infra-security-reviewer` (or `security-reviewer` where infra is merged into it) + `verifier` — never the operator that made the change |
+
+Only agents present in `.claude/agents/` can be named as reviewers — the gate
+resolves every entry against that roster, and a role on leave in `_archive/` must be
+re-activated first (team-proposal), not merely typed.
 
 If a task doesn't fit the table, fall back to the principle: one reviewer per risk
 present, minimum one independent, escalate to 3 for releases or irreversible actions.

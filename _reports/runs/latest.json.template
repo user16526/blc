@@ -1,5 +1,6 @@
 {
   "$comment": "Machine-readable state of the latest pipeline run. GITIGNORED by design: it is written AFTER the commit it proves (head_sha = that commit), so it can never be tracked+committed+current at once. Flow: commit code+report FIRST, then write this with head_sha=HEAD, then run quality-gate.sh (which requires a clean tree, this file exempted). Human-readable tracked twin: _reports/runs/<dated>.md.",
+  "$comment_review": "row + builder + reviewers are the independent-review check. The gate reads them, not the prose report: 'builder' is the agent/role that produced the change, 'reviewers' are the agents that reviewed it, and no reviewer may be the builder. Both resolve against the ACTIVE roster (.claude/agents/*.md): an invented or archived name BLOCKS; the builder may also be 'orchestrator' (the main session). On HIGH/DESTRUCTIVE it also wants one distinct reviewer per entry in 'risks'. Leaving any of the three at its placeholder is a BLOCK, which is the intended behaviour — a run with no named reviewer has not been reviewed. LOW runs use ./scripts/quality-gate.sh --trivial and need no report at all.",
   "run_id": "",
   "timestamp": "",
   "task": "",
@@ -7,8 +8,10 @@
   "head_sha": "",
   "report": "_reports/runs/<dated>.md",
   "spec": "",
-  "risks": [],
+  "row": "LOW | NORMAL | HIGH | DESTRUCTIVE",
+  "builder": "",
   "reviewers": [],
+  "risks": [],
   "findings_open": 0,
   "findings": [],
   "artifacts": [],

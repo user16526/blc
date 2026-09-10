@@ -2,7 +2,11 @@
 # release-check.sh — the release gate. Verifies a release FROM ITS ARTIFACT,
 # never from the working tree (v8.3.19, lesson [release]).
 #
-#   bash scripts/release-check.sh [--out-dir <dir>] [--wrapper <folder>]
+#   bash scripts/release-check.sh --published-root <shared releases folder>
+#                                 [--out-dir <dir>] [--wrapper <folder>]
+#
+# --published-root is REQUIRED (v8.3.25): without it the published-name collision
+# check cannot run, and a check that did not run is a FAIL here, never a pass.
 #
 # Why this exists: twice on 2026-09-01 a working-tree verification passed while
 # the shipped artifact carried a defect it could not see — a stray .env seeded
@@ -16,11 +20,12 @@
 set -u
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root" || exit 1
-out=""; wrapper=""
+out=""; wrapper=""; pub=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --out-dir) out="$2"; shift 2;;
     --wrapper) wrapper="$2"; shift 2;;
+    --published-root) pub="$2"; shift 2;;
     *) echo "unknown arg: $1" >&2; exit 1;;
   esac
 done
@@ -32,17 +37,83 @@ fail=0; pass=0
 ok(){ echo "  ✓ $1"; pass=$((pass+1)); }
 no(){ echo "  ✗ $1"; fail=$((fail+1)); }
 [ -n "$out" ] || out="$(mktemp -d)"
+# Absolutize: the unpack step below cd's into a temp dir, so a relative --out-dir
+# (the README's own `../$V-build` recipe) made "artifact does not unzip" fire on a
+# perfectly good artifact (v8.3.23).
+mkdir -p "$out" || { echo "release-check: cannot create --out-dir $out" >&2; exit 1; }
+out="$(cd "$out" && pwd)"
 work="$(mktemp -d)"
 tv="$(tr -d '\r\n' < TEMPLATE_VERSION)"
 tname="$(printf '%s' "$tv" | tr . _).zip"
 
 echo "release-check: building from $(pwd) → $out"
-python3 scripts/build-release.py --out-dir "$out" > "$work/build.log" 2>&1 \
+# ---- published-name collision (v8.3.25) ---------------------------------------
+# build-release.py refuses an artifact whose name is already published with different
+# bytes. Here: the check must have run at all, and it must be able to fail.
+pubarg=()
+if [ -z "$pub" ]; then
+  no "--published-root not given — the published-name collision check did NOT run"
+elif [ ! -d "$pub" ]; then
+  no "--published-root $pub is not a directory — the collision check did NOT run"
+else
+  pubarg=(--published-root "$pub")
+  cgname="context-guard-$(python3 -c "import json;print(json.load(open('context-guard/version.json',encoding='utf-8'))['runtime_version'])").zip"
+  fake="$(mktemp -d)"; mkdir -p "$fake/root/context-guard-releases" "$fake/out"
+  printf 'not the artifact\n' > "$fake/root/context-guard-releases/$cgname"
+  # Negative controls must fail for the RIGHT reason: a crash is not a refusal.
+  ctl="$(python3 scripts/build-release.py --out-dir "$fake/out" --published-root "$fake/root" 2>&1)"
+  if echo "$ctl" | grep -q 'REFUSING: already published' && [ ! -e "$fake/out/$cgname" ]; then
+    ok "collision check refuses (and deletes) a same-name artifact with different bytes (negative control)"
+  else
+    no "collision check did NOT refuse a same-name artifact with different bytes: $(echo "$ctl" | tail -1)"
+  fi
+  ctl="$(python3 scripts/build-release.py --out-dir "$fake/root/x" --published-root "$fake/root" 2>&1)"
+  if echo "$ctl" | grep -q 'is inside --published-root' && [ ! -e "$fake/root/x" ]; then
+    ok "a build into the published folder is refused before anything is written (negative control)"
+  else
+    no "a build into the published folder was NOT refused: $(echo "$ctl" | tail -1)"
+  fi
+  rm -rf "$fake"
+fi
+python3 scripts/build-release.py --out-dir "$out" ${pubarg[@]+"${pubarg[@]}"} > "$work/build.log" 2>&1 \
   && ok "build-release.py clean (TEMPLATE_VERSION $tv)" || { no "build-release.py failed"; cat "$work/build.log"; exit 1; }
+[ "${#pubarg[@]}" -gt 0 ] && ok "no artifact name is already published with different bytes under $pub"
 [ -f "$out/$tname" ] && ok "artifact name derives from TEMPLATE_VERSION: $tname" \
   || { no "expected artifact $tname not produced"; ls "$out"; exit 1; }
 ( cd "$out" && sha256sum -c "${tname%.zip}.sha256" >/dev/null 2>&1 ) \
   && ok "sha256 companion matches artifact" || no "sha256 companion MISMATCH"
+
+# ---- the publishing bundle (v8.3.24) -----------------------------------------
+# The bundle is the thing actually handed over, and nothing used to verify it: this
+# gate only ever looked up the template artifact BY NAME, so a corrupt, stale or
+# half-written bundle shipped GREEN beside a perfectly good artifact. A gate that
+# never inspects the shipped object is the failure this whole script exists to stop.
+bname="release_$tv.zip"
+if [ ! -f "$out/$bname" ]; then
+  no "release bundle $bname not produced"
+else
+  ok "release bundle produced: $bname"
+  ( cd "$out" && sha256sum -c "${bname%.zip}.sha256" >/dev/null 2>&1 ) \
+    && ok "bundle outer sha256 matches the bundle" || no "bundle outer sha256 MISMATCH"
+  bwork="$(mktemp -d)"
+  if ( cd "$bwork" && unzip -q "$out/$bname" ); then
+    ( cd "$bwork" && sha256sum -c SHA256SUMS >/dev/null 2>&1 ) \
+      && ok "bundle SHA256SUMS verifies both artifacts inside it" \
+      || no "bundle SHA256SUMS does NOT verify"
+    cmp -s "$bwork/$tname" "$out/$tname" \
+      && ok "bundled template artifact is byte-identical to the gated one" \
+      || no "bundled template artifact DIFFERS from the one this gate checked"
+    n_members="$(ls -1 "$bwork" | wc -l | tr -d ' ')"
+    [ "$n_members" -eq 3 ] \
+      && ok "bundle carries exactly the two artifacts + SHA256SUMS" \
+      || no "bundle carries $n_members members: $(ls -1 "$bwork" | tr '\n' ' ')"
+  else
+    no "release bundle does not unzip"
+  fi
+  chmod -R u+w "$bwork" 2>/dev/null
+  find "$bwork" -mindepth 1 -delete 2>/dev/null
+  rmdir "$bwork" 2>/dev/null
+fi
 
 # ---- everything below runs INSIDE the unpacked artifact -----------------------
 ( cd "$work" && unzip -q "$out/$tname" ) || { no "artifact does not unzip"; exit 1; }
@@ -50,8 +121,13 @@ ex="$work/$tv"
 [ -d "$ex" ] && ok "inner folder named by version ($tv)" || { no "inner folder is not $tv"; ls "$work"; exit 1; }
 cd "$ex" || exit 1
 
+# '*.zip' and the checksum files are here for v8.3.24: the builder now writes zips,
+# and a build run with --out-dir pointing inside the tree would make the NEXT build
+# ship a release artifact as payload of itself.
 stray="$(find . \( -name '.env' -o -name '*.cg-tmp' -o -name '__pycache__' -o -name '*.pyc' \
-        -o -name 'handoffs' -o -name '.DS_Store' -o -name '*.orig' -o -name '*.rej' -o -name '*.bak' \) 2>/dev/null)"
+        -o -name 'handoffs' -o -name '.DS_Store' -o -name '*.orig' -o -name '*.rej' -o -name '*.bak' \
+        -o -name '*.zip' -o -name '*.sha256' -o -name 'SHA256SUMS' \
+        -o -path './.agent/state/handoff.md' -o -path './_reports/runs/latest.json' \) 2>/dev/null)"
 [ -z "$stray" ] && ok "no stray/runtime files in artifact" || no "stray files in artifact: $(echo "$stray" | tr '\n' ' ')"
 
 leak="$(find . -path './context-guard/*' -o -name 'install-context-guard.py' -o -name 'test-context-guard.sh' \

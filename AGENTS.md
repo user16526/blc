@@ -26,7 +26,9 @@ Before doing any work:
 5. **"Done" requires evidence AND a passing gate.** Run `./scripts/quality-gate.sh`
    (or `--trivial`) and only report done on GREEN. Non-trivial flow: write
    `_reports/runs/<dated>.md`, **commit code + report**, THEN write
-   `_reports/runs/latest.json` (gitignored, `head_sha` = current HEAD), then gate.
+   `_reports/runs/latest.json` (gitignored; `head_sha` = current HEAD, plus `row`,
+   `builder`, a non-empty `reviewers` list of ACTIVE agents none of which is the
+   builder, and `risks` on HIGH+ — the gate refuses a self-reviewed run, v8.3.23), then gate.
    The gate BLOCKS on a dirty tree (sole exemption: latest.json) — unverified
    changes after the proof invalidate the proof.
 6. Respect the RISK MATRIX & AUTOMODE in `CLAUDE.md`: HIGH needs the human's plan

@@ -64,6 +64,147 @@ g(){ printf '%s' "$1" | bash scripts/guard.sh >/dev/null 2>&1; echo $?; }
   && ok "blocks xoxb- (Slack)" || no "MISSED xoxb- token"
 [ "$(g '{"tool_name":"Write","content":"see https://github.com/openai/gpt-4 and tokens like ghp_ (redacted)"}')" = "0" ] \
   && ok "does NOT false-block prose mentioning token prefixes" || no "false-blocked prose"
+# -- 1b. CASE SENSITIVITY (v8.3.24) --
+# The block list is two greps now, and the split is load-bearing: in a UNIX flag the
+# case IS the meaning, so folding it blocked the SAFE sibling of a dangerous command.
+# A guard that blocks safe commands does not make people careful, it makes them reword
+# until it stops recognising them -- which is how a guard stops being one.
+[ "$(g '{"tool_name":"Bash","command":"git branch -D feature/x"}')" = "2" ] \
+  && ok "blocks force-delete of a branch (upper-case flag destroys unmerged work)" \
+  || no "did NOT block a force branch delete"
+[ "$(g '{"tool_name":"Bash","command":"git branch -d feature/x"}')" = "0" ] \
+  && ok "ALLOWS the safe merged-branch delete (lower-case flag refuses unmerged)" \
+  || no "false-blocked the safe branch delete (case fold regressed)"
+[ "$(g '{"tool_name":"Bash","command":"git branch --delete --force feature/x"}')" = "2" ] \
+  && ok "blocks the long-form force delete too" || no "long-form force delete slipped through"
+# Cross-vendor review, round 2: delete-plus-force also has a short CLUSTER spelling and
+# a short-plus-long spelling. Both force-delete an unmerged branch. The old case-folded
+# pattern caught them BY ACCIDENT (folding made it match their lower-case d), so the
+# first cut of the split silently un-blocked them. They are named explicitly now.
+for spelling in \
+  "git branch -df feature/x" \
+  "git branch -fd feature/x" \
+  "git branch -drf origin/topic" \
+  "git branch -d --force feature/x" \
+  "git branch --force -d feature/x" \
+  "git branch --delete --force feature/x" \
+  "git branch --force --delete feature/x" \
+  "git branch -d -f feature/x" \
+  "git branch -f -d feature/x" \
+  "git branch --delete -f feature/x" \
+  "git branch -f --delete feature/x" \
+  "git branch -r -D origin/topic" \
+  "git branch -Dq feature/x" \
+  "git branch --delete --forc feature/x" \
+  "git branch --delete --for feature/x" \
+  "git branch -D feature/x"; do
+  [ "$(g "{\"tool_name\":\"Bash\",\"command\":\"$spelling\"}")" = "2" ] \
+    && ok "blocks force-delete spelling: $spelling" \
+    || no "force-delete spelling ESCAPED the guard: $spelling"
+done
+# ...and none of that may cost the safe delete, which is the whole reason for the change.
+for safe in \
+  "git branch -d feature/x" \
+  "git branch -d fix/typo" \
+  "git branch -d topic/fix" \
+  "git branch -rd origin/merged" \
+  "git branch -d --quiet feature/x" \
+  "git branch --delete feature/x" \
+  "git branch --list" \
+  "git branch --format=%(refname)" \
+  "git branch -a"; do
+  [ "$(g "{\"tool_name\":\"Bash\",\"command\":\"$safe\"}")" = "0" ] \
+    && ok "allows safe branch command: $safe" \
+    || no "FALSE-BLOCKED a safe branch command: $safe"
+done
+[ "$(g '{"tool_name":"Bash","command":"iptables -F"}')" = "2" ] \
+  && ok "blocks the iptables flush (upper-case F drops every rule)" || no "did NOT block an iptables flush"
+[ "$(g '{"tool_name":"Bash","command":"iptables -f -L INPUT"}')" = "0" ] \
+  && ok "allows the iptables fragment flag (lower-case f is harmless)" || no "false-blocked a harmless iptables flag"
+[ "$(g '{"tool_name":"Bash","command":"git clean -xdf"}')" = "2" ] \
+  && ok "blocks a force git clean inside a mixed flag cluster" || no "git clean force slipped through"
+[ "$(g '{"tool_name":"Bash","command":"git clean -n"}')" = "0" ] \
+  && ok "allows a git clean dry run" || no "false-blocked a git clean dry run"
+# The raw disk-copy command is a two-letter LOWER-CASE name. Folding its case made the
+# upper-case day field of an ISO date template match it, so writing a dated document
+# through a heredoc was refused as destructive. Found while authoring this release.
+[ "$(g '{"tool_name":"Bash","command":"cat > report.md <<EOF ; # run at {YYYY-MM-DD HH:MM}"}')" = "0" ] \
+  && ok "does NOT false-block a doc carrying an ISO date placeholder" \
+  || no "false-blocked an ISO date placeholder (disk-copy case fold regressed)"
+[ "$(g '{"tool_name":"Bash","command":"dd if=/dev/zero of=/dev/sdb bs=1M"}')" = "2" ] \
+  && ok "still blocks the raw disk-copy command itself" || no "MISSED the raw disk-copy command"
+# NEGATIVE CONTROLS for the split. Moving the WHOLE list to a case-sensitive grep
+# would silently un-block these, which is a far worse bug than the one being fixed:
+# the recursive-remove flag has a valid upper-case spelling, and SQL is conventionally
+# written lower-case. These four must stay blocked no matter how the split is edited.
+[ "$(g '{"tool_name":"Bash","command":"rm -Rf /tmp/x"}')" = "2" ] \
+  && ok "still blocks recursive remove with the upper-case flag spelling" || no "rm -Rf slipped through (the split went too far)"
+[ "$(g '{"tool_name":"Bash","command":"psql -c \"drop database prod\""}')" = "2" ] \
+  && ok "still blocks lower-case SQL drop database" || no "lower-case drop database slipped through"
+[ "$(g '{"tool_name":"Bash","command":"psql -c \"truncate table users\""}')" = "2" ] \
+  && ok "still blocks lower-case SQL truncate" || no "lower-case truncate slipped through"
+[ "$(g '{"tool_name":"Bash","command":"git reset --HARD origin/main"}')" = "2" ] \
+  && ok "still blocks a shouted git reset --hard" || no "upper-case git reset --hard slipped through"
+# An ordinary word ending in the disk-copy command's two letters must not match it.
+[ "$(g '{"tool_name":"Bash","command":"git commit -m \"Add support for retries\""}')" = "0" ] \
+  && ok "does NOT false-block a word ending in those two letters" || no "false-blocked an ordinary word (boundary too loose)"
+# -- 1c. FORCED PUSH, every spelling and position (v8.3.25) --
+# --force-with-lease used to be caught only as a prefix of --force, and only straight
+# after `push`; a force flag written after the remote and branch slipped through.
+for spelling in \
+  "git push --force-with-lease" \
+  "git push origin main --force-with-lease=main:abc123" \
+  "git push origin feature --force" \
+  "git push origin -f" \
+  "git push -uf origin main" \
+  "git push origin +main" \
+  "git -C repo push --force" \
+  "git -c push.default=current push -f"; do
+  [ "$(g "{\"tool_name\":\"Bash\",\"command\":\"$spelling\"}")" = "2" ] \
+    && ok "blocks forced push: $spelling" || no "forced push ESCAPED the guard: $spelling"
+done
+for safe in \
+  "git push --follow-tags origin main" \
+  "git push -u origin feature/fix" \
+  "git push origin fix-force-flag"; do
+  [ "$(g "{\"tool_name\":\"Bash\",\"command\":\"$safe\"}")" = "0" ] \
+    && ok "allows ordinary push: $safe" || no "FALSE-BLOCKED an ordinary push: $safe"
+done
+# -- 1d. A COMMIT MESSAGE IS PROSE (v8.3.25) --
+# A heredoc message with a QUOTED delimiter is not scanned for command shapes: it blocked
+# a commit whose message described an earlier, correctly-blocked .env staging, and the
+# only way out was rewording until the guard stopped recognising it. JSON carries the
+# newlines as \n escapes, exactly as the real hook input does.
+h(){ printf '{"tool_name":"Bash","command":"%s"}' "$1" | bash scripts/guard.sh >/dev/null 2>&1; echo $?; }
+[ "$(h $'git commit -m \\"$(cat <<\'EOF\'\\nchore: never git add -A while a .env exists\\nEOF\\n)\\"')" = "0" ] \
+  && ok "commit message heredoc may describe a blocked .env staging" || no "commit message prose was scanned as a command (.env)"
+[ "$(h $'git commit -F - <<\'EOF\'\\nwhy we refused rm -rf and git push --force\\nEOF')" = "0" ] \
+  && ok "commit -F - heredoc may mention destructive commands" || no "commit message prose was scanned as a command (destructive)"
+[ "$(h $'git tag -a v1 -F - <<\\"EOF\\"\\nnotes: git reset --hard was blocked\\nEOF')" = "0" ] \
+  && ok "tag message heredoc (double-quoted delimiter) is prose too" || no "tag message prose was scanned as a command"
+# ...and none of that may open a hole: each of these RUNS the destructive command.
+for evil in \
+  $'git commit -F - <<EOF\\n$(rm -rf /tmp/x)\\nEOF' \
+  $'bash <<\'EOF\'\\nrm -rf /tmp/x\\nEOF' \
+  $'git commit -F - <<\'EOF\'\\nmsg\\nEOF\\nrm -rf /tmp/x' \
+  $'bash <<\'X\' ; git commit -F - <<\'EOF\'\\nrm -rf /tmp/x\\nX\\nmsg\\nEOF' \
+  $'git commit -F - <<<\'x\'\\nrm -rf /tmp/x\\nx' \
+  $'git commit $(perl -F - <<\'EOF\'\\nrm -rf /tmp/x\\nEOF\\n)' \
+  $'git commit -m \\"$(bash <<\'EOF\'\\nrm -rf /tmp/x\\nEOF\\n)\\"' \
+  $'# git commit -F - <<\'EOF\'\\nrm -rf /tmp/x' \
+  $'sh -s git commit -F - <<\'EOF\'\\nrm -rf /tmp/x\\nEOF' \
+  $'git commit -m \\"$(cat <<\'EOF\' | sh\\nrm -rf /tmp/x\\nEOF\\n)\\"' \
+  $'git commit -F - <<\'EOF\'X\\nmsg\\nEOFX\\nrm -rf /tmp/x' \
+  $'git commit -F - <<-\'EOF\'\\nmsg\\n\\tEOF\\nrm -rf /tmp/x' \
+  $'echo \\"git commit -F - <<\'EOF\'\\\\n\\"; rm -rf /tmp/x' \
+  $'git commit -m \\"foo -F - <<\'EOF\'\\nbar\\"; rm -rf /tmp/x\\nEOF' \
+  $'git commit # -F - <<\'EOF\'\\nrm -rf /tmp/x\\nEOF' \
+  $'git commit -F - <<\'EOF\'\\nmsg\\nEOF\\r\\nrm -rf /tmp/x' \
+  $'git branch -v \\\\\\n -D feature' \
+  $'git add -v -f \\\\\\n.env' \
+  $'git commit -F - <<\'EOF\' && rm -rf /tmp/x\\nmsg\\nEOF'; do
+  [ "$(h "$evil")" = "2" ] && ok "still blocks: ${evil%%\\n*}…" || no "heredoc exemption opened a hole: $evil"
+done
 
 # ── 2. check-claude-md-size.sh (PostToolUse) ──
 echo "── 2. check-claude-md-size.sh ──"
@@ -103,6 +244,37 @@ non-core tail EDITED FREELY
 EOF
 bash scripts/check-core.sh >/dev/null 2>&1; rc=$?
 [ "$rc" -eq 0 ] && ok "non-CORE edit does NOT trip the gate" || no "non-CORE edit wrongly tripped the gate (rc=$rc)"
+# -- 3b. core-baseline.sh argument handling (v8.3.24) --
+# This script used to parse nothing and re-baseline unconditionally, so EVERY argument
+# was silently ignored. A session ran it with --check expecting a dry run and it
+# rewrote the baseline instead, over an unapproved kernel edit. The hash then matched,
+# check-core went green, and the protection was gone with no error anywhere. A flag
+# that is ignored is worse than one that does not exist: it reads as a promise.
+cp .claude/core.sha .claude/core.sha.keep
+cp CLAUDE.md CLAUDE.md.keep
+# "Compare only, never write" has to include "never CREATE": with no baseline on disk,
+# --check must report that and leave the directory as it found it.
+mv .claude/core.sha .claude/core.sha.away
+bash scripts/core-baseline.sh --check >/dev/null 2>&1; rc=$?
+[ "$rc" -ne 0 ] && ok "--check with no baseline reports failure" || no "--check passed with no baseline at all"
+[ ! -f .claude/core.sha ] && ok "--check did NOT create a baseline out of thin air" || no "--check CREATED a baseline"
+mv .claude/core.sha.away .claude/core.sha
+bash scripts/core-baseline.sh --check >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 0 ] && ok "--check passes on a matching CORE" || no "--check failed on a matching CORE (rc=$rc)"
+sed -i 's/rule one/rule one MOVED/' CLAUDE.md
+bash scripts/core-baseline.sh --check >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 1 ] && ok "--check reports a changed CORE (exit 1)" || no "--check did not report a changed CORE (rc=$rc)"
+cmp -s .claude/core.sha .claude/core.sha.keep \
+  && ok "--check did NOT rewrite the baseline (the whole point of the flag)" \
+  || no "--check REWROTE the baseline (the v8.3.23 defect regressed)"
+bash scripts/core-baseline.sh --dry-run >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 2 ] && ok "an unknown argument is fatal (exit 2)" || no "an unknown argument was ignored (rc=$rc)"
+cmp -s .claude/core.sha .claude/core.sha.keep \
+  && ok "an unknown argument did NOT rewrite the baseline" || no "an unknown argument REWROTE the baseline"
+bash scripts/core-baseline.sh >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 0 ] && ok "a bare run still re-baselines (the approved-change path)" || no "a bare run stopped working (rc=$rc)"
+mv CLAUDE.md.keep CLAUDE.md
+mv .claude/core.sha.keep .claude/core.sha
 
 # ── 4. precompact-snapshot.sh (PreCompact) ──
 echo "── 4. precompact-snapshot.sh ──"
@@ -173,6 +345,35 @@ rv=$(grep -iEA1 -m1 'verdict' d2-report.md | grep -oEi 'GREEN|YELLOW|RED' | head
                     || no "D2 regressed: template-style report has no parsable verdict"
 rm -f d2-report.md
 
+# -- 6b. install-git-hooks.sh (v8.3.25) --
+# It used to cp into .git/hooks unconditionally. With core.hooksPath set git never runs
+# that file, so the .env/secret blocker was silently off; in a worktree (.git is a FILE)
+# the script refused to run at all.
+ih="$(mktemp -d)"
+( cd "$ih" && git init -q . && git config user.email t@t.t && git config user.name t \
+  && mkdir scripts && cp "$SANDBOX/scripts/pre-commit" "$SANDBOX/scripts/install-git-hooks.sh" scripts/ ) >/dev/null 2>&1
+( cd "$ih" && bash scripts/install-git-hooks.sh ) >/dev/null 2>&1 && [ -x "$ih/.git/hooks/pre-commit" ] \
+  && ok "install-git-hooks installs into git's own hooks folder" || no "install-git-hooks did not install the hook"
+rm -f "$ih/.git/hooks/pre-commit"; git -C "$ih" config core.hooksPath .githooks
+( cd "$ih" && bash scripts/install-git-hooks.sh ) >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 1 ] && [ ! -e "$ih/.git/hooks/pre-commit" ] && [ ! -e "$ih/.githooks/pre-commit" ] \
+  && ok "refuses (exit 1, writes nothing) when core.hooksPath would shadow the hook" \
+  || no "wrote a hook git will never run, or touched the project's own hooks (rc=$rc)"
+git -C "$ih" config --unset core.hooksPath
+git -C "$ih" commit -q --allow-empty -m init >/dev/null 2>&1 && git -C "$ih" worktree add -q "$ih-wt" >/dev/null 2>&1
+( cd "$ih-wt" && mkdir -p scripts && cp "$SANDBOX/scripts/pre-commit" "$SANDBOX/scripts/install-git-hooks.sh" scripts/ \
+  && bash scripts/install-git-hooks.sh ) >/dev/null 2>&1 && [ -x "$ih/.git/hooks/pre-commit" ] \
+  && ok "works from a worktree (.git is a file), into the shared hooks folder" || no "install-git-hooks fails in a worktree"
+printf '#!/bin/sh\necho foreign hook\n' > "$ih/.git/hooks/pre-commit"
+( cd "$ih" && bash scripts/install-git-hooks.sh ) >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 1 ] && grep -q 'foreign hook' "$ih/.git/hooks/pre-commit" \
+  && ok "refuses to overwrite a foreign pre-commit (husky / pre-commit framework)" \
+  || no "overwrote a foreign pre-commit hook (rc=$rc)"
+printf '#!/usr/bin/env bash\n# Git pre-commit hook: last line of defense. (older copy)\n' > "$ih/.git/hooks/pre-commit"
+( cd "$ih" && bash scripts/install-git-hooks.sh ) >/dev/null 2>&1 && cmp -s "$ih/scripts/pre-commit" "$ih/.git/hooks/pre-commit" \
+  && ok "replaces its OWN older hook copy" || no "did not update its own older hook copy"
+rm -rf "$ih" "$ih-wt"
+
 # ── 7. quality-gate.sh — smoke + ADVERSARIAL (fake proof must NOT pass) ──
 echo "── 7. quality-gate.sh ──"
 qout="$(bash scripts/quality-gate.sh --trivial 2>&1)"
@@ -192,18 +393,19 @@ fi
 # `git add -A`-ed: test-hooks.sh itself contains fake secret literals and the installed
 # pre-commit hook would (correctly) refuse to commit it.
 printf '%s\n' '/scripts/' '/.agent/' '/.claude/' '/CLAUDE.md' '/_reports/runs/latest.json' > .gitignore
+mkdir -p .claude/agents/_archive && for a in block-executor verifier security-reviewer infra-security-reviewer devops-operator; do printf -- '---\nname: %s\n---\n' "$a" > ".claude/agents/$a.md"; done; printf -- '---\nname: ui-ux-qa\n---\n' > .claude/agents/_archive/ui-ux-qa.md
 printf 'Verdict: GREEN\nInputs: x\nFindings: none\nArtifacts: ok\n' > _reports/runs/t_green.md
 git add .gitignore _reports/runs/t_red.md _reports/runs/t_green.md 2>/dev/null
 git commit -qm "code + report" >/dev/null 2>&1
 sha="$(git rev-parse HEAD 2>/dev/null || echo '')"
-printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md"}' "$sha" > _reports/runs/latest.json
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["verifier"]}' "$sha" > _reports/runs/latest.json
 if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
   ok "gate passes a genuine GREEN run bound to HEAD (clean tree, latest.json exempt)"
 else
   no "gate blocked a legitimate GREEN run"
 fi
 # 7c. GREEN json but head_sha of a DIFFERENT commit → stale proof must BLOCK
-printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef","report":"_reports/runs/t_green.md"}' > _reports/runs/latest.json
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["verifier"]}' > _reports/runs/latest.json
 if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
   no "gate accepted proof from a DIFFERENT commit (stale-proof hole)"
 else
@@ -211,7 +413,7 @@ else
 fi
 # 7d. THE DIRTY-TREE LOOPHOLE (external review, v8.1.9-p1-lean): valid GREEN proof
 # bound to HEAD + an UNVERIFIED unstaged change made AFTER verification → must BLOCK.
-printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md"}' "$sha" > _reports/runs/latest.json
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["verifier"]}' "$sha" > _reports/runs/latest.json
 echo "tampered after verification" >> ok.txt
 if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
   no "gate went GREEN with a dirty tree (proof-for-old-state loophole regressed)"
@@ -250,6 +452,246 @@ git checkout -q -- ok.txt 2>/dev/null
 #     "$SANDBOX/..." the inside-the-repo case
 # Assertions in this fragment: 44. Full suite in the field project: 92/0.
 # -----------------------------------------------------------------------------
+# 7e-7w. F2 (v8.3.23): the independent review is enforced by the gate, not hoped for.
+# Field project A, week of 2026-09-01: ~19 of 20 NORMAL+ runs had no reviewer except the
+# builder itself; latest.json even listed the builder as the "reviewer". Nothing caught it.
+# 7e. NORMAL run with NO reviewers -> BLOCK
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":[]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: gate accepted a NORMAL run with no reviewers"
+else
+  ok "F2: gate BLOCKS a NORMAL run with no reviewers"
+fi
+# 7f. reviewer == builder -> BLOCK (self-review is not a review)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"devops-operator","reviewers":["devops-operator (live SSH session)"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: gate accepted the builder as its own reviewer"
+else
+  ok "F2: gate BLOCKS reviewer == builder"
+fi
+# 7f2. missing builder -> BLOCK (independence cannot be checked)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","reviewers":["verifier"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: gate accepted a run that never named its builder"
+else
+  ok "F2: gate BLOCKS a run with no 'builder'"
+fi
+# 7g. HIGH with 2 risks and 1 distinct reviewer -> BLOCK
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"HIGH","builder":"block-executor","risks":["security","infra"],"reviewers":["security-reviewer","security-reviewer (second pass)"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: gate accepted a HIGH run with fewer distinct reviewers than risks"
+else
+  ok "F2: gate BLOCKS a HIGH run with 1 distinct reviewer for 2 risks"
+fi
+# 7g2. HIGH with one independent reviewer per risk -> pass
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"HIGH","builder":"block-executor","risks":["security","infra"],"reviewers":["security-reviewer","infra-security-reviewer","verifier"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  ok "F2: gate passes a HIGH run with one independent reviewer per risk"
+else
+  no "F2: gate blocked a HIGH run that satisfies one-reviewer-per-risk"
+fi
+# 7h. HIGH with no risks listed -> BLOCK (the row demands them)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"HIGH","builder":"block-executor","reviewers":["verifier"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: gate accepted a HIGH run with no risks listed"
+else
+  ok "F2: gate BLOCKS a HIGH run that lists no risks"
+fi
+
+# 7i-7u. F2 hardening from the functional-verifier's adversarial pass (v8.3.23):
+# type confusion and junk tokens must not turn the self-review check into a no-op.
+# 7i. builder given as a LIST (LLM slip) with itself as reviewer -> BLOCK (F-1, was GREEN)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":["verifier"],"reviewers":["verifier"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: a list-typed builder let the builder review itself"
+else
+  ok "F2: gate BLOCKS a non-string builder (type confusion no longer bypasses self-review)"
+fi
+# 7j. HIGH, 2 risks, reviewers are junk tokens -> BLOCK (F-2)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"HIGH","builder":"block-executor","risks":["security","infra"],"reviewers":["(pending)","security-reviewer"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: junk reviewer token counted as an independent reviewer"
+else
+  ok "F2: gate BLOCKS a reviewer entry that is not an agent name"
+fi
+# 7k. HIGH, DUPLICATE risk entries, one reviewer -> pass (F-3: duplicates must not inflate the requirement)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"HIGH","builder":"block-executor","risks":["infra","Infra"],"reviewers":["infra-security-reviewer"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  ok "F2: duplicate risks do not demand a second reviewer"
+else
+  no "F2: duplicate risk entries inflated the reviewer requirement"
+fi
+# 7l. bullet-prefixed reviewer entry is read as its agent name -> pass (F-5)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["- verifier"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  ok "F2: a bullet-prefixed reviewer entry resolves to the agent name"
+else
+  no "F2: bullet prefix misread as the reviewer name"
+fi
+# 7m. pseudo-reviewer "orchestrator" -> BLOCK
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["orchestrator"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no 'F2: "orchestrator" accepted as an independent reviewer'
+else
+  ok "F2: gate BLOCKS a pseudo-reviewer (orchestrator)"
+fi
+# 7n. unknown row value -> BLOCK
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"MEDIUM","builder":"block-executor","reviewers":["verifier"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: unknown row value accepted"
+else
+  ok "F2: gate BLOCKS an unknown row value"
+fi
+# 7o. declared LOW row on a NON-trivial gate run -> BLOCK (LOW means --trivial; otherwise it is the cheapest F2 escape)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"LOW","builder":"block-executor","reviewers":[]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: a self-declared LOW row skipped the review check on a non-trivial gate run"
+else
+  ok "F2: gate BLOCKS a self-declared LOW row on a non-trivial run (LOW = --trivial)"
+fi
+# 7p. builder null -> BLOCK (independence uncheckable; code-reviewer HIGH)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":null,"reviewers":["block-executor"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: null builder passed as a named builder"
+else
+  ok "F2: gate BLOCKS a null builder"
+fi
+# 7q. reviewer entries that are objects -> BLOCK
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"devops-operator","reviewers":[{"name":"verifier"}]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: an object counted as a reviewer"
+else
+  ok "F2: gate BLOCKS reviewer entries that are not strings"
+fi
+# 7r. self-review spelled with a space ("block executor") -> BLOCK (ADV-1)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["block executor (self-review)"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: "block executor" passed as a different agent than "block-executor""
+else
+  ok "F2: gate BLOCKS a self-review disguised by space-vs-hyphen spelling"
+fi
+# 7s. invented reviewer names on HIGH -> BLOCK (ADV-7)
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"HIGH","builder":"block-executor","risks":["security","infra","data"],"reviewers":["abc","def","ghi"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: three invented names satisfied one-reviewer-per-risk"
+else
+  ok "F2: gate BLOCKS reviewers that are not active agents"
+fi
+# 7t. an agent on leave (_archive) offered as reviewer -> BLOCK
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["ui-ux-qa"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: an agent on leave counted as an active reviewer"
+else
+  ok "F2: gate BLOCKS an archived agent as reviewer"
+fi
+# 7u. free-form entries that START with a roster name -> pass
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"HIGH","builder":"orchestrator (main session)","risks":["functional","security"],"reviewers":["Verifier consolidated the evidence","security-reviewer (app+infra) PASS"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  ok "F2: free-form reviewer entries resolve to their roster agent"
+else
+  no "F2: a legitimate free-form reviewer entry was rejected"
+fi
+# 7v. EMPTY active roster -> BLOCK (SHERIFF [1]: shape-only fallback let invented names through)
+mv .claude/agents .claude/agents.off
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["totally-invented-agent"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "F2: an empty active roster let an invented reviewer pass"
+else
+  ok "F2: gate BLOCKS when there are no active agents to have reviewed"
+fi
+mv .claude/agents.off .claude/agents
+# 7w. validator cannot run (python3 broken/absent) -> BLOCK, never "latest.json present" (SHERIFF [2])
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"block-executor","reviewers":["verifier"]}' "$sha" > _reports/runs/latest.json
+stub="$(mktemp -d)"; printf '#!/usr/bin/env bash\nexit 127\n' > "$stub/python3"; chmod +x "$stub/python3"
+if PATH="$stub:$PATH" QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  no "gate went GREEN although the latest.json validator never ran"
+else
+  ok "gate BLOCKS when the latest.json validator cannot run"
+fi
+rm -rf "$stub"
+
+# 7x. THE SHIPPED SKELETON MUST SATISFY THE VALIDATOR (v8.3.24).
+# Every other test in this section writes its own latest.json by hand, so the suite
+# stayed fully green while the shipped _reports/runs/latest.json.template was missing
+# two fields the gate had begun requiring. A project that used the skeleton exactly as
+# intended got a BLOCK it had done nothing to earn, and nothing here noticed.
+# The fill below only ever replaces keys the skeleton ALREADY declares -- it never adds
+# one -- so a field added to the validator and forgotten in the skeleton fails here.
+tpl="$ROOT/_reports/runs/latest.json.template"
+if [ ! -f "$tpl" ]; then
+  no "shipped _reports/runs/latest.json.template is missing"
+else
+  miss="$(python3 - "$tpl" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+need = ["run_id","timestamp","verdict","head_sha","report","row","builder","reviewers","risks"]
+print(",".join(k for k in need if k not in d))
+PY
+)"
+  [ -z "$miss" ] && ok "shipped skeleton declares every field the gate can require" \
+                 || no "shipped skeleton is missing gate fields: $miss"
+  python3 - "$tpl" "$sha" > _reports/runs/latest.json <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+fill = {"run_id": "t-skeleton", "timestamp": "now", "task": "skeleton validation",
+        "verdict": "GREEN", "head_sha": sys.argv[2],
+        "report": "_reports/runs/t_green.md", "spec": "",
+        "row": "NORMAL", "builder": "block-executor",
+        "reviewers": ["verifier"], "risks": [], "gate": "PASS"}
+out = {k: (fill[k] if k in fill else v) for k, v in d.items() if not k.startswith("$")}
+print(json.dumps(out))
+PY
+  qx="$(QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh 2>&1)"
+  if echo "$qx" | grep -q "independent review (F2)"; then
+    ok "the SHIPPED skeleton, filled in, satisfies the gate validator"
+  else
+    no "the shipped skeleton does NOT satisfy the gate: $(echo "$qx" | grep -i 'latest.json' | head -2 | tr '\n' ' ')"
+  fi
+fi
+
+# 7y. BUILDER resolved against the ACTIVE roster (v8.3.25). Reviewers always were; the
+# builder was only required to be non-empty, so a run built by an archived agent was
+# certified as long as its reviewers were real.
+for b in "ui-ux-qa" "made-up-builder" "self"; do
+  printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"%s","reviewers":["verifier"]}' "$sha" "$b" > _reports/runs/latest.json
+  if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+    no "F2: builder '$b' (archived / invented / pseudo) was accepted"
+  else
+    ok "F2: gate BLOCKS builder '$b' — not an active agent"
+  fi
+done
+printf '{"run_id":"t1","timestamp":"now","verdict":"GREEN","head_sha":"%s","report":"_reports/runs/t_green.md","row":"NORMAL","builder":"orchestrator","reviewers":["verifier"]}' "$sha" > _reports/runs/latest.json
+if QG_ALLOW_NO_CHECKS=1 bash scripts/quality-gate.sh >/dev/null 2>&1; then
+  ok "F2: the main session ('orchestrator') is a legitimate builder"
+else
+  no "F2: the main session was refused as a builder"
+fi
+
+# 7z. No CLAUDE.md -> a visible BLOCK. It used to crash awk on stderr and skip the CORE
+# check without a line on stdout (v8.3.25).
+mv CLAUDE.md CLAUDE.md.away
+qx="$(bash scripts/quality-gate.sh --trivial 2>&1)"; rc=$?
+if [ "$rc" -ne 0 ] && echo "$qx" | grep -q "no CLAUDE.md" && ! echo "$qx" | grep -qi "fatal"; then
+  ok "gate BLOCKS, visibly, when there is no CLAUDE.md (no silent CORE skip)"
+else
+  no "missing CLAUDE.md did not produce a visible BLOCK (rc=$rc)"
+fi
+mv CLAUDE.md.away CLAUDE.md
+
+# 7z2. Every step keeps its OWN log (v8.3.25). One shared /tmp/qg.out let the next step
+# overwrite a failing step's evidence before anyone read it.
+stub="$(mktemp -d)"; printf '#!/usr/bin/env bash\necho "output of make $1"; exit 1\n' > "$stub/make"; chmod +x "$stub/make"
+printf 'lint:\n\ttrue\ntest:\n\ttrue\n' > Makefile
+qx="$(PATH="$stub:$PATH" bash scripts/quality-gate.sh --trivial 2>&1)"
+l1="$(echo "$qx" | grep -o 'lint (make) FAILED (log: [^)]*)' | sed 's/.*log: //; s/)$//')"
+l2="$(echo "$qx" | grep -o 'test (make) FAILED (log: [^)]*)' | sed 's/.*log: //; s/)$//')"
+if [ -n "$l1" ] && [ -n "$l2" ] && [ "$l1" != "$l2" ] && grep -q "make lint" "$l1" 2>/dev/null && grep -q "make test" "$l2" 2>/dev/null; then
+  ok "each failing gate step keeps its own log, which survives the next step"
+else
+  no "gate step logs are shared or lost (lint log '$l1', test log '$l2')"
+fi
+rm -f Makefile; rm -rf "$stub"; [ -n "$l1" ] && rm -rf "$(dirname "$l1")"
+
 
 # -- 8. sheriff-review.sh -- reviewer-isolation guarantees --
 # These are the STATIC half. The wrapper exists because the same guarantees, written as

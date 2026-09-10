@@ -63,6 +63,10 @@ Compare files CR-STRIPPED (e.g. hash `tr -d '\r' < file`), never raw bytes:
 Windows worktree checks `.md` out as CRLF while release zips are uniformly LF —
 a raw hash sweep invents divergences that do not exist and manufactures hand-
 merges (field project B, 2026-08-31). Line-ending-only difference == identical.
+The same normalisation applies to the MERGE, not only to the comparison: run
+`git merge-file` on CR-stripped copies and write the result back in the file's
+ORIGINAL convention. Merging raw CRLF against LF reports every file as one
+whole-file conflict — six files, all spurious (field project A, 2026-09-09).
 - **Template-owned, unmodified here** (byte-identical to the old template /
   never touched): replace with the new version. Typical: `scripts/*`,
   `.claude/commands/*`, `docs/ROLES.md`, unedited template skills/rules.
@@ -71,11 +75,53 @@ merges (field project B, 2026-08-31). Line-ending-only difference == identical.
 - **Project-owned — NEVER touch:** `.agent/state/*`, `tasks/*`, `_reports/*`,
   `specs/*`, real `.env*`, project-created skills/agents/rules, `temp/`.
 
+## 2b. Resolving the conflicts you will actually get
+An onboarded project is not a modified template — it is a FILLED-IN one, and it may
+be AHEAD of the template. Both produce conflicts that look alarming and resolve
+mechanically. Four classes — the first, third and fourth observed on field project B,
+v8.3.21 -> v8.3.24 (7 conflicts, none of which needed a judgement call), the second on
+its own hook suite the same week:
+
+- **Filled placeholders / a deleted FIRST RUN block -> keep OURS, always.** Every
+  onboarded project deleted the onboarding block on day one and wrote its own
+  PROJECT section, so any template edit to that text conflicts with all of them at
+  once. Taking theirs RESURRECTS the onboarding interview.
+  **A project that deleted the FIRST RUN block at onboarding DROPS the template's hunk
+  for it — the onboarding interview is never resurrected by an upgrade.** This class
+  hits every onboarded project identically, and taking `--theirs` here is silently
+  wrong rather than loudly wrong: nothing fails, the next session just starts
+  interviewing the owner about a project that was set up months ago.
+- **A project-local block in `quality-gate.sh` must be scoped to a marker path.** The
+  gate ships with the template and also runs in the hook suite's sandbox, where the
+  project's own files do not exist; a local block that fail-closes there blocks every
+  sandboxed run and turns the suite's expected-BLOCK assertions into vacuous passes.
+  Keep the project's block (OURS), and make sure it first tests a path only the real
+  project has — the convention is in the header of `scripts/quality-gate.sh`.
+- **The project already fixed it, differently -> keep OURS, and say so in the run
+  report.** field project B fixed the three `state-patch.py` sheriff findings on 2026-09-02;
+  the template fixed the same three on 2026-09-08. Six conflict hunks, zero
+  disagreement. Diff ours-vs-base AND theirs-vs-base before choosing: when theirs
+  adds nothing ours lacks, keep ours and skip the file entirely.
+- **Formatting-only divergence -> take THEIRS.** A re-wrapped list conflicts with any
+  insertion into it. Take theirs for that hunk, then prove nothing was lost — for
+  `settings.json` diff the PARSED `permissions.allow` sets, not the text.
+
+Resolve per HUNK, not per file: `git merge-file --ours` / `--theirs` settles only the
+conflicted hunks and keeps every clean template change.
+
 ## 3. CLAUDE.md and settings are a MERGE, never a replace
 - PROJECT / STACK / MY COMMANDS / MY RULES: preserved verbatim.
 - Non-CORE structural changes: propose as a diff.
 - CORE block: only with my explicit OK + a Kernel Change Rationale, then
   re-baseline via `./scripts/core-baseline.sh`.
+  First check whether CORE changed AT ALL: hash the block in both templates,
+  CR-stripped (`awk '/CORE:START/{f=1} f{print} /CORE:END/{f=0}' | sha256sum`).
+  v8.3.21 -> v8.3.24 leaves it byte-identical, so no rationale, no OK and no
+  re-baseline apply, and `core-baseline.sh --check` stays GREEN throughout — that
+  GREEN is the proof. Run the ceremony only when the two hashes actually differ.
+  v8.3.25 DOES change it (AUTOMODE paragraph, one SAFETY line): show the owner the
+  CORE diff, get the OK for THIS project, then re-baseline. One OK per project —
+  a baseline is the attestation that a human approved, so it is never batched.
 - `.claude/settings.json`: merge (I may have added permissions/hooks).
 
 ## 4. Adapt, don't just copy
@@ -86,6 +132,15 @@ changelog says to cut, cut here too — my veto, then a survival test.
 
 ## 5. Verify + record + clean up
 - `bash scripts/test-hooks.sh` → GREEN; `./scripts/quality-gate.sh --trivial`.
+  **`--trivial` is the acceptance form, and a missing `latest.json` is not an
+  upgrade regression.** `_reports/runs/latest.json` is RUN STATE and is gitignored,
+  so it never travels with the repo: a fresh clone, a worktree, or any project
+  between runs starts with the FULL gate BLOCKED on `missing latest.json` — plus
+  `no lint/test/build commands` wherever the project root has no package.json /
+  Makefile / justfile. Both predate the upgrade. Prove that rather than assume it
+  (`git check-ignore -v _reports/runs/latest.json`, and run the OLD gate on the
+  pre-upgrade tree), then accept on `--trivial` + a GREEN hook suite +
+  `core-baseline.sh --check`.
 - Context Guard is NOT part of the project payload and has no project test: it is
   one shared runtime at `~/.claude/context-guard/`, upgraded from its own release
   artifact (`context-guard-<version>.zip`) with

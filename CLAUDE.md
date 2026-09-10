@@ -89,10 +89,15 @@ data / infra / content / money). Unsure between rows → take the higher one.
   config. Technically right ≠ business-right.
 
 **AUTOMODE** — session toggle; I say "automode on" / "automode off" (default in
-PROJECT). On: the NORMAL row behaves like LOW (no plan pause). Off: rows as above.
-The DESTRUCTIVE row NEVER shifts, regardless of automode. In every row: any RED,
-any "done" without evidence, anything irreversible, or a BLOCKED gate → STOP and
-ask me.
+PROJECT). On: the NORMAL row behaves like LOW (no plan pause), and **after a GREEN
+gate take the next eligible `[todo]` item in `tasks/board.md`, without asking**.
+Eligibility, the claim, the budget and the ONE stop list live in
+`.claude/rules/automode-queue.md` — read it before the first pick. Dispatch only
+agents on this project's active roster (`orchestration` skill, step 0). A plan-pause
+question only where the matrix requires approval, always with a recommended option;
+a genuine blocker may always be asked. Off: rows as above. The DESTRUCTIVE row NEVER
+shifts, regardless of automode. In every row: any RED, any "done" without evidence,
+anything irreversible, or a BLOCKED gate → STOP and ask me.
 
 ## DONE MEANS PROOF (always)
 **"Done" without shown evidence is not done.** Prove it: command output, passing
@@ -121,7 +126,8 @@ or work-erasing actions need a backup/commit + my explicit approval.
 **Checkpoint before big changes** (bulk edits, refactors, migrations, dependency
 bumps, infra/VPS): run the `checkpoint` skill — clean restore point, feature branch,
 rollback line stated BEFORE starting. Checkpoint stages ONLY this task's files.
-Never use `git push --force`, `git reset --hard`, `git checkout -- .`, `git clean -f`,
+Never use `git push --force` (`--force-with-lease` included), `git reset --hard`,
+`git checkout -- .`, `git clean -f`,
 or stash someone else's changes without my approval — they erase uncommitted work.
 (Guides here; the PreToolUse hook in `.claude/settings.json` enforces the hard blocks.)
 
@@ -162,8 +168,8 @@ This file is the KERNEL: rules + routing + pointers. History, decisions, backlog
 run logs live elsewhere. At session start read: (1) `.agent/state/current.md` —
 what's true now; (2) `_reports/runs/latest.json` — machine run state;
 (3) `tasks/lessons.md`. Route new info with the `memory-router` skill. Precedence
-on conflict: my chat request → this kernel → current.md → capsules → lessons →
-docs → defaults. **Resume after a context blowup:** new session → current.md +
+on conflict: my chat request → this kernel → always-on rules (`.claude/rules/`) →
+current.md → capsules → lessons → docs → defaults. **Resume after a context blowup:** new session → current.md +
 latest.json + active spec → pick up from the last completed phase; artifacts are
 the checkpoint, never chat memory. Auto-compaction is covered by Context Guard:
 advisory thresholds prompt an agent-written task handoff (`.claude/handoffs/current.md`)
