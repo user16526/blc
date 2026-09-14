@@ -21,7 +21,7 @@ archiving roles no longer needed — move their files to `.claude/agents/_archiv
                    over http://localhost:8099; for strategy/analysis — a written
                    deliverable in `_reports/` citing the GA4/Clarity numbers it used.
 - Default automode: on
-- SHERIFF cross-review: off
+- SHERIFF cross-review: on
 - VPS workspace:    n/a
 - Active team:      gaming-product-owner, gaming-ux-strategist, verifier, ui-ux-qa
 - SCOPE LIMIT:     product, marketing and UI/UX only. Claude does NOT write or modify
