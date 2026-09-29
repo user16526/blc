@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Start Season event</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1f;--mute:#6b6b70;--line:#e3e1dc;--good:#1f8a4c;--bad:#c23b2f;--acc:#b8322a;--bar:#d9d6cf;--ev:#fff4e8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141416;--card:#1e1e21;--ink:#ececef;--mute:#9a9aa2;--line:#2e2e33;--good:#4cc27d;--bad:#ff6b5e;--acc:#ff802b;--bar:#38383e;--ev:#2a2118}}
+:root[data-theme="dark"]{--bg:#141416;--card:#1e1e21;--ink:#ececef;--mute:#9a9aa2;--line:#2e2e33;--good:#4cc27d;--bad:#ff6b5e;--acc:#ff802b;--bar:#38383e;--ev:#2a2118}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--mute);font-size:12px;margin-bottom:12px}
+.g{display:grid;gap:10px}
+.two{grid-template-columns:5fr 7fr}
+.c{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto}
+.c h2{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td,th{padding:3px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-weight:600;color:var(--mute);font-size:11px}
+td:first-child,th:first-child{text-align:left}
+.up{color:var(--good);font-weight:600}.dn{color:var(--bad);font-weight:600}
+.ev td{background:var(--ev)}
+.mark td{background:var(--acc);color:#fff;font-weight:700;text-align:left}
+.b{display:inline-block;height:9px;background:var(--bar);border-radius:2px;vertical-align:middle;margin-right:4px}
+.ev .b{background:var(--acc)}
+ul{margin:0;padding-left:16px}li{margin:2px 0}
+.verdict{font-weight:700}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>Івент Start Season 2026: реєстрації по днях + чи успішний івент</h1>
+<div class="sub">Live DB (репліка), 29.09.2026. Дні UTC (припущення). Новий івент стартував <b>08.09 20:00</b>, триває до 06.10. Попередній (No Name Resort): 22.07 – 07.09.</div>
+
+<div class="g two">
+<div class="c">
+<h2>Вердикт</h2>
+<p class="verdict">Залучення — так. Гроші — ні.</p>
+<ul>
+<li><span class="up">Охоплення +20%</span> активних учасників проти 20 днів до старту; утримання на рівні старту попереднього івенту.</li>
+<li><span class="up">FTD +10%</span> (765 проти 696).</li>
+<li><span class="dn">GMV −18%</span> проти 20 днів до старту, <span class="dn">−25%</span> проти старту попереднього івенту.</li>
+<li>Платників стільки ж (≈1 270) — просів <b>розмір депозиту</b>: ARPPU (без топ-10) 40 → 35.5 → 31.4 $. Спад почався ще до івенту — новий івент його не розвернув.</li>
+<li>Реєстрації без змін (−2%): івент не драйвить залучення нових юзерів.</li>
+</ul>
+</div>
+<div class="c">
+<h2>Перші 20 днів: новий vs попередній</h2>
+<table>
+<tr><th>метрика</th><th>попер. старт<br>22.07–11.08</th><th>до старту<br>18.08–07.09</th><th>новий старт<br>08.09–28.09</th><th>vs до старту</th></tr>
+<tr><td>Реєстрації</td><td>16 758</td><td>17 999</td><td>17 669</td><td class="dn">−2%</td></tr>
+<tr><td>FTD</td><td>711</td><td>696</td><td>765</td><td class="up">+10%</td></tr>
+<tr><td>Активні в івенті</td><td>12 593</td><td>11 351</td><td>13 630</td><td class="up">+20%</td></tr>
+<tr><td>Активні 3+ днів</td><td>2 184</td><td>672*</td><td>2 054</td><td>−6%*</td></tr>
+<tr><td>Активні 7+ днів</td><td>531</td><td>334*</td><td>487</td><td>−8%*</td></tr>
+<tr><td>Платники</td><td>1 270</td><td>1 261</td><td>1 279</td><td>+1%</td></tr>
+<tr><td>Депозитів</td><td>3 306</td><td>3 015</td><td>2 911</td><td class="dn">−3%</td></tr>
+<tr><td>GMV, $</td><td>79 529</td><td>72 913</td><td>59 518</td><td class="dn">−18%</td></tr>
+<tr><td>GMV топ-10 платників, $</td><td>29 136</td><td>28 556</td><td>19 634</td><td class="dn">−31%</td></tr>
+<tr><td>GMV решти, $</td><td>50 393</td><td>44 357</td><td>39 884</td><td class="dn">−10%</td></tr>
+<tr><td>Платники $500+</td><td>24</td><td>22</td><td>15</td><td class="dn">−7</td></tr>
+</table>
+<div class="sub" style="margin:6px 0 0">* «до старту» = хвіст старого івенту, тому утримання (3+/7+ днів) порівнюємо зі стартом попереднього івенту. Кожен платник автоматично отримує XP івенту, тож депозити на івент атрибутувати не можна.</div>
+</div>
+</div>
+
+<div class="c" style="margin-top:10px">
+<h2>По днях, 01.08 – 28.09</h2>
+<table id="t"><tr><th>день</th><th>реєстрації</th><th>FTD</th><th>платники</th><th>GMV, $</th><th>вступили в івент</th></tr></table>
+</div>
+</div>
+<script>
+const d=[["08-01","Сб",749,38,105,2819,553],["08-02","Нд",938,30,94,4282,578],["08-03","Пн",729,33,93,2640,500],["08-04","Вт",805,41,117,2265,611],["08-05","Ср",706,37,105,3180,485],["08-06","Чт",730,36,115,4270,498],["08-07","Пт",851,46,139,4033,594],["08-08","Сб",789,41,120,3367,588],["08-09","Нд",741,46,109,2579,537],["08-10","Пн",832,42,105,2659,540],["08-11","Вт",818,49,129,3417,580],["08-12","Ср",801,31,102,4631,545],["08-13","Чт",731,36,112,5478,483],["08-14","Пт",747,47,140,4293,515],["08-15","Сб",862,43,116,3164,573],["08-16","Нд",855,41,109,2703,580],["08-17","Пн",829,27,97,3384,538],["08-18","Вт",828,30,88,3316,547],["08-19","Ср",863,36,96,3094,566],["08-20","Чт",777,44,109,4818,541],["08-21","Пт",911,26,113,4119,582],["08-22","Сб",807,28,100,3869,546],["08-23","Нд",764,38,99,3801,487],["08-24","Пн",902,31,109,4493,561],["08-25","Вт",838,30,89,5387,531],["08-26","Ср",1019,36,104,3641,667],["08-27","Чт",948,40,108,2460,614],["08-28","Пт",868,45,128,2994,514],["08-29","Сб",942,30,88,5537,571],["08-30","Нд",970,38,89,2845,629],["08-31","Пн",919,32,95,4319,618],["09-01","Вт",837,36,106,4128,534],["09-02","Ср",846,34,92,4816,537],["09-03","Чт",852,47,105,2604,533],["09-04","Пт",943,36,103,3132,643],["09-05","Сб",1050,30,90,3040,596],["09-06","Нд",1038,32,85,2113,631],["09-07","Пн",939,24,82,1337,594],["09-08","Вт",965,39,89,1523,1320],["09-09","Ср",934,48,132,5762,2830],["09-10","Чт",911,38,120,4108,1054],["09-11","Пт",969,53,120,3558,829],["09-12","Сб",1090,52,122,2362,802],["09-13","Нд",965,43,95,2040,741],["09-14","Пн",885,43,102,2184,634],["09-15","Вт",803,35,91,2660,610],["09-16","Ср",807,25,75,1679,566],["09-17","Чт",831,43,97,3185,588],["09-18","Пт",817,44,111,3471,572],["09-19","Сб",778,31,95,2834,546],["09-20","Нд",963,40,99,1817,593],["09-21","Пн",832,37,90,4217,572],["09-22","Вт",793,30,83,2002,505],["09-23","Ср",870,32,80,2598,583],["09-24","Чт",907,33,86,3212,595],["09-25","Пт",842,27,93,4069,533],["09-26","Сб",928,34,94,3030,561],["09-27","Нд",911,32,86,2708,636],["09-28","Пн",788,35,84,2213,512]];
+const t=document.getElementById("t"),mx=Math.max(...d.map(r=>r[2])),f=n=>n.toLocaleString("uk-UA");
+for(const r of d){
+  const ev=r[0]>="09-08";
+  if(r[0]==="09-08")t.insertAdjacentHTML("beforeend",'<tr class="mark"><td colspan="6">▼ 08.09 20:00 — старт нового івенту Start Season 2026 (попередній завершився 07.09 23:59)</td></tr>');
+  t.insertAdjacentHTML("beforeend",`<tr${ev?' class="ev"':''}><td>${r[0].slice(3)}.${r[0].slice(0,2)} ${r[1]}</td><td><span class="b" style="width:${Math.round(r[2]/mx*80)}px"></span>${f(r[2])}</td><td>${r[3]}</td><td>${r[4]}</td><td>${f(r[5])}</td><td>${f(r[6])}</td></tr>`);
+}
+</script>
+</body>
+</html>

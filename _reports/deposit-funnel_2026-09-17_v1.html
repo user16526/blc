@@ -1,0 +1,259 @@
+<title>Where Deposits Leak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f6f5f4; --surface:#ffffff; --ink:#1c1a1e; --muted:#6a6570; --rule:#e5e1e4; --head:#f0edef;
+  --accent:#9b1c2e; --good:#1c7548; --good-bg:#e3f2ea; --bad:#b42318; --bad-bg:#fbe7e5; --warn-bg:#fdf2dc;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141215; --surface:#1c191d; --ink:#eeeaef; --muted:#a39da8; --rule:#322d34; --head:#241f25;
+    --accent:#e2596d; --good:#52c48d; --good-bg:#16301f; --bad:#f07a6f; --bad-bg:#3a1a19; --warn-bg:#352a14;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141215; --surface:#1c191d; --ink:#eeeaef; --muted:#a39da8; --rule:#322d34; --head:#241f25;
+  --accent:#e2596d; --good:#52c48d; --good-bg:#16301f; --bad:#f07a6f; --bad-bg:#3a1a19; --warn-bg:#352a14;
+}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:32px 64px;display:grid;gap:40px}
+header{display:grid;gap:10px}
+.eyebrow{font:500 12px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:clamp(28px,4.4vw,40px);line-height:1.1;margin:0;font-weight:700;text-wrap:balance}
+h2{font-size:20px;margin:0;font-weight:600;text-wrap:balance}
+.lede{max-width:68ch;color:var(--muted);margin:0}
+.leaks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.leak{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px;display:grid;gap:6px;align-content:start}
+.leak .step{font:500 12px/1.2 "IBM Plex Mono",monospace;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.leak .big{font:600 26px/1.1 "IBM Plex Mono",monospace;color:var(--bad)}
+.leak.ok .big{color:var(--good)}
+.leak p{margin:0;font-size:14px}
+section{display:grid;gap:12px}
+.note{color:var(--muted);font-size:13.5px;margin:0;max-width:80ch}
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--head);font-weight:600;font-size:12px;color:var(--muted);position:sticky;top:0}
+thead tr.grp th{text-align:center;color:var(--ink);font-size:12px}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px}
+td.cur{font-weight:600}
+tr.stage td:first-child{font-weight:600}
+tr.sub td:first-child{padding-left:28px;color:var(--muted)}
+tr.total td{background:var(--head);font-weight:600}
+.sep{border-left:1px solid var(--rule)}
+.chip{display:inline-block;min-width:58px;padding:1px 6px;border-radius:4px;font:500 12px/1.6 "IBM Plex Mono",monospace;text-align:right}
+.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.good{background:var(--good-bg);color:var(--good)}
+.chip.flat{color:var(--muted)}
+td.hot{background:var(--warn-bg)}
+ul.caveats{margin:0;padding-left:18px;color:var(--muted);font-size:13.5px;display:grid;gap:4px;max-width:85ch}
+code{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">BLC deposits · days 1–16 · live DB, 2026-09-17</div>
+  <h1>Where Deposits Leak</h1>
+  <p class="lede">September 2026 compared with August 2026 and September 2025, same days (1st–16th). More people visit, sign up and start a deposit than ever. The money is lost at the last step: the payment doesn't go through.</p>
+</header>
+
+<div class="leaks" id="leaks"></div>
+
+<section>
+  <h2>Full funnel</h2>
+  <p class="note">People are counted once per window. An "attempt" is one deposit row; a person can try several times. The database can't see deposit-window opens or checkout page views (GA4/Clarity only), so the funnel starts at "logged in".</p>
+  <div class="scroll"><table id="t-funnel"></table></div>
+</section>
+
+<section>
+  <h2>New vs returning players</h2>
+  <p class="note">"New" = account created inside the same window. Returning players carry ~80% of GMV and account for most of the loss.</p>
+  <div class="scroll"><table id="t-cohort"></table></div>
+</section>
+
+<section>
+  <h2>By country</h2>
+  <p class="note">Top 10 deposit countries in Sep 2026, sorted by GMV change vs August. "Start → pay" = people who paid ÷ people who started a deposit. Cells shaded where start → pay fell 10+ pp vs August.</p>
+  <div class="scroll"><table id="t-country"></table></div>
+</section>
+
+<section>
+  <h2>By payment system</h2>
+  <p class="note">The replica has no names for payment systems; ids only. PS 82 carries ~86% of GMV.</p>
+  <div class="scroll"><table id="t-ps"></table></div>
+</section>
+
+<section>
+  <h2>PS 82 week by week</h2>
+  <p class="note">Weeks start Monday. The step down begins in the week of Aug 17 and hasn't recovered. The Sep 14 week is partial (Sep 14–16).</p>
+  <div class="scroll"><table id="t-week"></table></div>
+</section>
+
+<section>
+  <h2>Read with care</h2>
+  <ul class="caveats">
+    <li>"Paid" = <code>deposits.paid_at</code> is set (inferred, not confirmed in app code). Timestamps are assumed UTC.</li>
+    <li>Status semantics changed: in 2025 ~1,200 PS 82 attempts per window stayed <em>pending</em>; in 2026 almost none do, and they show up as <em>failed</em>. Compare paid counts across years, not failed counts.</li>
+    <li>Test and do-not-count accounts (<code>clients.flags &amp; 65</code>) are excluded from deposits and sign-ups. "Logged in" comes from login records without that filter.</li>
+    <li>"Intended by never-payers" = the largest unpaid amount each never-paying person tried. It's an upper bound on lost GMV, not a forecast.</li>
+    <li>Currencies are summed as one unit; the top countries all deposit in USD. Deposit country source (IP or card) is unverified.</li>
+    <li>All clients have <code>partner_id = 1</code>, so traffic source can't be split here. Use GA4 for that.</li>
+    <li>SQL: <code>_reports/blc-data_2026-09-17_1300_v2.md</code> (funnel, new vs returning, country, payment system, weekly).</li>
+  </ul>
+</section>
+</div>
+
+<script>
+const W = ["Sep 2025","Aug 2026","Sep 2026"];
+const W4 = ["Aug 2025","Sep 2025","Aug 2026","Sep 2026"];
+
+// ---- data (live DB, 2026-09-17) ----
+const F = { // index = W4
+  active:[15548,14147,18806,21238], regs:[9896,8720,12684,14834],
+  starters:[2118,2190,2249,2676], payers:[1280,1305,1137,1086],
+  attempts:[5897,6379,5815,6265], paid:[3168,3176,2745,2327],
+  gmv:[59363,64560,55668,46863], ftd:[678,721,637,607], intended:[15837,19545,27218,40540],
+  newStart:[983,1081,1109,1402], newPay:[503,571,454,458], oldStart:[1135,1109,1140,1274], oldPay:[777,734,683,628],
+  gmvNew:[10180,15129,10661,8881], gmvOld:[49182,49431,45007,37983]
+};
+const C = { // country: [attempts, paid, starters, payers, gmv] per W
+  UA:[[2439,1554,793,602,28866],[1738,1111,614,440,21473],[1627,883,682,409,17024]],
+  TR:[[616,352,130,71,11277],[703,407,212,121,13923],[724,279,237,96,11903]],
+  PL:[[510,302,174,115,5232],[695,337,281,146,6289],[785,355,323,139,4942]],
+  CZ:[[86,53,39,24,871],[195,97,62,41,1745],[188,60,81,42,831]],
+  US:[[205,68,64,35,1857],[306,173,95,47,2641],[230,115,94,48,1939]],
+  BR:[[392,79,137,59,850],[268,60,130,46,462],[362,56,180,52,368]],
+  AR:[[67,22,34,15,150],[168,32,68,29,257],[199,52,95,35,337]],
+  BY:[[32,0,15,0,0],[32,0,20,0,0],[93,3,61,3,32]],
+  DE:[[412,190,162,95,5052],[156,68,93,41,1051],[233,89,93,30,1535]],
+  GB:[[59,31,29,21,496],[126,62,46,29,1099],[233,87,54,30,1935]]
+};
+const P = { // ps: [attempts, paid, gmv] per W (null = no rows)
+  82:[[4956,2803,53381],[4383,2505,51080],[4231,2038,40226]],
+  94:[[671,35,1143],[1012,41,1108],[1568,76,2711]],
+  97:[[17,0,0],[107,14,108],[173,36,228]],
+  83:[[106,45,2620],[113,40,1170],[128,51,1262]],
+  5:[[190,190,6158],[141,141,2124],[122,122,2405]],
+  96:[[154,69,714],[14,0,0],[23,0,0]],
+  95:[[87,21,294],[9,0,0],[13,2,15]],
+  98:[[136,0,0],null,null]
+};
+const WK = [["Jul 6",2023,56.1,30293],["Jul 13",1836,56.5,21256],["Jul 20",1794,56.7,27600],["Jul 27",1937,52.8,30532],
+  ["Aug 3",1877,57.9,20807],["Aug 10",1984,57.4,23608],["Aug 17",1821,50.9,23989],["Aug 24",1948,50.7,25391],
+  ["Aug 31",1784,49.6,20894],["Sep 7",2015,47.0,16840],["Sep 14*",718,47.4,5785]];
+
+// ---- helpers ----
+const n = v => v==null ? "—" : Math.round(v).toLocaleString("en-US");
+const usd = v => v==null ? "—" : "$"+Math.round(v).toLocaleString("en-US");
+const pct = v => v==null || !isFinite(v) ? "—" : v.toFixed(1)+"%";
+const r = (a,b) => b ? 100*a/b : null;
+// dir: 1 = up is good, -1 = up is bad, 0 = neutral
+function chipPct(cur, base, dir){ if(!base) return '<span class="chip flat">—</span>';
+  const d = 100*(cur-base)/base; return chip(d, (d>0?"+":"")+d.toFixed(0)+"%", dir, 3); }
+function chipPp(cur, base, dir){ if(cur==null||base==null) return '<span class="chip flat">—</span>';
+  const d = cur-base; return chip(d, (d>0?"+":"")+d.toFixed(1)+" pp", dir, 1); }
+function chipUsd(d, dir){ return chip(d, (d>0?"+$":"−$")+Math.abs(Math.round(d)).toLocaleString("en-US"), dir, 200); }
+function chip(d, label, dir, flat){ const cls = dir===0 || Math.abs(d)<flat ? "flat" : (d*dir>0 ? "good" : "bad");
+  return `<span class="chip ${cls}">${label}</span>`; }
+
+// ---- leak cards ----
+const payA = r(F.payers[2],F.starters[2]), payS = r(F.payers[3],F.starters[3]);
+const lostPayers = Math.round(F.starters[3]*payA/100 - F.payers[3]);
+document.getElementById("leaks").innerHTML = [
+  {cls:"ok", step:"Visit → start deposit", big:pct(r(F.starters[3],F.active[3])),
+   p:`Of logged-in users, the share who start a deposit held up (Aug ${pct(r(F.starters[2],F.active[2]))}). Demand is there: ${n(F.starters[3])} people tried to pay, the most of any window.`},
+  {cls:"", step:"Start → paid", big:pct(payS),
+   p:`Down from ${pct(payA)} in August and ${pct(r(F.payers[1],F.starters[1]))} a year ago. At August's rate, ~${n(lostPayers)} more people would have paid.`},
+  {cls:"", step:"Money tried but not collected", big:usd(F.intended[3]),
+   p:`Intended by people who never paid, up from ${usd(F.intended[2])} in August. Returning players' GMV fell ${usd(F.gmvOld[2]-F.gmvOld[3])}; new players' ${usd(F.gmvNew[2]-F.gmvNew[3])}.`}
+].map(c=>`<div class="leak ${c.cls}"><div class="step">${c.step}</div><div class="big">${c.big}</div><p>${c.p}</p></div>`).join("");
+
+// ---- funnel table ----
+function rowsTable(id, rows){
+  const head = `<thead><tr><th>Step</th>${W4.map((w,i)=>`<th${i===3?' class="cur"':''}>${w}</th>`).join("")}<th class="sep">Sep 26 vs Aug 26</th><th>Sep 26 vs Sep 25</th></tr></thead>`;
+  const body = rows.map(x=>{
+    const cells = x.v.map((v,i)=>`<td class="num${i===3?' cur':''}">${x.f(v)}</td>`).join("");
+    const cmp = x.pp ? [chipPp(x.v[3],x.v[2],x.dir), chipPp(x.v[3],x.v[1],x.dir)] : [chipPct(x.v[3],x.v[2],x.dir), chipPct(x.v[3],x.v[1],x.dir)];
+    return `<tr class="${x.cls||""}"><td>${x.label}</td>${cells}<td class="sep">${cmp[0]}</td><td>${cmp[1]}</td></tr>`;
+  }).join("");
+  document.getElementById(id).innerHTML = head + "<tbody>"+body+"</tbody>";
+}
+const ix = [0,1,2,3];
+rowsTable("t-funnel", [
+  {label:"Logged-in users", v:F.active, f:n, dir:1, cls:"stage"},
+  {label:"New sign-ups", v:F.regs, f:n, dir:1, cls:"stage"},
+  {label:"Started a deposit", v:F.starters, f:n, dir:1, cls:"stage"},
+  {label:"% of logged-in", v:ix.map(i=>r(F.starters[i],F.active[i])), f:pct, dir:1, pp:true, cls:"sub"},
+  {label:"Paid at least once", v:F.payers, f:n, dir:1, cls:"stage"},
+  {label:"Start → paid (people)", v:ix.map(i=>r(F.payers[i],F.starters[i])), f:pct, dir:1, pp:true, cls:"sub"},
+  {label:"First deposits (FTD)", v:F.ftd, f:n, dir:1, cls:"stage"},
+  {label:"FTD per 100 sign-ups", v:ix.map(i=>r(F.ftd[i],F.regs[i])), f:v=>v==null?"—":v.toFixed(1), dir:1, pp:true, cls:"sub"},
+  {label:"Deposit attempts", v:F.attempts, f:n, dir:0, cls:"stage"},
+  {label:"Attempt success", v:ix.map(i=>r(F.paid[i],F.attempts[i])), f:pct, dir:1, pp:true, cls:"sub"},
+  {label:"Attempts per person", v:ix.map(i=>F.attempts[i]/F.starters[i]), f:v=>v.toFixed(2), dir:0, cls:"sub"},
+  {label:"GMV", v:F.gmv, f:usd, dir:1, cls:"stage"},
+  {label:"GMV per payer", v:ix.map(i=>F.gmv[i]/F.payers[i]), f:usd, dir:1, cls:"sub"},
+  {label:"Intended by never-payers", v:F.intended, f:usd, dir:-1, cls:"sub"}
+]);
+rowsTable("t-cohort", [
+  {label:"New — started a deposit", v:F.newStart, f:n, dir:1, cls:"stage"},
+  {label:"% of sign-ups", v:ix.map(i=>r(F.newStart[i],F.regs[i])), f:pct, dir:1, pp:true, cls:"sub"},
+  {label:"New — paid", v:F.newPay, f:n, dir:1, cls:"stage"},
+  {label:"Start → paid", v:ix.map(i=>r(F.newPay[i],F.newStart[i])), f:pct, dir:1, pp:true, cls:"sub"},
+  {label:"New — GMV", v:F.gmvNew, f:usd, dir:1, cls:"sub"},
+  {label:"Returning — started a deposit", v:F.oldStart, f:n, dir:1, cls:"stage"},
+  {label:"Returning — paid", v:F.oldPay, f:n, dir:1, cls:"stage"},
+  {label:"Start → paid", v:ix.map(i=>r(F.oldPay[i],F.oldStart[i])), f:pct, dir:1, pp:true, cls:"sub"},
+  {label:"Returning — GMV", v:F.gmvOld, f:usd, dir:1, cls:"sub"}
+]);
+
+// ---- country table ----
+(function(){
+  const rows = Object.entries(C).map(([k,v])=>({k, v, dg: v[2][4]-v[1][4]})).sort((a,b)=>a.dg-b.dg);
+  const tot = [0,1,2].map(i=>rows.reduce((s,x)=>s+x.v[i][4],0));
+  const all = [F.gmv[1],F.gmv[2],F.gmv[3]];
+  const head = `<thead><tr class="grp"><th></th><th colspan="4" class="sep">GMV</th><th colspan="4" class="sep">Start → paid (people)</th><th colspan="3" class="sep">Sep 2026</th></tr>
+  <tr><th>Country</th><th class="sep">Sep 25</th><th>Aug 26</th><th>Sep 26</th><th>vs Aug</th>
+  <th class="sep">Sep 25</th><th>Aug 26</th><th>Sep 26</th><th>vs Aug</th>
+  <th class="sep">Started</th><th>Paid</th><th>Attempt success vs Aug</th></tr></thead>`;
+  const body = rows.map(({k,v,dg})=>{
+    const sp = v.map(w=>r(w[3],w[2])), as = v.map(w=>r(w[1],w[0]));
+    const hot = sp[2]!=null && sp[1]!=null && sp[2]-sp[1] <= -10;
+    return `<tr><td>${k}</td>
+      <td class="num sep">${usd(v[0][4])}</td><td class="num">${usd(v[1][4])}</td><td class="num cur">${usd(v[2][4])}</td><td>${chipUsd(dg,1)}</td>
+      <td class="num sep">${pct(sp[0])}</td><td class="num">${pct(sp[1])}</td><td class="num cur${hot?" hot":""}">${pct(sp[2])}</td><td>${chipPp(sp[2],sp[1],1)}</td>
+      <td class="num sep">${n(v[2][2])}</td><td class="num">${n(v[2][3])}</td><td>${chipPp(as[2],as[1],1)}</td></tr>`;
+  }).join("");
+  const other = [0,1,2].map(i=>all[i]-tot[i]);
+  const foot = `<tr><td>Other countries</td><td class="num sep">${usd(other[0])}</td><td class="num">${usd(other[1])}</td><td class="num cur">${usd(other[2])}</td><td>${chipUsd(other[2]-other[1],1)}</td><td class="sep" colspan="4"></td><td class="sep" colspan="3"></td></tr>
+  <tr class="total"><td>All</td><td class="num sep">${usd(all[0])}</td><td class="num">${usd(all[1])}</td><td class="num cur">${usd(all[2])}</td><td>${chipUsd(all[2]-all[1],1)}</td>
+  <td class="num sep">${pct(r(F.payers[1],F.starters[1]))}</td><td class="num">${pct(r(F.payers[2],F.starters[2]))}</td><td class="num cur">${pct(r(F.payers[3],F.starters[3]))}</td><td>${chipPp(r(F.payers[3],F.starters[3]),r(F.payers[2],F.starters[2]),1)}</td>
+  <td class="num sep">${n(F.starters[3])}</td><td class="num">${n(F.payers[3])}</td><td>${chipPp(r(F.paid[3],F.attempts[3]),r(F.paid[2],F.attempts[2]),1)}</td></tr>`;
+  document.getElementById("t-country").innerHTML = head + "<tbody>"+body+foot+"</tbody>";
+})();
+
+// ---- payment system table ----
+(function(){
+  const head = `<thead><tr class="grp"><th></th>${W.map(w=>`<th colspan="3" class="sep">${w}</th>`).join("")}<th class="sep"></th></tr>
+  <tr><th>PS id</th>${W.map(()=>`<th class="sep">Attempts</th><th>Success</th><th>GMV</th>`).join("")}<th class="sep">Success vs Aug</th></tr></thead>`;
+  const body = Object.entries(P).sort((a,b)=>((b[1][2]||[0,0,0])[2])-((a[1][2]||[0,0,0])[2])).map(([k,v])=>{
+    const cells = v.map((w,i)=> w ? `<td class="num sep${i===2?" cur":""}">${n(w[0])}</td><td class="num${i===2?" cur":""}">${pct(r(w[1],w[0]))}</td><td class="num${i===2?" cur":""}">${usd(w[2])}</td>`
+                                   : `<td class="num sep">—</td><td class="num">—</td><td class="num">—</td>`).join("");
+    const s = v.map(w=> w ? r(w[1],w[0]) : null);
+    const big = v[2] && v[2][0] >= 100;
+    return `<tr><td>${k}</td>${cells}<td class="sep">${big ? chipPp(s[2],s[1],1) : '<span class="chip flat">few rows</span>'}</td></tr>`;
+  }).join("");
+  document.getElementById("t-ps").innerHTML = head + "<tbody>"+body+"</tbody>";
+})();
+
+// ---- weekly ----
+(function(){
+  const base = 57.6; // avg of Aug 3 + Aug 10 weeks
+  const head = `<thead><tr><th>Week of</th><th>Attempts</th><th>Success</th><th>vs early Aug (57.6%)</th><th>GMV</th></tr></thead>`;
+  const body = WK.map(([w,a,s,g])=>`<tr><td>${w}</td><td class="num">${n(a)}</td><td class="num cur">${pct(s)}</td><td>${chipPp(s,base,1)}</td><td class="num">${usd(g)}</td></tr>`).join("");
+  document.getElementById("t-week").innerHTML = head + "<tbody>"+body+"</tbody>";
+})();
+</script>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Туреччина: оплати</title>
+<style>:root{
+  --bg:#f5f4f0;--card:#fff;--ink:#17171a;--mute:#6b6b72;--faint:#9a9aa1;--line:#e6e3dc;
+  --good:#18864a;--good-bg:#e3f4ea;--bad:#c2372b;--bad-bg:#fbe7e4;--acc:#e0621a;--acc-bg:#fff1e6;--bar:#dcd8cf;
+  --num:"Segoe UI Variable Display","SF Pro Display","Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121214;--card:#1c1c1f;--ink:#ededf0;--mute:#9d9da6;--faint:#6f6f78;--line:#2c2c31;--good:#4cc27d;--good-bg:#173323;--bad:#ff6b5e;--bad-bg:#3a1c19;--acc:#ff8a3d;--acc-bg:#33241a;--bar:#38383f}}
+:root[data-theme="dark"]{--bg:#121214;--card:#1c1c1f;--ink:#ededf0;--mute:#9d9da6;--faint:#6f6f78;--line:#2c2c31;--good:#4cc27d;--good-bg:#173323;--bad:#ff6b5e;--bad-bg:#3a1c19;--acc:#ff8a3d;--acc-bg:#33241a;--bar:#38383f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:1120px;margin:0 auto;padding:28px 16px 48px}
+/* numbers: one face, tabular, slightly tight */
+.n,td,.kpi b,.big{font-family:var(--num);font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum","lnum"}
+/* header */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+h1{font-family:var(--num);font-size:28px;line-height:1.15;letter-spacing:-.02em;margin:4px 0 6px;font-weight:700}
+.sub{color:var(--mute);font-size:13px;max-width:780px}
+h2{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
+h3{font-size:16px;margin:0 0 6px;letter-spacing:-.01em}
+section{margin-top:28px}
+/* verdict */
+.verdict{margin-top:18px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:10px;padding:14px 18px}
+.verdict p{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em}
+.verdict .sub{margin-top:4px}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi span{display:block;font-size:12px;color:var(--mute)}
+.kpi b{display:block;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.03em;margin:4px 0 2px}
+.kpi small{font-size:12px;color:var(--faint)}
+.kpi span.d{display:inline-block}
+.d{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:20px;font-family:var(--num)}
+.d.up{color:var(--good);background:var(--good-bg)}.d.dn{color:var(--bad);background:var(--bad-bg)}.d.eq{color:var(--mute);background:var(--bar)}
+/* cards + grid */
+.g{display:grid;gap:10px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+.c{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto}
+.c p{margin:0 0 8px}
+/* tables */
+table{width:100%;border-collapse:collapse}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-weight:600;color:var(--mute);font-size:11px;text-transform:uppercase;letter-spacing:.04em;vertical-align:bottom}
+td:first-child,th:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+td.t{white-space:normal;text-align:left}
+.up{color:var(--good);font-weight:650}.dn{color:var(--bad);font-weight:650}.mu{color:var(--faint)}
+tr.hl td{background:var(--acc-bg)}
+tr.mark td{background:var(--acc);color:#fff;font-weight:700;text-align:left;font-family:inherit}
+/* inline bars */
+.bar{display:inline-block;height:8px;border-radius:4px;background:var(--bar);vertical-align:middle;margin-right:6px}
+.bar.a{background:var(--acc)}.bar.gd{background:var(--good)}.bar.bd{background:var(--bad)}
+/* horizontal bar rows: label | bar | value */
+.hb{display:grid;grid-template-columns:150px 1fr 70px;gap:8px;align-items:center;margin:5px 0}
+.hb i{display:block;height:14px;border-radius:4px;background:var(--bar)}
+.hb i.a{background:var(--acc)}
+.hb .v{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+/* lists */
+ul.clean{margin:0;padding-left:18px}ul.clean li{margin:4px 0}
+ol.rec{margin:0;padding-left:20px}ol.rec li{margin:0 0 10px}ol.rec li b{display:block}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px;background:var(--bar);color:var(--ink)}
+.chip.a{background:var(--acc-bg);color:var(--acc)}
+.foot{margin-top:28px;color:var(--faint);font-size:12px}
+@media (max-width:760px){.kpis{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}h1{font-size:22px}.kpi b{font-size:24px}.hb{grid-template-columns:100px 1fr 56px}}
+
+tr.grp td{background:transparent;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);padding-top:14px;font-family:inherit}
+tr.ev td{background:color-mix(in srgb,var(--acc-bg) 45%,transparent)}
+th.l,td.l{text-align:left}
+.small td,.small th{padding:4px 6px;font-size:13px}
+.w{max-width:1180px}
+.xs td,.xs th{padding:4px 4px;font-size:12px}
+.scroll,.c{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="eyebrow">BloodyCase · Туреччина · оплати · дані на 28.09.2026</div>
+<h1>Туреччина: платити пробують більше, ніж рік тому, але Zen пропускає 46% замість ~63%</h1>
+<div class="sub">Депозити з <code>deposits.country = 'TR'</code> (live-репліка БД) і GA4 з країною Türkiye. Травень 2025 – вересень 2026, по місяцях і по тижнях; вересень 2026 = 1–28 число. Дні UTC (припущення). Джерело чисел і SQL: <code>_reports/blc-data_2026-09-29_2135_v1.md</code>.</div>
+
+<div class="verdict"><p>Провал у Туреччині — це оплата, а не попит. У вересні Zen проводить 46% спроб замість 64% влітку і 63% у вересні 2025; злам почався 06.09.</p>
+<div class="sub">Проти вересня 2025: клієнтів, що пробували платити, +69%, спроб +8%, а GMV −3.3%. Успішних клієнтів 48.6% → 38.3%. Якби успішність лишилась торішньою, було б ≈37 платників більше за 28 днів (оцінка). Проти літа 2026 GMV/день $1 250 → $731 (−41.5%; проти серпня −32.1%). Падіння є в усіх групах — у новачків і повторних, у малих і середніх сумах — тобто воно на боці оплати (банк / провайдер / каса), а не в тому, хто платить.</div></div>
+
+<div class="kpis">
+  <div class="kpi"><span>Zen: успішних спроб, вересень</span><b>46.0%</b><span class="d dn">−17.4 пп</span> <small>vs 63.3% у 2025</small></div>
+  <div class="kpi"><span>Клієнти зі спробою оплати</span><b>358</b><span class="d up">+68.9%</span> <small>vs 212</small></div>
+  <div class="kpi"><span>Платники</span><b>137</b><span class="d up">+33.0%</span> <small>vs 103</small></div>
+  <div class="kpi"><span>GMV, 1–28 вересня</span><b>$20 450</b><span class="d mu">−3.3%</span> <small>vs $21 151</small></div>
+</div>
+
+<section>
+<h2>1 · Вересень 2026 vs вересень 2025 (1–28 число)</h2>
+<div class="g g2">
+<div class="c"><table><tr><th class="l">Туреччина, 1–28 вересня</th><th>2025</th><th>2026</th><th>Δ</th></tr><tr class="grp"><td colspan="4">БД: спроби оплати</td></tr><tr><td class="l">Спроби оплати (депозити створено)</td><td>1 066</td><td>1 147</td><td class="up">+7.6%</td></tr><tr><td class="l">Клієнти, що пробували платити</td><td>212</td><td>358</td><td class="up">+68.9%</td></tr><tr><td class="l">Спроб на одного клієнта</td><td>5.0</td><td>3.2</td><td class="mu">−36.3%</td></tr><tr><td class="l">Сер. сума спроби, $</td><td>32.8</td><td>39.3</td><td class="up">+19.8%</td></tr><tr class="grp"><td colspan="4">БД: успішність</td></tr><tr><td class="l">Zen: спроби</td><td>941</td><td>892</td><td class="dn">−5.2%</td></tr><tr><td class="l">Zen: успішних спроб</td><td>63.3%</td><td>46.0%</td><td class="dn">−17.4 пп</td></tr><tr><td class="l">Zen: успішних клієнтів</td><td>58.6%</td><td>48.8%</td><td class="dn">−9.8 пп</td></tr><tr><td class="l">Усі методи: успішних клієнтів</td><td>48.6%</td><td>38.3%</td><td class="dn">−10.3 пп</td></tr><tr><td class="l">Не оплачено (статус ≠ 2), спроб</td><td>460</td><td>703</td><td class="dn">+52.8%</td></tr><tr><td class="l">Частка Zen у спробах</td><td>88.3%</td><td>77.8%</td><td class="dn">−10.5 пп</td></tr><tr class="grp"><td colspan="4">БД: гроші</td></tr><tr><td class="l">Платники</td><td>103</td><td>137</td><td class="up">+33.0%</td></tr><tr><td class="l">GMV, $</td><td>$21 151</td><td>$20 450</td><td class="dn">−3.3%</td></tr><tr><td class="l">Оплачені депозити</td><td>606</td><td>444</td><td class="dn">−26.7%</td></tr><tr><td class="l">Сер. оплачений депозит, $</td><td>$34.9</td><td>$46.1</td><td class="up">+32.1%</td></tr><tr class="grp"><td colspan="4">GA4 (Türkiye)</td></tr><tr><td class="l">Сесії</td><td>9 833</td><td>12 208</td><td class="up">+24.2%</td></tr><tr><td class="l">Нові користувачі</td><td>3 272</td><td>3 917</td><td class="up">+19.7%</td></tr><tr><td class="l">add_payment_info</td><td>999</td><td>1 036</td><td class="up">+3.7%</td></tr><tr><td class="l">purchase</td><td>545</td><td>418</td><td class="dn">−23.3%</td></tr><tr><td class="l">purchase / add_payment_info</td><td>54.6%</td><td>40.3%</td><td class="dn">−14.2 пп</td></tr></table>
+<div class="sub" style="margin-top:8px">Спроби й успішність — за датою створення депозиту; платники й GMV — оплачені з цих спроб. Червоне/зелене — гірше/краще для бізнесу.</div></div>
+<div class="c"><p><b>Як читати.</b></p>
+<ul class="clean">
+<li>Попит у Туреччині вищий, ніж рік тому: клієнтів зі спробою +69%, нових користувачів у GA4 +19.7%.</li>
+<li>Але до оплати доходить менша частка: 48.6% → 38.3% клієнтів. Неоплачених спроб 460 → 703.</li>
+<li>GA4 бачить те саме: purchase / add_payment_info 55% → 40%.</li>
+<li>Платників більше (+33%), а оплачених депозитів менше (606 → 444): кожен платник доводить до оплати менше депозитів. Тому GMV −3.3%, хоча середній депозит більший ($34.9 → $46.1).</li>
+<li>Оцінка, не факт: ≈37 недоотриманих платників ≈ $5 513 GMV за 28 днів (за середнім GMV на платника цього вересня).</li>
+</ul></div>
+</div>
+</section>
+
+<section>
+<h2>2 · Коли зламалось: по тижнях, травень – вересень 2026</h2>
+<div class="c scroll"><table class="small"><tr><th>тиждень з</th><th>спроби</th><th>клієнти<br>зі спробою</th><th>Zen<br>спроби</th><th>Zen: успішн.<br>спроб</th><th>Zen: успішн.<br>клієнтів</th><th>оплачені<br>деп.</th><th>платники</th><th>FTD</th><th>GMV, $</th><th>GA4<br>сесії</th><th>GA4 add_<br>payment_info</th><th>GA4<br>purchase</th></tr><tr><td>04.05</td><td>520</td><td>214</td><td>447</td><td class="l"><span class="bar a" style="width:46px"></span>50.6%</td><td>58.5%</td><td>235</td><td>107</td><td>59</td><td>7 259</td><td>6 445</td><td>493</td><td>218</td></tr><tr><td>11.05</td><td>426</td><td>185</td><td>384</td><td class="l"><span class="bar a" style="width:45px"></span>50.5%</td><td>57.8%</td><td>197</td><td>95</td><td>50</td><td>5 508</td><td>5 732</td><td>373</td><td>159</td></tr><tr><td>18.05</td><td>515</td><td>195</td><td>441</td><td class="l"><span class="bar a" style="width:56px"></span>62.1%</td><td>65.4%</td><td>279</td><td>108</td><td>46</td><td>12 169</td><td>5 685</td><td>478</td><td>81</td></tr><tr><td>25.05</td><td>469</td><td>174</td><td>403</td><td class="l"><span class="bar a" style="width:59px"></span>66.0%</td><td>70.6%</td><td>268</td><td>98</td><td>55</td><td>13 043</td><td>5 168</td><td>425</td><td>1</td></tr><tr><td>01.06</td><td>460</td><td>145</td><td>409</td><td class="l"><span class="bar a" style="width:54px"></span>60.4%</td><td>65.6%</td><td>252</td><td>88</td><td>34</td><td>8 672</td><td>4 942</td><td>411</td><td>1</td></tr><tr><td>08.06</td><td>505</td><td>148</td><td>419</td><td class="l"><span class="bar a" style="width:54px"></span>60.1%</td><td>73.2%</td><td>256</td><td>83</td><td>39</td><td>6 870</td><td>4 672</td><td>463</td><td>1</td></tr><tr><td>15.06</td><td>332</td><td>128</td><td>262</td><td class="l"><span class="bar a" style="width:54px"></span>59.9%</td><td>67.3%</td><td>161</td><td>67</td><td>27</td><td>3 286</td><td>4 198</td><td>309</td><td>0</td></tr><tr><td>22.06</td><td>342</td><td>122</td><td>279</td><td class="l"><span class="bar a" style="width:59px"></span>65.6%</td><td>64.8%</td><td>183</td><td>60</td><td>24</td><td>10 882</td><td>3 961</td><td>306</td><td>109</td></tr><tr><td>29.06</td><td>529</td><td>142</td><td>435</td><td class="l"><span class="bar a" style="width:57px"></span>63.2%</td><td>58.6%</td><td>280</td><td>63</td><td>36</td><td>16 715</td><td>3 841</td><td>522</td><td>269</td></tr><tr><td>06.07</td><td>364</td><td>131</td><td>295</td><td class="l"><span class="bar a" style="width:65px"></span>71.9%</td><td>79.2%</td><td>216</td><td>79</td><td>38</td><td>9 509</td><td>3 664</td><td>337</td><td>174</td></tr><tr><td>13.07</td><td>300</td><td>115</td><td>229</td><td class="l"><span class="bar a" style="width:55px"></span>60.7%</td><td>73.4%</td><td>149</td><td>60</td><td>26</td><td>3 962</td><td>3 464</td><td>272</td><td>133</td></tr><tr><td>20.07</td><td>348</td><td>100</td><td>311</td><td class="l"><span class="bar a" style="width:61px"></span>68.2%</td><td>64.9%</td><td>213</td><td>52</td><td>20</td><td>8 744</td><td>3 448</td><td>336</td><td>196</td></tr><tr><td>27.07</td><td>358</td><td>104</td><td>308</td><td class="l"><span class="bar a" style="width:65px"></span>72.1%</td><td>64.5%</td><td>225</td><td>49</td><td>16</td><td>15 887</td><td>3 254</td><td>303</td><td>188</td></tr><tr><td>03.08</td><td>293</td><td>109</td><td>246</td><td class="l"><span class="bar a" style="width:64px"></span>70.7%</td><td>75.3%</td><td>179</td><td>64</td><td>31</td><td>5 593</td><td>3 332</td><td>277</td><td>174</td></tr><tr><td>10.08</td><td>329</td><td>117</td><td>282</td><td class="l"><span class="bar a" style="width:53px"></span>58.5%</td><td>72.8%</td><td>167</td><td>68</td><td>35</td><td>5 613</td><td>3 295</td><td>301</td><td>157</td></tr><tr><td>17.08</td><td>320</td><td>105</td><td>268</td><td class="l"><span class="bar a" style="width:55px"></span>60.8%</td><td>68.8%</td><td>175</td><td>56</td><td>17</td><td>9 097</td><td>3 205</td><td>274</td><td>154</td></tr><tr><td>24.08</td><td>274</td><td>89</td><td>207</td><td class="l"><span class="bar a" style="width:53px"></span>58.5%</td><td>61.8%</td><td>129</td><td>38</td><td>10</td><td>8 674</td><td>2 914</td><td>234</td><td>129</td></tr><tr><td>31.08</td><td>330</td><td>107</td><td>245</td><td class="l"><span class="bar a" style="width:51px"></span>56.7%</td><td>71.1%</td><td>148</td><td>56</td><td>27</td><td>7 477</td><td>3 252</td><td>303</td><td>134</td></tr><tr class="ev"><td>07.09 ▲ старт івенту</td><td>341</td><td>135</td><td>256</td><td class="l"><span class="bar bd" style="width:33px"></span>36.7%</td><td class="dn">45.5%</td><td>103</td><td>45</td><td>16</td><td>3 847</td><td>3 186</td><td>297</td><td>92</td></tr><tr><td>14.09</td><td>226</td><td>96</td><td>168</td><td class="l"><span class="bar bd" style="width:41px"></span>45.2%</td><td>53.7%</td><td>96</td><td>45</td><td>21</td><td>4 218</td><td>2 882</td><td>203</td><td>97</td></tr><tr><td>21.09</td><td>240</td><td>87</td><td>205</td><td class="l"><span class="bar bd" style="width:44px"></span>48.8%</td><td class="dn">47.8%</td><td>103</td><td>36</td><td>14</td><td>6 160</td><td>2 881</td><td>216</td><td>99</td></tr></table>
+<div class="sub" style="margin-top:8px">Тиждень — з понеділка; останній повний тиждень 21–27.09. Zen-успішність нижче 50% — червоним. По днях (розділ 5 у джерелі): успішних клієнтів Zen 25–31.08 71%, 01–05.09 75%, з 06.09 49%. Злам почався 06.09 — за ~2 дні до старту івенту (08.09), тож івент його не спричинив. GA4 purchase 20.05–23.06 = 0 — збій трекінгу GA4, не оплат (у БД платежі звичайні); тижні 18.05 і 22.06 — частково.</div></div>
+</section>
+
+<section>
+<h2>3 · По місяцях, травень 2025 – вересень 2026</h2>
+<div class="c scroll"><table class="small xs"><tr><th>місяць</th><th>спроби</th><th>клієнти<br>зі спробою</th><th>Zen: успішн.<br>спроб</th><th>Zen: успішн.<br>клієнтів</th><th>усі методи:<br>успішн. кл.</th><th>оплачені<br>деп.</th><th>платники</th><th>FTD</th><th>GMV, $</th><th>GMV /<br>день, $</th><th>сер.<br>деп., $</th><th>GA4<br>сесії</th><th>GA4 add_<br>payment_info</th><th>GA4<br>purchase</th></tr><tr><td>05.2025</td><td>1 698</td><td>453</td><td>57.9%</td><td>59.7%</td><td>50.8%</td><td>846</td><td>230</td><td>161</td><td>14 794</td><td>477</td><td>17.5</td><td>19 067</td><td>1 572</td><td>656</td></tr><tr><td>06.2025</td><td>1 817</td><td>290</td><td>60.7%</td><td>68.8%</td><td>57.2%</td><td>918</td><td>166</td><td>106</td><td>26 319</td><td>877</td><td>28.7</td><td>13 118</td><td>1 732</td><td>793</td></tr><tr><td>07.2025</td><td>1 412</td><td>295</td><td>56.6%</td><td>57.8%</td><td>47.8%</td><td>645</td><td>140</td><td>93</td><td>19 801</td><td>639</td><td>30.7</td><td>11 453</td><td>1 278</td><td>556</td></tr><tr><td>08.2025</td><td>999</td><td>257</td><td>66.0%</td><td>62.8%</td><td>57.2%</td><td>603</td><td>148</td><td>97</td><td>18 029</td><td>582</td><td>29.9</td><td>11 937</td><td>898</td><td>493</td></tr><tr class="ev"><td>09.2025</td><td>1 137</td><td>223</td><td>63.0%</td><td>58.4%</td><td>48.4%</td><td>643</td><td>108</td><td>56</td><td>22 369</td><td>746</td><td>34.8</td><td>10 575</td><td>1 065</td><td>575</td></tr><tr><td>10.2025</td><td>1 642</td><td>536</td><td>59.9%</td><td>61.7%</td><td>53.9%</td><td>887</td><td>289</td><td>238</td><td>28 342</td><td>914</td><td>32.0</td><td>23 041</td><td>1 543</td><td>793</td></tr><tr><td>11.2025</td><td>1 550</td><td>376</td><td>60.2%</td><td>61.3%</td><td>50.5%</td><td>851</td><td>190</td><td>130</td><td>33 526</td><td>1 118</td><td>39.4</td><td>18 188</td><td>1 412</td><td>748</td></tr><tr><td>12.2025</td><td>1 237</td><td>300</td><td>58.1%</td><td>54.1%</td><td>45.7%</td><td>656</td><td>137</td><td>85</td><td>24 891</td><td>803</td><td>37.9</td><td>14 343</td><td>1 130</td><td>583</td></tr><tr><td>01.2026</td><td>1 378</td><td>306</td><td>67.1%</td><td>58.4%</td><td>51.6%</td><td>875</td><td>158</td><td>112</td><td>39 636</td><td>1 279</td><td>45.3</td><td>14 676</td><td>1 308</td><td>828</td></tr><tr><td>02.2026</td><td>1 054</td><td>313</td><td>62.9%</td><td>63.5%</td><td>53.7%</td><td>603</td><td>168</td><td>107</td><td>18 928</td><td>676</td><td>31.4</td><td>14 381</td><td>971</td><td>554</td></tr><tr><td>03.2026</td><td>1 600</td><td>490</td><td>59.5%</td><td>58.5%</td><td>50.4%</td><td>853</td><td>245</td><td>169</td><td>21 962</td><td>708</td><td>25.7</td><td>19 366</td><td>1 471</td><td>771</td></tr><tr><td>04.2026</td><td>2 104</td><td>574</td><td>61.4%</td><td>57.6%</td><td>47.7%</td><td>1 169</td><td>276</td><td>211</td><td>55 447</td><td>1 848</td><td>47.4</td><td>26 092</td><td>1 924</td><td>1 044</td></tr><tr><td>05.2026</td><td>2 138</td><td>702</td><td>56.9%</td><td>57.0%</td><td>47.9%</td><td>1 079</td><td>337</td><td>240</td><td>40 977</td><td>1 322</td><td>38.0</td><td>26 192</td><td>1 966</td><td>552</td></tr><tr><td>06.2026</td><td>1 799</td><td>458</td><td>61.5%</td><td>62.1%</td><td>49.6%</td><td>942</td><td>228</td><td>136</td><td>34 618</td><td>1 154</td><td>36.7</td><td>18 815</td><td>1 628</td><td>183</td></tr><tr><td>07.2026</td><td>1 651</td><td>407</td><td>66.9%</td><td>64.4%</td><td>46.2%</td><td>931</td><td>188</td><td>119</td><td>47 001</td><td>1 516</td><td>50.5</td><td>15 766</td><td>1 566</td><td>844</td></tr><tr><td>08.2026</td><td>1 353</td><td>341</td><td>62.9%</td><td>67.0%</td><td>47.2%</td><td>731</td><td>161</td><td>99</td><td>33 364</td><td>1 076</td><td>45.6</td><td>14 001</td><td>1 190</td><td>673</td></tr><tr class="ev"><td>09.2026 (1–28)</td><td>1 147</td><td>358</td><td class="dn">46.0%</td><td>48.8%</td><td>38.3%</td><td>445</td><td>138</td><td>86</td><td>20 464</td><td>731</td><td>46.0</td><td>12 208</td><td>1 036</td><td>418</td></tr></table>
+<div class="sub" style="margin-top:8px">Вересень 2026 — 28 днів, тому для порівняння є GMV / день. Виділено обидва вересні. Zen-успішність у Туреччині за попередні 16 місяців — від 56.6% до 67.1%; вересень 2026 — 46.0%. GA4 purchase у травні–червні 2026 занижений через збій трекінгу 20.05–23.06. Спроб на день майже стільки ж, скільки в серпні (41.0 vs 43.6), а платників на день 5.2 → 4.9.</div></div>
+</section>
+
+<section>
+<h2>4 · Чому це оплата, а не гравці</h2>
+<div class="g g2">
+<div class="c"><table><tr><th class="l">Zen, Туреччина</th><th>червень–серпень</th><th>вересень 1–28</th><th>Δ</th></tr><tr class="grp"><td colspan="4">Новачки vs повторні</td></tr><tr><td class="l">Перші депозити (новачки)</td><td>37.2% <small>(333/894)</small></td><td>28.0% <small>(79/282)</small></td><td class="dn">−9.2 пп</td></tr><tr><td class="l">Повторні депозити</td><td>71.4% <small>(2201/3082)</small></td><td>54.3% <small>(331/610)</small></td><td class="dn">−17.2 пп</td></tr><tr class="grp"><td colspan="4">За сумою спроби</td></tr><tr><td class="l">до $10</td><td>53.3% <small>(704/1320)</small></td><td>37.4% <small>(139/372)</small></td><td class="dn">−16.0 пп</td></tr><tr><td class="l">$10–19</td><td>60.8% <small>(512/842)</small></td><td>34.7% <small>(43/124)</small></td><td class="dn">−26.1 пп</td></tr><tr><td class="l">$20–49</td><td>70.8% <small>(687/970)</small></td><td>54.0% <small>(135/250)</small></td><td class="dn">−16.8 пп</td></tr><tr><td class="l">$50–99</td><td>76.3% <small>(255/334)</small></td><td>50.0% <small>(24/48)</small></td><td class="dn">−26.3 пп</td></tr><tr><td class="l">$100+</td><td>73.7% <small>(376/510)</small></td><td>70.4% <small>(69/98)</small></td><td class="dn">−3.3 пп</td></tr></table>
+<div class="sub" style="margin-top:8px">Zen, Туреччина, частка оплачених спроб. Просіли всі групи, крім $100+ (там мало гравців: 14 клієнтів у вересні). У клієнтах те саме: з повторних гравців оплатили 84% → 66%.</div></div>
+<div class="c"><table><tr><th>місяць</th><th>Zen Туреччина</th><th>Zen інші країни</th></tr><tr><td>05.2026</td><td class="l"><span class="bar a" style="width:68px"></span>56.9%</td><td class="l"><span class="bar" style="width:71px"></span>59.1%</td></tr><tr><td>06.2026</td><td class="l"><span class="bar a" style="width:74px"></span>61.5%</td><td class="l"><span class="bar" style="width:68px"></span>57.0%</td></tr><tr><td>07.2026</td><td class="l"><span class="bar a" style="width:80px"></span>66.9%</td><td class="l"><span class="bar" style="width:64px"></span>53.6%</td></tr><tr><td>08.2026</td><td class="l"><span class="bar a" style="width:76px"></span>62.9%</td><td class="l"><span class="bar" style="width:63px"></span>52.5%</td></tr><tr><td>09.2026</td><td class="l"><span class="bar bd" style="width:55px"></span>46.0%</td><td class="l"><span class="bar" style="width:59px"></span>49.0%</td></tr></table>
+<div class="sub" style="margin-top:8px">Zen в інших країнах теж сповзає (59% → 49% з травня; найбільший крок — серпень → вересень). Можливо, частина загального тренду Zen; у Туреччині — різкіше й за один тиждень. У Туреччині з червня по серпень Zen працював краще, ніж в інших країнах, а у вересні впав за один тиждень.</div></div>
+</div>
+<div class="c" style="margin-top:10px"><p><b>Чого з наших даних не видно.</b> У репліці немає причин відмов: поле відповіді провайдера порожнє для всіх вересневих спроб Zen у Туреччині, статус 3 не розрізняє «банк відмовив» і «гравець закрив вікно». Усі спроби в Туреччині — в USD, валюта не мінялась.</p></div>
+</section>
+
+<section>
+<h2>5 · Що робити</h2>
+<div class="c"><ol class="rec">
+<li><b>Сьогодні: запит команді BloodyCase / Zen.</b>Коди відмов Zen по Туреччині з 01.09 у розрізі днів, і чи щось мінялось 06–08.09: правила антифроду, 3DS, BIN-блоки, MCC, маршрутизація, ліміти, сторінка оплати.</li>
+<li><b>Запасний метод для Туреччини.</b>Після невдалої спроби Zen одразу пропонувати інший метод, а не повертати гравця на початок каси. Питання до команди: чи є локальний метод для Туреччини (оплата в лірах).</li>
+<li><b>Щоденний алерт «успішність Zen × країна».</b>Поріг: −10 пп від середнього за 4 тижні. Злам було видно вже в перший тиждень, а знайшли його через 3 тижні.</li>
+<li><b>Після фіксу — повернути тих, хто не оплатив.</b>221 клієнт у вересні пробував платити, але не оплатив. Повідомлення «оплата знову працює» + невеликий бонус на наступний депозит.</li>
+</ol></div>
+</section>
+
+<div class="foot">Caveats: країна — поле <code>deposits.country</code> (IP, картка чи профіль — не перевірено); GA4 — країна Türkiye за IP сесії, тому числа GA4 і БД близькі, але не тотожні; депозити включають неприбрані внутрішні акаунти; «новачок» = спроба до першого оплаченого депозиту. Джерело і SQL: _reports/blc-data_2026-09-29_2135_v1.md</div>
+</div>
+</body>
+</html>

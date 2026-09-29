@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Бонусна сітка BLC</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1f;--mute:#6b6b70;--line:#e3e1dc;--good:#1f8a4c;--bad:#c23b2f;--acc:#b8322a;--cry:#2a6fb8;--bar:#d9d6cf}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141416;--card:#1e1e21;--ink:#ececef;--mute:#9a9aa2;--line:#2e2e33;--good:#4cc27d;--bad:#ff6b5e;--acc:#ff5a4d;--cry:#6aa8ff;--bar:#38383e}}
+:root[data-theme="dark"]{--bg:#141416;--card:#1e1e21;--ink:#ececef;--mute:#9a9aa2;--line:#2e2e33;--good:#4cc27d;--bad:#ff6b5e;--acc:#ff5a4d;--cry:#6aa8ff;--bar:#38383e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--mute);font-size:12px;margin-bottom:12px}
+.g{display:grid;gap:10px}
+.k{grid-template-columns:repeat(4,1fr)}
+.two{grid-template-columns:1fr 1fr}
+.c{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.c h2{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.n{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.l{color:var(--mute);font-size:12px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td,th{padding:3px 6px;border-bottom:1px solid var(--line);text-align:right}
+th{font-weight:600;color:var(--mute);font-size:11px}
+td:first-child,th:first-child{text-align:left}
+.cr{color:var(--cry);font-weight:600}
+.row{display:grid;grid-template-columns:78px 1fr 40px;align-items:center;gap:6px;margin:2px 0;font-variant-numeric:tabular-nums}
+.bar{height:12px;background:var(--bar);border-radius:3px}
+.bar.hi{background:var(--good)}
+.v{text-align:right}
+.tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:10px;background:var(--bar)}
+ul{margin:0;padding-left:16px}
+li{margin:2px 0}
+.p li::marker{content:"+ ";color:var(--good);font-weight:700}
+.m li::marker{content:"− ";color:var(--bad);font-weight:700}
+.verdict{font-weight:700;color:var(--bad)}
+@media (max-width:760px){.k{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>Бонуси на депи 2+ і сітка «карта / крипта»</h1>
+<div class="sub">Live DB, оплачені депи, останні 90 днів · 25.09.2026 · кореляції, не причинність</div>
+
+<div class="g k">
+  <div class="c"><div class="n">$20.6k</div><div class="l">бонуси на депи 2+ = 6.8% GMV ($304k)</div></div>
+  <div class="c"><div class="n">92%</div><div class="l">GMV через карти · комісія ≈ 7% + $0.30</div></div>
+  <div class="c"><div class="n cr">2.5%</div><div class="l">GMV через крипту (USDT) · комісія 0, чарджбеків немає</div></div>
+  <div class="c"><div class="n" style="color:var(--bad)">$35</div><div class="l">ліміт бонусу на будь-який деп: $1 000 USDT → 3.5%</div></div>
+</div>
+
+<div class="g two" style="margin-top:10px">
+  <div class="c">
+    <h2>1-й деп → роблять 2-й за 30 днів</h2>
+    <div class="row"><span>$5</span><div class="bar" style="width:57%"></div><span class="v">24%</span></div>
+    <div class="row"><span>$6–9.99</span><div class="bar" style="width:73%"></div><span class="v">31%</span></div>
+    <div class="row"><span>$10–14.99</span><div class="bar" style="width:83%"></div><span class="v">35%</span></div>
+    <div class="row"><span><b>$15–24.99</b></span><div class="bar hi" style="width:95%"></div><span class="v"><b>40%</b></span></div>
+    <div class="row"><span>$25–99</span><div class="bar hi" style="width:100%"></div><span class="v">42%</span></div>
+    <div class="l" style="margin-top:4px">Плато з <b>$19.99</b>. Але 74% гравців стартують з $5 · GMV за 90 днів: $17.50 проти $87</div>
+  </div>
+  <div class="c">
+    <h2>2-й деп → роблять 3-й за 30 днів</h2>
+    <div class="row"><span>$5</span><div class="bar" style="width:73%"></div><span class="v">49%</span></div>
+    <div class="row"><span>$6–14.99</span><div class="bar" style="width:79%"></div><span class="v">53%</span></div>
+    <div class="row"><span>$15–24.99</span><div class="bar" style="width:82%"></div><span class="v">55%</span></div>
+    <div class="row"><span><b>$25–49.99</b></span><div class="bar hi" style="width:100%"></div><span class="v"><b>67%</b></span></div>
+    <div class="row"><span>$50+</span><div class="bar hi" style="width:94%"></div><span class="v">63%</span></div>
+    <div class="l" style="margin-top:4px">Крок на <b>$25</b> (гравці, що почали з $10+). Плаский бонус 7% на 2-й деп конверсію не зрушив</div>
+  </div>
+</div>
+
+<div class="g two" style="margin-top:10px">
+  <div class="c">
+    <h2>Пропозиція: одна сітка з 2-го депу <span class="tag">чернетка</span></h2>
+    <table>
+      <tr><th>сума</th><th>зараз</th><th>карта</th><th class="cr">крипта</th></tr>
+      <tr><td>$5–9.99</td><td>0% (2-й: 7%)</td><td>0%</td><td class="cr">5%</td></tr>
+      <tr><td>$10–24.99</td><td>0–6%</td><td>3%</td><td class="cr">8%</td></tr>
+      <tr><td><b>$25–98.99</b></td><td>6–7%</td><td><b>6%</b></td><td class="cr">11%</td></tr>
+      <tr><td>$99–198.99</td><td>8%</td><td>7%</td><td class="cr">13%</td></tr>
+      <tr><td>$199–499</td><td>10%, ≤$35</td><td>8% (макс. $200)</td><td class="cr">15%</td></tr>
+      <tr><td>$500 / $1k / $2k+</td><td>≤$35</td><td>—</td><td class="cr">16 / 18 / 20%, ≤$500</td></tr>
+    </table>
+    <div class="l" style="margin-top:4px">Карти: −$3k за 90 днів · крипта: +$0.5k · комісія + бонус на крипті ≤ карти · великі суми на крипті тільки з вейджером</div>
+  </div>
+  <div class="c">
+    <h2>Сітка Андрія <span class="verdict">— не в такому вигляді</span></h2>
+    <div class="l">Покриває тільки $199+: 9 перших депів і 377 наступних за 90 днів (&lt;1% депів)</div>
+    <ul class="p" style="margin-top:4px">
+      <li>Сильний сигнал для кита, дешево: 1-й деп ~+$0.3k за 90 днів</li>
+    </ul>
+    <ul class="m">
+      <li>1-й деп 32–38% на <b>картах</b> — приманка для фроду (украдена карта → бонус → чарджбек)</li>
+      <li>Наступні 12% на картах: +$1.25k за 90 днів для ~32 гравців, які й так повертаються (94% за 7 днів); витрати 19%</li>
+      <li>Одна сітка для карт і крипти · обрив $199 → $200 · вище ліміту % падає до 6.7%</li>
+      <li>Не чіпає $19.99 / $25, де ми втрачаємо гравців</li>
+    </ul>
+    <div class="l" style="margin-top:4px"><b>Взяти:</b> 1-й деп 32–38% — тільки для крипти з вейджером; наступні — J для крипти, карти без змін</div>
+  </div>
+</div>
+
+<div class="c" style="margin-top:10px">
+  <h2>Далі</h2>
+  <ul>
+    <li><b>Дев-команда:</b> розділити ліміт $35 для карт і крипти · є вейджер на бонус? · частка чарджбеків на картах</li>
+    <li><b>A/B:</b> пресет $19.99 за замовчуванням + крок на $25 проти поточної модалки · основна метрика: GMV за 90 днів мінус комісія і бонус · контроль: конверсія в 1-й деп</li>
+  </ul>
+</div>
+</div>
+</body>
+</html>

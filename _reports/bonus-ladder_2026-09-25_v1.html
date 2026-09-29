@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Сходинки бонусів BLC</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1f;--mute:#6b6b70;--line:#e3e1dc;--good:#1f8a4c;--bad:#c23b2f;--cry:#2a6fb8;--gold:#b7860b;--now:#a3a19b;--zone:#efece5;--chip:#f1efe9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141416;--card:#1e1e21;--ink:#ececef;--mute:#9a9aa2;--line:#2e2e33;--good:#4cc27d;--bad:#ff6b5e;--cry:#6aa8ff;--gold:#ffc53a;--now:#6c6c74;--zone:#232327;--chip:#26262a}}
+:root[data-theme="dark"]{--bg:#141416;--card:#1e1e21;--ink:#ececef;--mute:#9a9aa2;--line:#2e2e33;--good:#4cc27d;--bad:#ff6b5e;--cry:#6aa8ff;--gold:#ffc53a;--now:#6c6c74;--zone:#232327;--chip:#26262a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:1120px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--mute);font-size:12px}
+.sw{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.sw button{font:inherit;font-weight:600;border:0;background:var(--card);color:var(--mute);padding:6px 12px;cursor:pointer}
+.sw button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin:0 0 10px}
+.lg i{display:inline-block;width:18px;height:0;border-top:3px solid;vertical-align:middle;margin-right:5px}
+.panel{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.panel h2{font-size:15px;margin:0 0 2px}
+.panel .q{color:var(--mute);font-size:12px;margin-bottom:6px}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--mute);font:10px system-ui,sans-serif}
+svg .lc{fill:var(--ink);font-weight:700}
+svg .lb{fill:var(--cry);font-weight:700}
+.ev{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12px;margin-top:4px}
+.ev td,.ev th{padding:3px 4px;text-align:center;border-top:1px solid var(--line)}
+.ev th{font-weight:600;color:var(--mute);font-size:11px}
+.ev td:first-child,.ev th:first-child{text-align:left;color:var(--mute);font-size:11px;font-weight:400}
+.ev .hi{color:var(--good);font-weight:700}
+.args{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.args li{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:start}
+.args b.n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--chip);font-size:11px}
+.args .k{font-weight:700}
+.costs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.costs div{background:var(--chip);border-radius:6px;padding:5px 9px;font-size:12px}
+.costs b{font-size:14px}
+.up{color:var(--good)}.dn{color:var(--bad)}.cr{color:var(--cry)}
+.foot{color:var(--mute);font-size:11px}
+@media (max-width:820px){.panel{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="top">
+    <div>
+      <h1>Бонус росте разом з депом: схема</h1>
+      <div class="sub">Вісь X: сума депу (лог. шкала) · вісь Y: бонус у % з урахуванням ліміту · live DB 25.09.2026</div>
+    </div>
+    <div class="sw" role="group" aria-label="Варіант">
+      <button type="button" data-v="A" aria-pressed="true">Варіант A · сходинки</button>
+      <button type="button" data-v="B" aria-pressed="false">Варіант B · поріг</button>
+    </div>
+  </div>
+  <div class="lg">
+    <span><i style="border-color:var(--now);border-top-style:dashed"></i>зараз (однаково для всіх методів)</span>
+    <span><i style="border-color:var(--ink)"></i>нова: карта / BLIK / PIX</span>
+    <span><i style="border-color:var(--cry)"></i>нова: крипта (USDT)</span>
+    <span><span style="color:var(--gold)">◎</span> ★ пресет за замовчуванням</span>
+  </div>
+
+  <section class="panel">
+    <div>
+      <h2>1-й деп: менше втрат на $5, стрибок на $19.99</h2>
+      <div class="q">Що зробить гравець далі залежно від суми 1-го депу</div>
+      <svg id="c1" viewBox="0 0 560 250" role="img" aria-label="Бонус на 1-й деп за сумою"></svg>
+      <table class="ev">
+        <tr><th>1-й деп</th><th>$5</th><th>$9.99</th><th>$19.99</th><th>$49.99</th><th>$100</th><th>$200</th></tr>
+        <tr><td>оборот за 90 днів</td><td>$17</td><td>$41</td><td class="hi">$99</td><td>$178</td><td>$339</td><td>$1.6k*</td></tr>
+        <tr><td>2-й деп за 30 днів</td><td>23%</td><td>35%</td><td class="hi">42%</td><td>48%</td><td>42%</td><td>75%*</td></tr>
+        <tr><td>гравців</td><td>5 285</td><td>508</td><td>1 083</td><td>95</td><td>38</td><td>12</td></tr>
+      </table>
+      <div class="foot">Гравці з 1-м депом 3–12 міс. тому. * мала вибірка. Кореляція: більші гравці самі обирають більші суми.</div>
+    </div>
+    <div>
+      <ul class="args">
+        <li><b class="n">!</b><span><span class="k dn">Зараз 1-й деп коштує 30% обороту:</span> бонус $7.9k (21.5%) і комісія 8.1% за 90 днів. 67% бонусу ($5.3k) отримали гравці, які більше не депнули.</span></li>
+        <li><b class="n">1</b><span><span class="k">Сума 1-го депу найкраще передбачає, що буде далі.</span> Новачок на $19.99 приносить за 90 днів ×6 обороту від $5 і повертається за 2-м депом у 42% випадків проти 23%.</span></li>
+        <li><b class="n">2</b><span><span class="k">~⅔ новачків стартують з $5–5.99.</span> Там бонус зменшуємо (<span class="v1">15%</span>), а на $19.99 даємо стрибок до <b class="v2">30%</b>. На кнопці: «$5 → +$0.50, $19.99 → +$5», бонус ×10 за ×4 депу.</span></li>
+        <li><b class="n">3</b><span><span class="k">★ ставимо на $19.99, а не на $99.</span> На $99 за 90 днів було лише 15 перших депів, тобто його ніхто не натискає. $5.99 прибираємо: це дубль $5.</span></li>
+        <li><b class="n">4</b><span><span class="k">Ринок дає 5–20% на 1-й деп, ми вже даємо 20–25%.</span> Тому перевага не в загальному %, а в сходинці. Бонус окремо для крипти майже ніхто не робить, це помітна фішка.</span></li>
+        <li><b class="n">5</b><span><span class="k">Карта: максимум $200 і ризик фроду</span> (вкрадена карта → бонус → чарджбек), тому ліміт бонусу <b class="v3">$50</b>. <span class="cr">Крипта:</span> комісія 0 і немає чарджбеків, тому <b class="v4">+5 пп</b> і ліміт <b class="v5">$100</b>. Вейджеру немає, тому бонус = реальні гроші (виводиться скінами), і ліміт тримаємо помірним.</span></li>
+        <li><b class="n">6</b><span class="v6">Варіант A: весь бонус нараховується одразу.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div>
+      <h2>2-й деп і далі: закріпити гравця на $25+</h2>
+      <div class="q">Чи зробить гравець 3-й деп залежно від суми 2-го (гравці, що стартували з $10+)</div>
+      <svg id="c2" viewBox="0 0 560 250" role="img" aria-label="Бонус на 2-й деп і далі за сумою"></svg>
+      <table class="ev">
+        <tr><th>2-й деп</th><th>$5</th><th>$6–9.99</th><th>$10–14.99</th><th>$19.99–24.99</th><th>$25–49.99</th><th>$50+</th></tr>
+        <tr><td>3-й деп за 30 днів</td><td>49%</td><td>50%</td><td>56%</td><td>55%</td><td class="hi">67%</td><td>63%</td></tr>
+        <tr><td>оборот за 90 днів</td><td>$87</td><td>$80</td><td>$61</td><td>$119</td><td class="hi">$226</td><td>$484</td></tr>
+      </table>
+      <div class="foot">Гравці з 2-м депом 3–12 міс. тому. Зараз 2-й деп отримує 7% на будь-яку суму, 3-й під $19 отримує 0% (пунктир показує 3-й+).</div>
+    </div>
+    <div>
+      <ul class="args">
+        <li><b class="n">1</b><span><span class="k">Прибираємо обрив.</span> Зараз 2-й деп на $5 дає 7%, а 3-й на $5 дає 0%. Нова сітка одна для всіх депів від 2-го.</span></li>
+        <li><b class="n">2</b><span><span class="k">Крок на $25.</span> 67% роблять 3-й деп проти ~52% нижче цієї суми. ★ ставимо на $25, і бонус там <b class="w1">подвоюється (3 → 6%)</b>.</span></li>
+        <li><b class="n">3</b><span><span class="k">Плаский 7% на 2-й деп не працює.</span> Конверсія в 2-й деп за 7 днів 22–25% весь рік, до і після запуску бонусу. Бонус за сам факт депу гроші не повертає.</span></li>
+        <li><b class="n">4</b><span><span class="k">Карта:</span> комісія ≈7% + $0.30, тож бонус тримаємо ≤8%. На $200 знижуємо 10 → 8%: ці ~32 кити й так повертаються за 7 днів у 94% випадків.</span></li>
+        <li><b class="n">5</b><span><span class="k"><span class="cr">Крипта</span> йде вище $200</span> ($500 / $1000 / $2000). Зараз ліміт $35 перетворює деп на $1000 на 3.5% бонусу, тому великих депів у крипті немає. Новий ліміт <b class="w2">$150</b>: ліміт налаштовується окремо для кожного методу. Вейджеру немає, тому 15%+ даємо тільки акаунтам з 2+ депами, яким більше 7 днів, і не більше $300 бонусів на акаунт за 7 днів.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="costs">
+    <div>Витрати на бонуси за 90 днів, якщо поведінка не зміниться: <b class="up" id="cost">−$1.1k</b></div>
+    <div id="risk">Ризик: низький, логіка поточної сітки зберігається</div>
+    <div>Деталі й таблиці: <code>bonus-grid-variants_2026-09-26_v2.html</code></div>
+  </div>
+</div>
+
+<script>
+// tiers: [fromAmount, pct]; cap = max bonus $, max = max deposit for the method
+const V = {
+  A: {
+    first: {card:{t:[[5,10],[9.99,15],[19.99,25]],cap:35,max:200,pre:[5,9.99,19.99,49.99,99,200],star:19.99},
+            cry:{t:[[5,15],[9.99,20],[19.99,30]],cap:60,max:2000,pre:[10,25,50,100,200,500],star:25}},
+    next:  {card:{t:[[5,0],[9.99,3],[25,6],[49.99,7],[99,8]],cap:16,max:200,pre:[9.99,25,49.99,99,200],star:25},
+            cry:{t:[[5,3],[9.99,6],[25,10],[49.99,12],[99,13],[200.01,15],[500,16],[1000,18]],cap:180,max:2000,pre:[25,50,100,250,500,1000,2000],star:50}},
+    txt:{v6:'Варіант A: весь бонус нараховується одразу.',v1:'10%',v2:'25%',v3:'$35 (як зараз)',v4:'+5 пп',v5:'$60',w1:'подвоюється (3 → 6%)',w2:'$180',cost:'−$3.2k',risk:'Ризик: низький, логіка поточної сітки зберігається'}
+  },
+  B: {
+    first: {card:{t:[[5,10],[9.99,15],[19.99,25]],cap:35,max:200,pre:[5,9.99,19.99,49.99,99,200],star:19.99},
+            cry:{t:[[5,15],[9.99,20],[19.99,30]],cap:60,max:2000,pre:[10,25,50,100,200,500],star:25}},
+    next:  {card:{t:[[5,0],[25,5],[49.99,7],[99,8]],cap:16,max:200,pre:[10,25,50,100,200],star:25},
+            cry:{t:[[5,5],[25,10],[49.99,12],[99,14],[200.01,15],[500,17],[1000,20]],cap:200,max:2000,pre:[25,100,250,500,1000,2000],star:100}},
+    txt:{v6:'Варіант B: 50% бонусу одразу, 50% нараховується з 2-м депом від $9.99 протягом 7 днів. Бонус тим, хто не повертається, стає гачком на 2-й деп.',v1:'10%',v2:'25%',v3:'$35 (як зараз)',v4:'+5 пп',v5:'$60',w1:'з\'являється (0 → 5%)',w2:'$200',cost:'−$7.3k',risk:'Ризик: $19.99 на 2-му+ депі = 0%, а бонус у 2 частини складніше зрозуміти. Потрібен A/B'}
+  }
+};
+const NOW = {first:{t:[[5,20],[19.76,25]],cap:35,max:2000}, next:{t:[[5,0],[19,6],[49,7],[99,8],[199,10]],cap:35,max:2000}};
+
+const W=560,H=250,L=34,R=10,T=14,B=30, X0=Math.log(5), X1=Math.log(2000);
+const x = a => L + (Math.log(a)-X0)/(X1-X0)*(W-L-R);
+const pct = (g,a) => { let p=0; for (const [f,v] of g.t) if (a>=f) p=v; return Math.min(p*a/100, g.cap)/a*100; };
+const NS='http://www.w3.org/2000/svg';
+function el(svg,tag,attrs,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;svg.appendChild(e);return e;}
+function path(g,y){
+  const xs=new Set();
+  for(let i=0;i<=300;i++) xs.add(Math.exp(X0+(Math.log(g.max)-X0)*i/300));
+  for(const [f] of g.t) if(f>5&&f<=g.max){xs.add(f);xs.add(f-0.001);}
+  return [...xs].sort((a,b)=>a-b).map((a,i)=>(i?'L':'M')+x(a).toFixed(1)+' '+y(pct(g,a)).toFixed(1)).join(' ');
+}
+function draw(id,key,ymax,v){
+  const svg=document.getElementById(id); svg.innerHTML='';
+  const y = p => H-B - p/ymax*(H-B-T);
+  el(svg,'rect',{x:x(5),y:T,width:x(200)-x(5),height:H-B-T,fill:'var(--zone)'});
+  el(svg,'text',{x:x(200)-4,y:H-B-5,'text-anchor':'end'},'карта ≤ $200');
+  el(svg,'text',{x:x(200)+4,y:H-B-5},'тільки крипта →');
+  const step = ymax>30?10:5;
+  for(let p=0;p<=ymax;p+=step){
+    el(svg,'line',{x1:L,x2:W-R,y1:y(p),y2:y(p),stroke:'var(--line)'});
+    el(svg,'text',{x:L-5,y:y(p)+3,'text-anchor':'end'},p+'%');
+  }
+  for(const a of [5,10,20,50,100,200,500,1000,2000])
+    el(svg,'text',{x:x(a),y:H-B+14,'text-anchor':'middle'},a>=1000?'$'+a/1000+'k':'$'+a);
+  el(svg,'text',{x:W-R,y:H-4,'text-anchor':'end'},'сума депу →');
+  el(svg,'path',{d:path(NOW[key],y),fill:'none',stroke:'var(--now)','stroke-width':2,'stroke-dasharray':'5 4'});
+  const g=V[v][key];
+  el(svg,'path',{d:path(g.cry,y),fill:'none',stroke:'var(--cry)','stroke-width':2.5});
+  el(svg,'path',{d:path(g.card,y),fill:'none',stroke:'var(--ink)','stroke-width':2.5});
+  for(const [m,cls,dy] of [[g.cry,'lb',-7],[g.card,'lc',14]]){
+    const col = cls==='lb'?'var(--cry)':'var(--ink)';
+    for(const a of m.pre){
+      const p=pct(m,a), cx=x(a), cy=y(p);
+      if(a===m.star) el(svg,'circle',{cx,cy,r:7,fill:'none',stroke:'var(--gold)','stroke-width':2});
+      el(svg,'circle',{cx,cy,r:3,fill:col});
+      el(svg,'text',{x:cx,y:cy+dy,'text-anchor':'middle',class:cls},Math.round(p)+'%');
+    }
+  }
+}
+function render(v){
+  draw('c1','first',35,v); draw('c2','next',22,v);
+  for(const k in V[v].txt) document.querySelectorAll('.'+k+',#'+k).forEach(n=>n.textContent=V[v].txt[k]);
+  document.querySelectorAll('.sw button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
+}
+document.querySelectorAll('.sw button').forEach(b=>b.addEventListener('click',()=>render(b.dataset.v)));
+render(new URLSearchParams(location.search).get('v')==='B'?'B':'A');
+</script>
+</body>
+</html>

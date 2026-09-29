@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Івенти BLC: розбір</title>
+<style>
+:root{
+  --bg:#f5f4f0;--card:#fff;--ink:#17171a;--mute:#6b6b72;--faint:#9a9aa1;--line:#e6e3dc;
+  --good:#18864a;--good-bg:#e3f4ea;--bad:#c2372b;--bad-bg:#fbe7e4;--acc:#e0621a;--acc-bg:#fff1e6;--bar:#dcd8cf;
+  --num:"Segoe UI Variable Display","SF Pro Display","Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121214;--card:#1c1c1f;--ink:#ededf0;--mute:#9d9da6;--faint:#6f6f78;--line:#2c2c31;--good:#4cc27d;--good-bg:#173323;--bad:#ff6b5e;--bad-bg:#3a1c19;--acc:#ff8a3d;--acc-bg:#33241a;--bar:#38383f}}
+:root[data-theme="dark"]{--bg:#121214;--card:#1c1c1f;--ink:#ededf0;--mute:#9d9da6;--faint:#6f6f78;--line:#2c2c31;--good:#4cc27d;--good-bg:#173323;--bad:#ff6b5e;--bad-bg:#3a1c19;--acc:#ff8a3d;--acc-bg:#33241a;--bar:#38383f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:1120px;margin:0 auto;padding:28px 16px 48px}
+.n,td,.kpi b,.big{font-family:var(--num);font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum","lnum"}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+h1{font-family:var(--num);font-size:28px;line-height:1.15;letter-spacing:-.02em;margin:4px 0 6px;font-weight:700}
+.sub{color:var(--mute);font-size:13px;max-width:780px}
+h2{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
+h3{font-size:16px;margin:0 0 6px;letter-spacing:-.01em}
+section{margin-top:28px}
+.verdict{margin-top:18px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:10px;padding:14px 18px}
+.verdict p{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em}
+.verdict .sub{margin-top:4px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi span{display:block;font-size:12px;color:var(--mute)}
+.kpi b{display:block;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.03em;margin:4px 0 2px}
+.kpi small{font-size:12px;color:var(--faint)}
+.kpi span.d{display:inline-block}
+.d{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:20px;font-family:var(--num)}
+.d.up{color:var(--good);background:var(--good-bg)}.d.dn{color:var(--bad);background:var(--bad-bg)}.d.eq{color:var(--mute);background:var(--bar)}
+.g{display:grid;gap:10px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+.c{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto}
+.c p{margin:0 0 8px}
+table{width:100%;border-collapse:collapse}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-weight:600;color:var(--mute);font-size:11px;text-transform:uppercase;letter-spacing:.04em;vertical-align:bottom}
+td:first-child,th:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+td.t{white-space:normal;text-align:left;font-family:inherit}
+.up{color:var(--good);font-weight:650}.dn{color:var(--bad);font-weight:650}.mu{color:var(--faint)}
+tr.hl td{background:var(--acc-bg)}
+.hb{display:grid;grid-template-columns:150px 1fr 90px;gap:8px;align-items:center;margin:5px 0}
+.hb i{display:block;height:14px;border-radius:4px;background:var(--bar);min-width:2px}
+.hb i.a{background:var(--acc)}.hb i.bd{background:var(--bad)}.hb i.gd{background:var(--good)}
+.hb .v{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+ul.clean{margin:0;padding-left:18px}ul.clean li{margin:4px 0}
+ol.rec{margin:0;padding-left:22px}ol.rec li{margin:0 0 12px}ol.rec li b{display:block;font-size:15px}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px;background:var(--bar);color:var(--ink);vertical-align:1px}
+.chip.a{background:var(--acc-bg);color:var(--acc)}.chip.gd{background:var(--good-bg);color:var(--good)}
+.foot{margin-top:28px;color:var(--faint);font-size:12px}
+.cols{display:flex;align-items:flex-end;gap:3px;height:120px;margin-top:6px}
+.cols div{flex:1;background:var(--bar);border-radius:3px 3px 0 0;position:relative}
+.cols div.a{background:var(--acc)}
+.cl{display:flex;gap:3px;font-size:10px;color:var(--faint);margin-top:4px}.cl span{flex:1;text-align:center}
+@media (max-width:760px){.kpis{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}h1{font-size:22px}.kpi b{font-size:24px}.hb{grid-template-columns:96px 1fr 64px}.cl span:nth-child(even){visibility:hidden}}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="eyebrow">BloodyCase · розбір івентів · 29.09.2026</div>
+<h1>Чому івенти не драйвлять депозити — і що змінити</h1>
+<div class="sub">Live DB (репліка) + конфіг івенту на сайті + 7 конкурентів. Поточний івент Start Season 2026: 08.09 → 06.10. Порівняння: перші 20 днів vs 20 днів до старту. Дні UTC (припущення).</div>
+
+<div class="verdict">
+<p>Івент — це автоматичний кешбек на депозит у новій обгортці. Він платить ≈13% GMV за депозити, які івент не довів як додаткові.</p>
+<div class="sub">Однакові правила XP 11 івентів поспіль, без пауз. Активність росте, платники — ні. Великі депозити (від $50) просіли на 35%. Але головна проблема більша за івент: база платників стискається, а реєстрація → FTD впала майже вдвічі.</div>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><span>Не дійшли до 1-го рівня</span><b>93%</b><small>12 993 з 14 024 учасників</small></div>
+  <div class="kpi"><span>Платники після старту</span><b>+1%</b><span class="d eq">типово за 12 стартів</span></div>
+  <div class="kpi"><span>Депозити від $50</span><b>−35%</b><small>$35.0k → $22.6k</small></div>
+  <div class="kpi"><span>Вартість івенту</span><b>13%</b><small>≈$8k скінів гравцям за 20 днів</small></div>
+</div>
+
+<section>
+<h2>1 · Що всередині івенту</h2>
+<div class="g g2">
+<div class="c">
+<h3>Звідки береться XP</h3>
+<div class="hb"><span>Депозит</span><i class="a" style="width:58.2%"></i><span class="v">58%</span></div>
+<div class="hb"><span>Відкриття кейсу</span><i style="width:14.8%"></i><span class="v">15%</span></div>
+<div class="hb"><span>Джерело 2 (гра)</span><i style="width:12.7%"></i><span class="v">13%</span></div>
+<div class="hb"><span>Джерело 6 (?)</span><i class="bd" style="width:11.9%"></i><span class="v">12%</span></div>
+<div class="hb"><span>Інше (3, 8)</span><i style="width:2.3%"></i><span class="v">2%</span></div>
+<p class="sub" style="margin-top:10px">Кейс = 20 XP (80 на івентових). Депозит $5 = 800 XP, а 1-й рівень = 1 000 XP. Весь пас = 475 000 XP ≈ <b>$2 300</b> депозитів. У конфігу немає смуги понад $500 (ймовірно <b>0 XP</b>, не перевірено). Джерело 6 не описане в конфігу: 3 фінішери мають ~835k XP кожен, переважно з нього.</p>
+</div>
+<div class="c">
+<h3>Воронка рівнів</h3>
+<div class="hb"><span>&lt; L1</span><i class="bd" style="width:100%"></i><span class="v">12 993</span></div>
+<div class="hb"><span>L1–4</span><i class="a" style="width:6.2%"></i><span class="v">809</span></div>
+<div class="hb"><span>L5–9</span><i class="a" style="width:1.2%"></i><span class="v">154</span></div>
+<div class="hb"><span>L10–14</span><i class="a" style="width:.4%"></i><span class="v">52</span></div>
+<div class="hb"><span>L15–19</span><i class="a" style="width:.1%"></i><span class="v">13</span></div>
+<div class="hb"><span>L25 (фініш)</span><i class="a" style="width:.1%"></i><span class="v">3</span></div>
+<p class="sub" style="margin-top:10px">≈94% тих, хто пройшов L1 (974 з 1 031), — депозитори. <b>80% цінності скінів</b> ($318 з $399) лежить на рівнях 22–25, а до них потрібно $1.2–2.2k депозитів. Платник на $20 доходить до L2–3 і отримує скіни на $0.24–1.12.</p>
+</div>
+</div>
+</section>
+
+<section>
+<h2>2 · Куди пішли гроші</h2>
+<div class="g g2">
+<div class="c">
+<h3>Виплати івенту, 20 днів</h3>
+<div class="hb"><span>Скіни за рівні</span><i class="a" style="width:84%"></i><span class="v">$5.1k</span></div>
+<div class="hb"><span>Магазин (гравці)</span><i class="a" style="width:46%"></i><span class="v">$2.8k</span></div>
+<div class="hb"><span>Внутрішній акаунт</span><i class="bd" style="width:100%"></i><span class="v">$6.0k</span></div>
+<p class="sub" style="margin-top:10px">Один акаунт (<code>flags=128</code>, $0 депозитів) отримав <b>10 млн монет вручну</b> і купив 12 скінів по $500. Потрібне підтвердження клієнта, що це запланована промо-акція. Курс магазину: 1 000 монет = $1.</p>
+</div>
+<div class="c">
+<h3>Депозити за розміром: до → під час</h3>
+<table>
+<tr><th>розмір</th><th>до, $</th><th>івент, $</th><th>Δ</th></tr>
+<tr><td>$5–9</td><td>10 061</td><td>10 041</td><td class="mu">0%</td></tr>
+<tr><td>$10–19</td><td>9 723</td><td>8 447</td><td class="dn">−13%</td></tr>
+<tr><td>$20–49</td><td>18 085</td><td>18 425</td><td class="up">+2%</td></tr>
+<tr class="hl"><td>$50–99</td><td>9 709</td><td>6 025</td><td class="dn">−38%</td></tr>
+<tr class="hl"><td>$100–500</td><td>25 334</td><td>13 583</td><td class="dn">−46%</td></tr>
+<tr><td>&gt; $500 (смуги немає)</td><td>0</td><td>2 998</td><td class="mu">3 депи</td></tr>
+</table>
+<p class="sub" style="margin-top:8px">Дрібні депи стоять рівно. Майже весь спад (−$12.4k з −$13.4k) — у великих. Гіпотеза: для них в івенті немає цілі; але спад ARPPU почався ще до івенту.</p>
+</div>
+</div>
+</section>
+
+<section>
+<h2>3 · Чому івенти не драйвлять (усі старти з червня 2025)</h2>
+<div class="g g2">
+<div class="c">
+<h3>14 днів після старту vs 14 до</h3>
+<table>
+<tr><th>старт</th><th>івент</th><th>GMV</th><th>платники</th></tr>
+<tr><td>10.06.25</td><td class="t">—</td><td class="up">+23%</td><td class="mu">+1%</td></tr>
+<tr><td>29.07.25</td><td class="t">шаблон стартує</td><td class="up">+22%</td><td class="mu">+1%</td></tr>
+<tr><td>03.09.25</td><td class="t">Back to game</td><td class="mu">+1%</td><td class="up">+4%</td></tr>
+<tr><td>03.10.25</td><td class="t">Candy Battle</td><td class="mu">−3%</td><td class="mu">−1%</td></tr>
+<tr><td>04.11.25</td><td class="t">Black Friday</td><td class="dn">−24%</td><td class="dn">−22%</td></tr>
+<tr><td>03.12.25</td><td class="t">Xmas Loot</td><td class="dn">−17%</td><td class="mu">+2%</td></tr>
+<tr><td>06.01.26</td><td class="t">Gravity Blast</td><td class="up">+16%</td><td class="up">+6%</td></tr>
+<tr><td>17.02.26</td><td class="t">Rabbit Hunt</td><td class="up">+15%</td><td class="up">+6%</td></tr>
+<tr><td>14.04.26</td><td class="t">Major Cologne</td><td class="dn">−8%</td><td class="mu">0%</td></tr>
+<tr><td>22.06.26</td><td class="t">World Case Cup</td><td class="mu">+4%</td><td class="mu">−1%</td></tr>
+<tr><td>22.07.26</td><td class="t">No Name Resort</td><td class="up">+15%</td><td class="mu">−3%</td></tr>
+<tr class="hl"><td>08.09.26</td><td class="t">Start Season</td><td class="dn">−7%</td><td class="up">+5%</td></tr>
+</table>
+<p class="sub" style="margin-top:8px">GMV скаче ±20% за китами. Платники стоять на місці. З 29.07.25 правила XP ідентичні в усіх 11 івентах — змінюються лише тема і скіни.</p>
+</div>
+<div class="c">
+<h3>Платники на місяць, 2025–2026</h3>
+<div class="cols" id="pay"></div>
+<div class="cl" id="payl"></div>
+<table style="margin-top:14px">
+<tr><th></th><th>вер 2025</th><th>вер 2026*</th><th>Δ</th></tr>
+<tr><td>Реєстрації / день</td><td>583</td><td>896</td><td class="up">+54%</td></tr>
+<tr><td>FTD / день</td><td>44</td><td>37</td><td class="dn">−17%</td></tr>
+<tr><td>Реєстрація → FTD</td><td>7.6%</td><td>4.1%</td><td class="dn">−3.5 пп</td></tr>
+<tr><td>Платники / міс</td><td>2 124</td><td>≈1 800</td><td class="dn">−15%</td></tr>
+<tr><td>GMV / день</td><td>$3 888</td><td>$2 943</td><td class="dn">−24%</td></tr>
+</table>
+<p class="sub" style="margin-top:8px">* 01–28.09; платники перераховані на 30 днів. Макро-проблема ≈15× більша за івент (оцінка): навіть найкращий старт дав би ≈+108 платників/міс, а від піку втрачено ≈1 600/міс. Плюс з 17.08 просіла успішність оплат (звіт 18.09).</p>
+</div>
+</div>
+</section>
+
+<section>
+<h2>4 · Конкуренти: як івент прив'язують до депозиту</h2>
+<div class="c">
+<table>
+<tr><th>сайт</th><th>механіка, що тягне депозит</th></tr>
+<tr><td>Key-Drop</td><td class="t"><b>Платний Premium Event Pass, $5</b> — подвоєні нагороди на кожному рівні</td></tr>
+<tr><td>Hellcase</td><td class="t">Нагороди за <b>сумарне поповнення</b> за івент, Token Vault, VIP від $300/міс, підписка $5–25</td></tr>
+<tr><td>Farmskins</td><td class="t"><b>Підписка $10 / $50 / $100 на місяць</b> — кешбек + ексклюзивні кейси</td></tr>
+<tr><td>DatDrop</td><td class="t">Рівень безкоштовного кейса = сума депозитів, <b>згорає на $5 щодня</b> → треба депати знову</td></tr>
+<tr><td>CaseBattle</td><td class="t"><b>Лідерборди $1k/день і $20k/міс</b>, денний кейс росте від ставок за 7 днів</td></tr>
+<tr><td>Skin.club</td><td class="t">Вхід у розіграші за очки 12 / 100 / 220 / 900 — чіткі цілі на кожному рівні витрат</td></tr>
+</table>
+<p class="sub" style="margin-top:8px">Спільне: нагорода прив'язана до <b>додаткового зобов'язання</b> — платний пас, поріг суми, гонка, статус, що згорає, — а не нараховується автоматично за кожен депозит, як у нас. CaseBattle і Skin.club рахують ставки, а не депозити. Джерела з посиланнями: <code>competitor-events_2026-09-29_v1.md</code>.</p>
+</div>
+</section>
+
+<section>
+<h2>5 · Що робимо</h2>
+<div class="g g2">
+<div class="c">
+<h3>Івент 07.10 — тільки конфіг</h3>
+<ol class="rec">
+<li><b>Перший деп = перша нагорода</b> $5 → 1 000 XP, рівно ~200 XP/$ без обривів: $10 → 2k, $50 → 10k, $100 → 20k, $250 → 50k. <span class="chip gd">≤ $0.4k</span></li>
+<li><b>Цінність — у середину</b> Скрині на L5 / L10 / L15 (~$2 / $6.5 / $18). L22–24 → монети, Kukri на L25 лишається. <span class="chip gd">≈ +$0.6k</span></li>
+<li><b>Гонка китів</b> Смуги $500–999 → 100k XP, $1 000+ → 200k XP. Лідерборд за XP, пул публічно. Тільки конфіг — якщо лідерборд рахує XP (питання 3). <span class="chip a">пул ≈ $1.4k / 20 днів</span></li>
+<li><b>Урізати кешбек монетами вдвічі</b> з депозитів (кейси без змін) — фінансує пункти 2–3. <span class="chip gd">≈ −$0.8k</span></li>
+</ol>
+<p class="sub">Сумарно ≈ +$1.6k за 20 днів. Покривається зупинкою внутрішнього гранту на $6k.</p>
+</div>
+<div class="c">
+<h3>Потрібен dev клієнта</h3>
+<ol class="rec" start="5">
+<li><b>Холд-аут 20%</b> Випадкові 20% юзерів без івенту. Єдиний спосіб дізнатися, чи ці $8k щось купують.</li>
+<li><b>«$X до наступної скрині» в касі</b> Ціль — у момент вибору суми.</li>
+<li><b>Платний преміум-трек ~$5</b> Лише після холд-ауту, інакше знову не виміряємо.</li>
+</ol>
+<h3 style="margin-top:14px">Зараз (8 днів до кінця)</h3>
+<ul class="clean">
+<li>Виправити <code>MainTitleToken: "NO NAME RESORT"</code> — назва старого івенту в конфігу.</li>
+<li>CRM-пуш 963 гравцям на L1–9: «N XP до наступного скіна», 20% — контроль.</li>
+<li>Правила XP посеред івенту <b>не міняти</b>.</li>
+</ul>
+</div>
+</div>
+</section>
+
+<section>
+<h2>6 · Як міряти наступний івент</h2>
+<div class="g g3">
+<div class="kpi"><span>Дизайн</span><b>80 / 20</b><small>холд-аут за client_id, мін. 21 день + 7 днів після</small></div>
+<div class="kpi"><span>Головна метрика</span><b>9.4% → ≥11.2%</b><small>частка депозиторів; мінімальний помітний ефект +1.75 пп</small></div>
+<div class="kpi"><span>Планка окупності</span><b>+13% GMV</b><small>стільки коштує івент за buyout-цінами (завищує, якщо скіни витрачають на сайті)</small></div>
+</div>
+</section>
+
+<section>
+<h2>7 · Питання до клієнта</h2>
+<div class="c">
+<ol class="rec" style="margin:0">
+<li>Акаунт <code>flags=128</code>: 10 млн монет і $6k скінів — це запланована промо-акція? Хто погоджує такі гранти?</li>
+<li>Що таке джерело XP 6 (і 2, 3, 8)? 3 фінішери мають ~835k XP кожен, переважно з нього — ручне нарахування, баг чи абуз?</li>
+<li>За чим ранжує лідерборд, і чи приймає конфіг смуги депозиту понад $500?</li>
+<li>Чи може dev до 07.10 показувати івент лише частині юзерів (холд-аут)?</li>
+<li>Реальна собівартість скіна-нагороди, і чи згорають монети в кінці івенту?</li>
+</ol>
+</div>
+</section>
+
+<div class="foot">Дані: <code>_reports/blc-event-deep-dive_2026-09-29_v1.md</code> (SQL + таблиці) · стратегія: <code>event-strategy_2026-09-29_v1.md</code> · конкуренти: <code>competitor-events_2026-09-29_v1.md</code> · щоденна таблиця: <code>start-season-event_2026-09-29_v1.html</code>. Причинність не доведена: порівняння до/після без контрольної групи. Депозити включають неприбрані внутрішні акаунти.</div>
+</div>
+<script>
+const m=[["01.25",2562],["02",3011],["03",3418],["04",2728],["05",2677],["06",2394],["07",2234],["08",2222],["09",2124],["10",2647],["11",2279],["12",1894],["01.26",1968],["02",2197],["03",2557],["04",2237],["05",2279],["06",1814],["07",1787],["08",1859],["09*",1681]];
+const mx=3418,p=document.getElementById("pay"),l=document.getElementById("payl");
+m.forEach(([k,v],i)=>{p.insertAdjacentHTML("beforeend",`<div${i==m.length-1?' class="a"':''} style="height:${v/mx*100}%" title="${k}: ${v.toLocaleString("uk-UA")}"></div>`);l.insertAdjacentHTML("beforeend",`<span>${k}</span>`)});
+</script>
+</body>
+</html>

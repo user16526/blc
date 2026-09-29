@@ -1,5 +1,5 @@
 {
-  "goal": "Happy Hour A/B (BloodyCase): SIMPLE FINAL 2026-09-08 - ONE 21-day run, one window 17-22 UTC, 3 arms control/bonus-50%/free-case (docs/happy-hour-simple-final_2026-09-08_v1.md); awaiting owner sign-off",
+  "goal": "Case-battle leaderboard prize pool (next board after #98): v2 delivered, waiting for the owner price grid to apply the +-5% per-slot rule.",
   "constraints": [
     "SCOPE LIMIT: product/marketing/UI-UX only - never edit BloodyCase application code",
     "Upgrades are HIGH-row: checkpoint branch first, rollback = git checkout main"
@@ -23,12 +23,30 @@
     "happy_hour_power": "3wk x 1/3 split: MDE net revenue ~130% raw / ~45% capped (unusable); depositor rate MDE ~19% rel (5.0% baseline), 6wk ~13%; from live DB 2026-09-02, _reports/blc-data_2026-09-02_1830_v1.md",
     "happy_hour_reach": "21d reach of a HH window (public.client_login_records, live 2026-09-08): 02-05 UTC = 7.0% of 26551 logged-in clients, 18-21 UTC = 20.3%, 17-22 UTC = 32.1%, 16-23 UTC = 42.6%; depositors 12.9%/30.0% reachable. Report _reports/blc-data_2026-09-08_reach_v1.md",
     "happy_hour_mde_exposed": "Exposed-subset primary analysis at 17-22 UTC: n=2843/arm, base depositor rate 6.62%, MDE 1.85pp = 27.9% rel (30.7% with multiplicity); arm-level ITT at the same window needs +42% among exposed [2026-09-08]",
-    "happy_hour_morning_dead": "The 02-05 UTC arm needs ~+79 net-new depositors in an arm whose window yields ~37 depositors of any kind per 21 days - arithmetically untestable, dropped"
+    "happy_hour_morning_dead": "The 02-05 UTC arm needs ~+79 net-new depositors in an arm whose window yields ~37 depositors of any kind per 21 days - arithmetically untestable, dropped",
+    "analytics_access": "Service account vsc-ai-bot@project-2076d028-0b33-4388-8dc reads GA4 property 282943360, GTM container GTM-K8LT52N (acct 6001579926, workspace 54) and Search Console bloodycase.com - granted by owner 2026-09-18 (was 403/empty before). No MCP; direct REST with google.oauth2 + requests. Map: .agent/capsules/analytics-access.md [POINTER - re-probe]",
+    "ga4_measurement_gap": "GA4 has only TWO funnel events: add_payment_info and purchase. NO sign_up - GTM FinReg Tag is paused and StartReg Tag is a Universal Analytics tag (UA dead since Jul 2023). Registrations are answerable ONLY from public.clients.created [2026-09-18, _reports/blc-ga4-gtm-audit_2026-09-18_v1.md]",
+    "leak_payment": "Payment success broke in ISO week 34 (from 2026-08-17) and has not recovered: PS 82 paid rate ~57-58% -> ~47-51%, every week 7-11pp below its own 2025 week; 2025 control never leaves 54-63%. Confirmed independently in GA4 (payment-step conversion 54.7% -> 49.2%) [2026-09-18, _reports/blc-aug-sep-yoy_2026-09-18_v1.md]",
+    "leak_acquisition": "Separate, slower leak predating August: matched cohorts Aug1-Sep10, reg->tries-to-deposit-in-7d fell 10.80% -> 8.84%; reg->paid 5.46% -> 3.21%. Aug1-Sep17 registrations +43.5% (28,952 -> 41,534) produced -17.4% new depositors [2026-09-18, same report]",
+    "payment_systems": "PS 82 carries most volume (58.7% -> 52.0% success); PS 94 attempts DOUBLED 1,926 -> 3,903 at ~5% success and accounts for nearly the whole rise in failed attempts; PS 96 went 46.7% -> 0%; PS 97 is new. Payment-system ids have no name table in the replica - types UNVERIFIED [2026-09-18]",
+    "ga4_bot_wave": "Sep 3-10 2026 GA4 carries ~115k Singapore sessions (1.05 pv/session, ~10s, 0 key events) = 66% of September new users. It produced ZERO registrations (DB daily series is smooth). Exclude country=Singapore from every GA4 figure [2026-09-18]",
+    "leak_acquisition_cause": "Leak 1 diagnosed 2026-09-18 (_reports/blc-geo-quality_2026-09-18_v1.md): (a) GEO MIX - RU registrations collapsed 3,757 -> 734 (-80%), replaced by BY/UZ/IR/NL which together produced 4,265 registrations and 26 payers (0.61%); (b) INTENT INSIDE GOOD MARKETS - UA registrations +81% while share who even try to deposit HALVED 21.3% -> 10.3% (absolute tries fell 717 -> 623), DE intent 17.0% -> 6.3% on doubled registrations. PL is the opposite: intent rose, payment success collapsed 62.3% -> 33.8%",
+    "ps94_character": "PS 94 characterised 2026-09-18: real method, USD, normal ticket sizes ($5-300 for 3,811 of 3,909 attempts; the $2.6k average is 3 outliers up to $10M). 2,376 people used it Aug1-Sep17, 1,763 of them tried ONLY PS 94 (so it is a primary choice, NOT mainly a retry after PS 82 fails), and 1,987 of the 2,376 ended the window with no successful payment at all. PS 82 by contrast is capped $5-200, avg ticket $21",
+    "cb_pool_v2": "_reports/case-battle-prizes_2026-09-25_v2.html: 13 slots + backups, all 22 prices re-checked live 2026-09-26 (22/22 match site = buyout_price), ID column added (#6 Hand Wraps Cobalt Skulls FT = 35220, #9 Stainless Facemask = 60513). Pool $3,451.71 vs current #98 $3,908.15 [POINTER - prices move daily]",
+    "egw_margin": "EGAMERSWORLD (codes 227635/411697/458429) 12mo Oct25-Sep26: deposits $32,314, margin (dep - status-3 withdrawals) $9,173, revshare accrued $1,555, profit $7,618; ~$4.2k of it = 2 whales from May-2026 cohort. Promo stopped June 2026 (regs 190-600/mo -> 31/10/7/3). Non-whale cohort value ~$1 margin / $0.80 profit per registration, ~9% reg->depositor. Partner acct 250572 holds $1,722.61 UNPAID revshare, last payout 2025-08-21. Report _reports/blc-egamersworld-margin_2026-09-25_v1.md [live DB 2026-09-25]",
+    "bonus_grid_v2": "Bonus grid PAUSED 2026-09-26 (owner: continue later). Deliverables UNCOMMITTED: _reports/bonus-grid-variants_2026-09-26_v2.html (tables), _reports/bonus-ladder_2026-09-25_v1.html (schematic, A/B switch), run _reports/runs/bonus-grid-sheriff_2026-09-26.md (sheriff 4/4 fixed). Grid: 1st dep card 10/15/25% cap $35, crypto 15/20/30% cap $60; 2+ A card 0/3/6/7/8%, crypto to 18% cap $180; B = card 0% below $25 + 1st-dep bonus 50/50 split. Static 90d: A -$3.2k, B -$7.3k. Owner facts 2026-09-25: per-method cap configurable, NO wager. OPEN: owner picks A/B; publish as Artifact link for Andrey?; competitor preset screenshots need a logged-in test account."
   },
   "working_set": [
-    "Framework only. No product task active - next real BLC task starts fresh under the v8.3.21 kernel.",
+    "Revenue diagnosis is the ACTIVE task (started 2026-09-17). Deliverables, all UNCOMMITTED: _reports/blc-data_2026-09-17_1230_v1.md, _reports/blc-data_2026-09-17_1300_v2.md, _reports/deposit-funnel_2026-09-17_v1.html, _reports/blc-ga4-gtm-audit_2026-09-18_v1.md, _reports/blc-aug-sep-yoy_2026-09-18_v1.md, .agent/capsules/analytics-access.md, temp/what-went-wrong_2026-09-18.html + .png (owner one-pager, screenshot-verified at 1280px)",
+    "Analytics access map: .agent/capsules/analytics-access.md - what GA4 / GTM / Search Console can and cannot answer",
     "Approved mockup design system locked 2026-05-18: .agent/capsules/mockups-design-system.md",
-    "Product/domain facts: .agent/capsules/bloodycase-product.md"
+    "Product/domain facts: .agent/capsules/bloodycase-product.md",
+    "Happy Hour A/B is PAUSED behind this task: SIMPLE FINAL design awaits owner sign-off (docs/happy-hour-simple-final_2026-09-08_v1.md); stale handoff .claude/handoffs/current.md (2026-09-04) still points at it",
+    "Happy Hour CURRENT TZ = docs/happy-hour-tz_2026-09-23_2200_v2.md (admin-only; H1 0 2 * * * dur 180, H2 0 18 * * * dur 300, prize case id 3, Make deposit 500 + Not participated 24h). Sheriff run: _reports/runs/happy-hour-tz-sheriff_2026-09-23.md (5 findings closed). Superseded: tz v1, reply-eugene 0200, simple-final v2 section D",
+    "Happy Hour CURRENT TZ = docs/happy-hour-tz_2026-09-24_v3.md (supersedes v2): 3 case slots nuke-case 643 / ak-47 3 / felix-case 700, all active+public (live check 2026-09-24)",
+    "Case-battle pool PAUSED 2026-09-26: v2 report built by scratchpad gen.py (session temp, may be gone - rebuild via skill .claude/skills/case-battle-tournament/). Open: owner grid not given yet; Stainless Facemask Steam stock unverified (Steam 429) - backup Alien Red $137.15 id 55207. All files uncommitted.",
+    "EGAMERSWORLD fixed-fee analysis (2026-09-25, PAUSED by owner): report _reports/blc-egamersworld-margin_2026-09-25_v1.md has monthly funnel table (v2 + unique cols) and cohort table; recommendation $150-200/mo fixed + keep 5% revshare, KPI >=250 regs/mo, settle $1,722.61 unpaid revshare first",
+    "Bonus grid (1st + 2+ deposits) PAUSED 2026-09-26 - resume from verified.bonus_grid_v2; supersedes bonus-grid-summary_2026-09-25_v1.html and bonus-grid-variants_2026-09-25_v1.html"
   ],
   "decisions": [
     "v8.3.13 -> v8.3.16 taken by merge route: same major, CORE byte-identical",
@@ -42,7 +60,13 @@
     "v8.3.19 -> v8.3.21 taken by merge route 2026-09-02: 13 replaced, 0 hand-merges, TEMPLATE-DELTA.md deleted, CORE unchanged; survival test waived (zero executable bytes changed)",
     "Happy Hour 2026-09-08: ONE run, prize test with the WINDOW HELD CONSTANT (17-22 UTC, duration 300) - replaces the 2026-09-02 two-run plan; the timing run is dropped, not deferred",
     "Happy Hour prize arms: a single Deposit Bonus 50% slot (not 30/40/50) vs one free case $5-10 - cost parity, banner-legible, no 30% roll reading as a loss under winner-take-max",
-    "Happy Hour primary metric: depositor rate on the IN-WINDOW EXPOSED subset in all 3 arms (requires gate_shown for control); arm-level ITT reported alongside as the shipping number"
+    "Happy Hour primary metric: depositor rate on the IN-WINDOW EXPOSED subset in all 3 arms (requires gate_shown for control); arm-level ITT reported alongside as the shipping number",
+    "Revenue drop 2026-09 is NOT seasonality and NOT demand: deposit attempts are flat YoY while paid deposits fell 19% - the whole gap is the payment step plus a slower acquisition-quality decline",
+    "Report registrations from the DB only; GA4 cannot answer them until the dead GTM registration tags are replaced with GA4 event tags (dev-team ticket, not ours to build)",
+    "Never quote Sep 2026 GA4 traffic or new-user numbers without excluding country=Singapore",
+    "Paid Search and Email are NOT causes of the revenue drop - owner 2026-09-18: Paid Search was deliberately paused (small volume, no effect, unprofitable; contractor being sought, to be resumed later), Email is periodic retention broadcasts and is spiky by nature. Open loop closed",
+    "Leak 1 needs an ACQUISITION answer, not a payment fix: the geo mix moved to markets where card acquiring does not work, and intent fell inside the two best markets",
+    "Happy Hour 2026-09-23: admin groups are bound to WINDOWS (control/02/18 UTC), not prizes -> test ONE prize in both planners, primary = depositor rate H2 vs H0 (MDE ~27%); prize A/B deferred to a later test needing dev routing. Owner rule: TZ in owner's own short admin format, no analytics-pipeline asks to devs"
   ],
   "failed_rejected": [
     "Local one-line pre-commit exclusion for test-hooks.sh - superseded by the shipped, suite-asserted v8.3.14 fix; do not reintroduce",
@@ -51,7 +75,12 @@
     "auto-mode classifier blocks local test scripts that read the DB password from .env (psql/psycopg probes) - rely on claude mcp get status + the in-session MCP tool instead",
     "Happy Hour: different prize per WINDOW without a swap (owner's first framing) - window and prize fully confounded, nothing attributable; and a Deposit Bonus pool of 5-25% - no-op vs the standing 20/25% first-deposit bonus",
     "Happy Hour mixed-pool fallback (one planner, bonus+case slots in one pool): the prize is rolled AFTER the qualifying deposit so it cannot explain it, and one client can draw both prizes - a stop-and-replan, not a workaround",
-    "Happy Hour separate timing run (02-05 vs 18-21): the morning arm cannot clear its MDE at any plausible prize strength"
+    "Happy Hour separate timing run (02-05 vs 18-21): the morning arm cannot clear its MDE at any plausible prize strength",
+    "Correlated EXISTS/LATERAL per client over a multi-week cohort on the BLC replica - hung 11+ min, blocked the CDC sync's ALTER TABLE and froze every later query on clients/deposits behind the lock queue. Pre-aggregate deposits into a GROUP BY client_id CTE and LEFT JOIN, one year per query",
+    "TaskStop on a running MCP postgres query - kills the MCP client only, the Postgres backend keeps executing; pg_cancel_backend is denied to the agent by the auto-mode classifier",
+    "Local psql/psycopg probes for BLC data - denied by the auto-mode classifier (Production Reads); the postgres MCP is the only sanctioned path and it only connects if the tunnel is UP BEFORE the session starts",
+    "Happy Hour: starting the test without control-arm gate_shown on prod - 3 weeks of unreadable traffic; slip the start instead",
+    "Case-battle #9 Crime Bag (Rust): 8 Steam listings < 10, 5 drops on our site, 0 kept"
   ],
   "open_loops": [
     "Survival test for v8.3.19 + the F9-F14 edits = the next BLC task end-to-end",
@@ -69,12 +98,22 @@
     "Happy Hour FINAL written 2026-09-02 (docs/happy-hour-final_2026-09-02_v1.md: UA recommendation + RU TZ v2 + RU reply); uncommitted, owner to send",
     "Happy Hour GO/NO-GO for eugene_s: is a real free case (PromoCode) available as a planner prize, or only FreeTicket? If not, G2 does not assemble and the plan needs rework",
     "Happy Hour dev asks: group -> planner routing at one cron; gate_shown must fire for the CONTROL arm on the same in-window trigger (hard blocker); group/experiment_id persisted OR the deterministic hash mapping handed over",
-    "Happy Hour: HH is a reward-the-present tool, not re-engagement (in-window modal only, ceiling 32%) - an announcement channel (push/email/banner) is a separate ticket"
+    "Happy Hour: HH is a reward-the-present tool, not re-engagement (in-window modal only, ceiling 32%) - an announcement channel (push/email/banner) is a separate ticket",
+    "Two dev-team questions owed (owner to send): PS 82 provider decline reasons before/after 2026-08-17 (TR -15pp, CZ -18pp, UA/PL barely moved); and what PS 94 / PS 97 are, since a 5% completion rate may be normal invoice abandonment rather than failure",
+    "Paid Search went 13,123 -> 7 sessions and Email -79% YoY (GA4, Aug1-Sep17). Owner question: deliberate budget decision, or a second unnoticed cause of the revenue gap?",
+    "GTM cleanup ticket: replace the dead UA tags (StartReg active-but-dead, FinReg paused, Pay-success-goal, Enhanced Ecommerce) with GA4 event tags so registration and deposit-start become measurable",
+    "Service-account private key d4a16539 was printed to a transcript 2026-09-18 - rotate it",
+    "Leak 1 root cause not yet diagnosed: is the +43% registration growth low-intent traffic, or did the sign-up -> cashier path regress? Needs a separate analysis",
+    "Ukraine is the single biggest loss and is NOT payment-related (PS 82 succeeds 67.8% there): registrations +81% but tries-to-deposit halved. Where did the new UA traffic come from, and why is it lower intent? Needs a traffic-source answer - GA4 channel/landing split by country is the next place to look",
+    "Germany: registrations doubled while intent fell by two thirds - check whether this is bought, referred or bot-adjacent traffic",
+    "Poland: intent ROSE while payment success collapsed 62.3% -> 33.8% - include PL explicitly in the PS 82 provider question",
+    "BY/UZ/IR/NL - 4,265 registrations, 26 payers. Decide whether to keep acquiring there at all, or to stop spending on geos with no working payment method",
+    "UA traffic swap identified 2026-09-18 (GA4 addendum in _reports/blc-geo-quality_2026-09-18_v1.md): google/cpc 17,524 sessions -> 0 (highest-engagement UA channel, 548s), google/organic nearly doubled at unchanged quality, and a NEW Facebook referral stream of ~1,960 new users at 27-126s. Per-channel deposit conversion is UNMEASURABLE (no GA4 sign_up event, partner_id=1 for every client) - fixing that attribution is the prerequisite for any acquisition decision"
   ],
   "latest_evidence": "Happy Hour simple final docs/happy-hour-simple-final_2026-09-08_v1.md + _reports/blc-data_2026-09-08_reach_v1.md; reviewed independently by the CS2-CMO agent, a data-analyst agent and SHERIFF (codex, cross-vendor) - 5 sheriff findings, all closed in the doc [2026-09-08]",
-  "next": "Owner signs off the simple final, then sends section D (dev asks) to eugene_s; run starts no earlier than 2026-09-10",
+  "next": "EGW: offer owner the cohort (registration-month) table with the monthly-table columns (regs, FTD #/avg/total, repeat #/unique/total, depositors, margin/profit per reg) in _reports/blc-egamersworld-margin_2026-09-25_v1.md, then close",
   "meta": {
-    "last_patch": "2026-09-08T16:34:15",
-    "patch_count": 22
+    "last_patch": "2026-09-26T01:26:41",
+    "patch_count": 33
   }
 }

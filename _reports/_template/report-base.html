@@ -1,0 +1,104 @@
+<!doctype html>
+<!-- BLC report base. Copy this file, keep the <style> block as-is, replace <body>. Components shown below. -->
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BLC report base</title>
+<style>
+:root{
+  --bg:#f5f4f0;--card:#fff;--ink:#17171a;--mute:#6b6b72;--faint:#9a9aa1;--line:#e6e3dc;
+  --good:#18864a;--good-bg:#e3f4ea;--bad:#c2372b;--bad-bg:#fbe7e4;--acc:#e0621a;--acc-bg:#fff1e6;--bar:#dcd8cf;
+  --num:"Segoe UI Variable Display","SF Pro Display","Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121214;--card:#1c1c1f;--ink:#ededf0;--mute:#9d9da6;--faint:#6f6f78;--line:#2c2c31;--good:#4cc27d;--good-bg:#173323;--bad:#ff6b5e;--bad-bg:#3a1c19;--acc:#ff8a3d;--acc-bg:#33241a;--bar:#38383f}}
+:root[data-theme="dark"]{--bg:#121214;--card:#1c1c1f;--ink:#ededf0;--mute:#9d9da6;--faint:#6f6f78;--line:#2c2c31;--good:#4cc27d;--good-bg:#173323;--bad:#ff6b5e;--bad-bg:#3a1c19;--acc:#ff8a3d;--acc-bg:#33241a;--bar:#38383f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:1120px;margin:0 auto;padding:28px 16px 48px}
+/* numbers: one face, tabular, slightly tight */
+.n,td,.kpi b,.big{font-family:var(--num);font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum","lnum"}
+/* header */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+h1{font-family:var(--num);font-size:28px;line-height:1.15;letter-spacing:-.02em;margin:4px 0 6px;font-weight:700}
+.sub{color:var(--mute);font-size:13px;max-width:780px}
+h2{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
+h3{font-size:16px;margin:0 0 6px;letter-spacing:-.01em}
+section{margin-top:28px}
+/* verdict */
+.verdict{margin-top:18px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:10px;padding:14px 18px}
+.verdict p{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em}
+.verdict .sub{margin-top:4px}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi span{display:block;font-size:12px;color:var(--mute)}
+.kpi b{display:block;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.03em;margin:4px 0 2px}
+.kpi small{font-size:12px;color:var(--faint)}
+.kpi span.d{display:inline-block}
+.d{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:20px;font-family:var(--num)}
+.d.up{color:var(--good);background:var(--good-bg)}.d.dn{color:var(--bad);background:var(--bad-bg)}.d.eq{color:var(--mute);background:var(--bar)}
+/* cards + grid */
+.g{display:grid;gap:10px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+.c{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto}
+.c p{margin:0 0 8px}
+/* tables */
+table{width:100%;border-collapse:collapse}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-weight:600;color:var(--mute);font-size:11px;text-transform:uppercase;letter-spacing:.04em;vertical-align:bottom}
+td:first-child,th:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+td.t{white-space:normal;text-align:left}
+.up{color:var(--good);font-weight:650}.dn{color:var(--bad);font-weight:650}.mu{color:var(--faint)}
+tr.hl td{background:var(--acc-bg)}
+tr.mark td{background:var(--acc);color:#fff;font-weight:700;text-align:left;font-family:inherit}
+/* inline bars */
+.bar{display:inline-block;height:8px;border-radius:4px;background:var(--bar);vertical-align:middle;margin-right:6px}
+.bar.a{background:var(--acc)}.bar.gd{background:var(--good)}.bar.bd{background:var(--bad)}
+/* horizontal bar rows: label | bar | value */
+.hb{display:grid;grid-template-columns:150px 1fr 70px;gap:8px;align-items:center;margin:5px 0}
+.hb i{display:block;height:14px;border-radius:4px;background:var(--bar)}
+.hb i.a{background:var(--acc)}
+.hb .v{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+/* lists */
+ul.clean{margin:0;padding-left:18px}ul.clean li{margin:4px 0}
+ol.rec{margin:0;padding-left:20px}ol.rec li{margin:0 0 10px}ol.rec li b{display:block}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px;background:var(--bar);color:var(--ink)}
+.chip.a{background:var(--acc-bg);color:var(--acc)}
+.foot{margin-top:28px;color:var(--faint);font-size:12px}
+@media (max-width:760px){.kpis{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}h1{font-size:22px}.kpi b{font-size:24px}.hb{grid-template-columns:100px 1fr 56px}}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="eyebrow">BloodyCase · звіт</div>
+<h1>Заголовок звіту — одна думка</h1>
+<div class="sub">Джерело, період, часова зона, що виключено.</div>
+
+<div class="verdict"><p>Вердикт одним реченням.</p><div class="sub">Одне пояснення, чому.</div></div>
+
+<div class="kpis">
+  <div class="kpi"><span>GMV, 20 днів</span><b>$59.5k</b><span class="d dn">−18%</span> <small>vs 20 днів до</small></div>
+  <div class="kpi"><span>FTD</span><b>765</b><span class="d up">+10%</span></div>
+  <div class="kpi"><span>Платники</span><b>1 279</b><span class="d eq">+1%</span></div>
+  <div class="kpi"><span>Не дійшли до L1</span><b>93%</b><small>12 993 з 14 024</small></div>
+</div>
+
+<section>
+<h2>Картка + таблиця</h2>
+<div class="g g2">
+<div class="c"><table>
+<tr><th>метрика</th><th>до</th><th>після</th><th>Δ</th></tr>
+<tr><td>GMV, $</td><td>72 913</td><td>59 518</td><td class="dn">−18%</td></tr>
+<tr class="hl"><td>FTD</td><td>696</td><td>765</td><td class="up">+10%</td></tr>
+</table></div>
+<div class="c">
+<div class="hb"><span>Депозити</span><i class="a" style="width:58%"></i><span class="v">58%</span></div>
+<div class="hb"><span>Кейси</span><i style="width:15%"></i><span class="v">15%</span></div>
+</div>
+</div>
+</section>
+<div class="foot">Caveats / джерело SQL: _reports/…md</div>
+</div>
+</body>
+</html>

@@ -79,6 +79,32 @@ every hour → time of day is not a lever for new vs returning.
 6. CLOSED 2026-09-01: dev implemented the split for logged-in users (see Dev update). Still to confirm: assignment persisted in DB and joinable to deposits by client_id.
 Dev tickets identified: real `Weight` selection; re-enable spin-once check; planner end-date field.
 
+## v2 2026-09-23 (docs/happy-hour-simple-final_2026-09-23_0050_v2.md) — same design, re-dated
+Start Thu 2026-09-24 -> Wed 2026-10-14, stop morning 10-15 — conditional on dev go/no-go
+(routing, control gate_shown, group mapping, G2 prize type). Live DB re-baseline
+(`_reports/blc-data_2026-09-23_0050_v1.md`): reach 17-22 UTC 32.9 %, exposed depositor rate
+7.01 %, n 2 929/arm, MDE 26.6 % rel. New: deposit promo #104 (>= $25 -> case 809) ends
+2026-10-08, mid-run -> ask to extend to 10-15 or split days 1-14/15-21. First deposits = 33 %
+of in-window deposits, avg $11.58 -> 50 % bonus adds ~$3 to a new client vs ~$11.50 to a
+returning one; new/returning cut pre-registered as secondary, arms unchanged.
+Owner update 2026-09-23: HH not launched yet; dev work for the CONTROL group (no offer) is
+ready [owner's word, unverified: prod vs UAT, and whether gate_shown fires on the same
+in-window trigger]. Still open: group -> prize routing, group mapping, G2 prize type, promo #104.
+Prod recon 2026-09-23 (`_reports/happy-hour-prod-recon_2026-09-23_v1.md`): HH shipped, hidden by
+cookie `HappyHourAccess`; prize types CASE/FREE_TICKET/EVENT_COINS/BONUS_DEPOSIT (bonus has
+min/max_rate, min/max_deposit, duration_seconds = bonus on a LATER deposit); experiment pipeline
+`bloody_analytics.experiment_exposures` (variant + event_type + deposit_id) live for payment-modal
+and KYC — HH not registered there yet. Supersedes the 2026-08-27 "no PromoCode -> no real case" fact.
+eugene_s 2026-09-23: A/B split + events live ONLY on preview branch pr-948.bloodytest.dev (behind
+Cloudflare Access, we cannot see it) — NOT on UAT, NOT on prod (owner's "on prod" = HH core only).
+He waits for our OK on events before UAT -> prod. Weight question dropped (one prize per group).
+HH bonus vs standing bonus mechanics: Ivan owns. Reply: docs/happy-hour-reply-eugene_2026-09-23_0200_v1.md.
+Ivan (aid) 2026-09-23 CONFIRMED: weight ignored (uniform random prize); bonus % = uniform random
+between min_rate and max_rate per client (so min=max=50 gives a fixed 50 %); at deposit the MOST
+PROFITABLE bonus for the client applies (respecting each bonus's max_bonus_amount from DB) —
+first/second/HH alike, i.e. winner-take-max, not additive. Still unanswered: where the applied HH
+bonus is recorded (deposits.bonus_amount enough?), HH bonus duration_seconds, Eugene's OK on events.
+
 ## SUPERSEDING FINAL 2026-09-08 (docs/happy-hour-simple-final_2026-09-08_v1.md)
 The two-run plan below (Run 1 prize + Run 2 timing) is SUPERSEDED. One run only:
 21 days, ONE window **17:00-22:00 UTC** (duration 300, cyclic), three arms
@@ -119,3 +145,10 @@ client type (new/returning), NEVER H1 vs H2 (would break the timing isolation).
   re-engagement, hour-of-day deposits
 - Remote sources: host `bloodyanalytics02` → `~/docs/features/happy-hour-backend.md` (dev doc),
   DB `bloody` via `/mcpb` for live numbers.
+
+## ADMIN-ONLY TZ 2026-09-23 (docs/happy-hour-tz_2026-09-23_2200_v2.md) — CURRENT
+Owner: keep it simple, configure via admin. Admin (screenshot): planner = cron/duration/cyclic/active;
+Case prize = Case ID only; Make deposit condition has min cents; NO audience field. Groups are bound
+to WINDOWS (control / 02 UTC / 18 UTC), so a prize A/B in one window is not configurable -> v2:
+same prize (case ak-47 id 3) in both planners, H2 = 18:00 + duration 300, primary = depositor rate
+H2 vs H0. Prize comparison = next test, needs dev routing. Sheriff: 5 findings, all addressed.

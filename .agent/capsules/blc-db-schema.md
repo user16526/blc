@@ -21,8 +21,21 @@ Last updated: 2026-09-09. Structural facts only; numbers decay — re-query.
   `ga_cid`; PII: ip, city. Index (client_id, logged_at). ~25k distinct clients / 21 d (2026-09-02).
 - NOT in the replica (re-verified live 2026-09-03, all 3 schemas): tickets, case battles, promo/ticket codes, happy-hour tables. `stats` has
   auctions, events/event_clients/event_transactions/exchanges, tournaments, achievements only.
-- Not yet mapped: `stats.event_transactions`, `stats.event_exchange_transactions`,
-  `stats.event_clients`, `stats.client_achievements`.
+- Not yet mapped: `stats.event_exchange_transactions`, `stats.client_achievements`.
+
+## Events / battle-pass (mapped 2026-09-29)
+- `stats.events`: `id` uuid, `start_at`/`end_at` (w/o tz), `levels` jsonb (25), `extra` jsonb (slug in CDN image paths,
+  e.g. `startseasonevent2026`, `nonameresort2026`). No name column — identify by slug in `extra`.
+- `stats.event_clients`: one row per client per event (`event_id` TEXT, `created_at` = join time, `current_level`,
+  `total_currency`). New registrations auto-join the running event (daily joins ≈ daily regs).
+- `stats.event_transactions`: `event_id` uuid, `client_id`, `type` (1 = XP, 2 = coins; inferred), `source` int
+  (enum unmapped; source 7 ≈ deposit: its client count ≈ payers), `amount`, `created_at`. PK index only.
+  Every depositor earns event XP automatically → deposits can't be attributed to the event.
+- XP rules (`events.rewards`) identical across all events since 2025-07-29; curve always 475k XP / 25 levels.
+- `stats.event_exchanges`: coin shop (`currency_price`, `reward_type` 2 = skin, 3/4 unmapped); buys in
+  `stats.event_exchange_transactions`. Shop rate ≈ 1,000 coins = $1. Event txn source 13 = manual coin grant.
+- The live event config is also public: bloodycase.com/ua/events SSR state `events_get_current_events` (amounts in cents).
+- Reports: `_reports/blc-data_2026-09-29_2002_v1.md`, `_reports/blc-event-deep-dive_2026-09-29_v1.md`.
 
 ## `public.clients` (36 cols) — TEST-ACCOUNT FLAGS LIVE HERE (mapped 2026-09-09)
 - Identity/PII (never select): `email`, `steam_id`, `last_known_ip`, `display_name`, `trade_url`,
@@ -68,3 +81,32 @@ Last updated: 2026-09-09. Structural facts only; numbers decay — re-query.
   `date_trunc`, `to_char`, `regexp_replace`, `count(*) FILTER (WHERE …)`, window functions, CTEs, HAVING.
 - Always filter `_ab_cdc_deleted_at IS NULL`, and `paid_at IS NOT NULL` for real deposits.
 - Exclude internal accounts: `(flags & 64) = 0` PLUS the unflagged list in the report above.
+
+## Payment methods + payment success (mapped 2026-09-29)
+- Method names: `public_fwd.payment_systems` (`id`, `name`, `payment_gateway_id`, `status`, `category`, `min_deposit_amount`, `countries`)
+  + `public_fwd.payment_gateways` (`id`, `name`). E.g. 82 = `zen_multicurrency` (Zen, card, the main method), 94 = skinsback,
+  83 = whitepay_usdt, 5 = wallet_code. Rows carry updated_at 2023 — use for names, not live config.
+- `deposits.status`: 2 = paid (`paid_at` set), 3 = not paid (decline / abandon — indistinguishable here), 1 = pending (rare). Inferred from data.
+  Attempts = rows by `created`; success = paid / attempts, or clients with ≥1 paid / clients who created one.
+- `payment_system_response` is provider text — may hold transaction ids; never select raw, only aggregate.
+- Report: `_reports/blc-data_2026-09-29_2114_v1.md` (Zen TR success 69% → 42%, Sep 2026).
+- No decline reasons in the replica: `payment_system_response` is empty for all Sep 2026 TR Zen attempts (22 of ~4k in Jun–Aug).
+  Status 1 (pending) rows stop after Jun 2026 → status-3 counts are not comparable across that line; paid/attempts is.
+- GA4 `purchase` for Türkiye is ~0 for weeks 2026-05-25 → 06-15 (tracking gap, DB normal; other countries not checked). Turkey deep-dive: `_reports/blc-data_2026-09-29_2135_v1.md`.
+
+## Referral / partner codes (mapped 2026-09-25)
+- `public.client_referral_systems`: one row per code — `id`, `client_id` (partner's own account), `referral_code`, `level`, `flags`.
+  `public.client_referrals_histories`: `client_id` (referred) → `client_referral_system_id`, `created_at`.
+- Revshare accrues to the partner's balance as `balances.reference_type = 6` (~5% of referred deposits);
+  payouts are manual `reference_type = 4` with info `pay reff bonus by crypto`.
+- `client_items.status = 3` ≈ withdrawn to Steam (dated by `sold_at`): matches `clients.total_withdrawal_amount`
+  within ~15% on the EGW cohort. Inferred, not app-code confirmed. Report: `_reports/blc-egamersworld-margin_2026-09-25_v1.md`.
+
+## Items, prices, case-battle leaderboard (mapped 2026-09-26)
+- No items/name table in the replica. Name -> item_id: bloodycase.com item page SSR JSON `<script id="server_app-state">`,
+  key `item_details_*` -> `Exteriors[<wear>].Id` / `.Price` (cents). That Price = `client_items.buyout_price` at drop time.
+- `client_items.reason` vocabulary CHANGED: case opens are now `main case win: case id [N]` (no longer `''`), plus
+  `successful upgrade`, `battle id [N] winner`, `bot_stat_increment` (bots), `free nft`. No index on `item_id`:
+  filter through `ix_client_items_reason_created` with reason RANGES (`reason >= 'main case win' and reason < 'main case wio'`).
+- Case-battle leaderboard = `stats.tournament` type 3; prizes in `stats.tournament_awards` (place, award_reference = item_id).
+  Grid: places 1-10 unique, 11-20 / 21-50 / 51-100 one item each. Past boards: bloodycase.com/leaderboard/case-battle/history/<id>.
