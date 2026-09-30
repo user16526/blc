@@ -44,3 +44,8 @@ the host-agnostic steps and STOP at step 4 to ask how this project deploys.
 - **VPS over SSH**: deploy = connect, pull the new code, restart the service.
   Take a backup of the current release first. Rollback = restart the previous
   release. Never run destructive server commands without my approval.
+  **The server-side steps are the owner's from the start:** before step 4, hand over
+  every server command as the exact `!` lines the owner runs, in order, each with its
+  expected output — that list IS the deploy plan. Never offer "allow SSH writes" or any
+  wider permission as an option; a guard block on a server command (a restart, a
+  process kill) says the line was the owner's to run, not that a permission is missing.

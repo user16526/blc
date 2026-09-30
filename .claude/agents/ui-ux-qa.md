@@ -10,3 +10,5 @@ reviewers' verdicts. Compare: spacing, colors, typography, component states
 keyboard), and mobile breakpoints. Use a screenshot as evidence. Report deviations
 severity-tagged with location + fix. End PASS or NEEDS-FIX. A claim of "looks right"
 without a screenshot is itself a finding.
+Tag every finding `introduced` (this diff caused it) or `pre-existing` (it was there
+before this diff).

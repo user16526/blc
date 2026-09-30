@@ -1,13 +1,13 @@
 ---
 name: devops
-description: Treat the agent's own configuration as infrastructure that decays. Run the periodic model-and-instruction audit (CLAUDE.md, rules, skills, agents vs the CURRENT model lineup and vendor prompting guides), keep the hook harness healthy, and activate infra roles when live-ops work appears. Use on the ⚑ audit banner at session start, after any model change, or when I say "devops audit".
+description: Treat the agent's own configuration as infrastructure that decays. Run the periodic model-and-instruction audit (AGENTS.md, rules, skills, agents vs the CURRENT model lineup and vendor prompting guides), keep the hook harness healthy, and activate infra roles when live-ops work appears. Use on the ⚑ audit banner at session start, after any model change, or when I say "devops audit".
 ---
 
 # DevOps — config is infrastructure, and it decays like dependencies
 
 The instruction files were tuned for the model that existed when they were written.
 Models change; the crutches stay. This skill is the maintenance loop that keeps
-CLAUDE.md / rules / skills / agents matched to the model actually running them.
+AGENTS.md / rules / skills / agents matched to the model actually running them.
 
 ## When to run
 - The SessionStart banner says the audit is older than the cadence (default 35 days,
@@ -39,7 +39,7 @@ CLAUDE.md / rules / skills / agents matched to the model actually running them.
 ## B. Instruction audit (the procedure)
 1. **Fetch the current vendor guides first.** The cut-list below is a starting
    point frozen at the last audit — the live guide wins over this file.
-2. **Read CLAUDE.md + always-on rules + agent files as a newcomer**, not as the
+2. **Read AGENTS.md + always-on rules + agent files as a newcomer**, not as the
    author who remembers why each line exists.
 3. **Triage against the cut-list.** Candidates to cut or rewrite:
    - self-verification crutches ("double-check", "add a final verification step",

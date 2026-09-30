@@ -13,8 +13,13 @@ whose review the gate has not seen.
 # {Pipeline} run — {YYYY-MM-DD HH:MM}
 
 ## Verdict: GREEN ✅
-<!-- one of: GREEN ✅ / YELLOW 🟡 / RED 🔴 — on the header line or the next;
-     the gate reads both (D2 fix, 2026-09-01) -->
+<!-- One of GREEN ✅ / YELLOW 🟡 / RED 🔴, as the FIRST word after `Verdict` on the heading,
+     or as the first word of the first plain line under it. Anything else there ("Not
+     GREEN", a sentence) BLOCKS the gate; comments and code blocks are skipped. Write only
+     the final value: a second one there (`~~GREEN~~ RED`, `GREEN → RED`) BLOCKS too. -->
+<!-- A report appended to (one file, several runs) names the run on every Verdict
+     heading — `## Verdict — run <run_id>: GREEN ✅`, `<run_id>` exactly latest.json's; the
+     gate reads only the heading that names the current run. -->
 
 ## Inputs
 - Spec: {path, version}
@@ -25,6 +30,10 @@ whose review the gate has not seen.
   or `orchestrator` for the main session; e.g. block-executor}
 - Reviewers: {the agents that reviewed it — none may be the Builder; on HIGH and
   DESTRUCTIVE, one distinct reviewer per touched risk}
+- research: {choice_steps: <n>, briefs: <n>, owner_trips: <n>}
+<!-- research: /run-spec runs only; owner_trips must be 0 — a trip is the owner carrying
+     research into the session. Keep a comment on its own lines: the gate BLOCKS one that
+     opens mid-line and closes on a later line. -->
 
 ## Phases
 - Spec: {what happened}
@@ -32,10 +41,13 @@ whose review the gate has not seen.
 - Build: {blocks done}
 - Verify: {what each layer found}
 
-## Findings (numbered, severity-tagged)
-1. 🔴 {title} — {what} — {where} — {recommended fix}
-2. 🟡 {…}
-3. 🟢 {…}
+## Findings (numbered, severity- and origin-tagged)
+<!-- origin: introduced = this diff caused it | pre-existing = there before this diff.
+     The verdict counts `introduced` only; `pre-existing` go to tasks/board.md
+     (`orchestration` skill, step 4). -->
+1. 🔴 [introduced] {title} — {what} — {where} — {recommended fix}
+2. 🟡 [pre-existing] {…}
+3. 🟢 [introduced] {…}
 
 ## Decisions taken mid-run
 - {decision + why}

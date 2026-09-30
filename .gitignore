@@ -19,6 +19,8 @@ temp/
 node_modules/
 dist/
 .DS_Store
+__pycache__/
+*.pyc
 
 # Auto-regenerated working state (machine-local; rewritten on each auto-compaction)
 .agent/state/handoff.md

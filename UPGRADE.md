@@ -54,7 +54,7 @@ state the rollback line. No upgrade on a dirty tree.
 - Read every changelog entry between FROM and TO. That narrated INTENT is what
   you apply; raw file diffs only confirm it.
 - **Route:** same major → steps 2–5 (merge). Major gap, or the project lacks
-  the v8 markers (CORE sentinel in CLAUDE.md, `.claude/core.sha`,
+  the v8 markers (CORE sentinel in `AGENTS.md` — `CLAUDE.md` before v8.3.28 — `.claude/core.sha`,
   `.agent/state/`) → section T (transplant). Steps 0 and 5 apply to both.
 
 ## 2. Classify every template file — three buckets
@@ -74,6 +74,11 @@ whole-file conflict — six files, all spurious (field project A, 2026-09-09).
   (old template / new template / ours), propose a merge. My veto per file.
 - **Project-owned — NEVER touch:** `.agent/state/*`, `tasks/*`, `_reports/*`,
   `specs/*`, real `.env*`, project-created skills/agents/rules, `temp/`.
+  **Exception: a `*.template` skeleton the template ships inside those folders is
+  template-owned** (today: `_reports/runs/latest.json.template`). Replace it when the
+  project copy equals the OLD template's; merge it like any modified template file
+  otherwise. Skipping it because of its folder turns the hook suite RED ("shipped
+  skeleton is missing gate fields") on the first release that adds a gate field.
 
 ## 2b. Resolving the conflicts you will actually get
 An onboarded project is not a modified template — it is a FILLED-IN one, and it may
@@ -109,8 +114,15 @@ its own hook suite the same week:
 Resolve per HUNK, not per file: `git merge-file --ours` / `--theirs` settles only the
 conflicted hunks and keeps every clean template change.
 
-## 3. CLAUDE.md and settings are a MERGE, never a replace
-- PROJECT / STACK / MY COMMANDS / MY RULES: preserved verbatim.
+## 3. The kernel and settings are a MERGE, never a replace
+The kernel is `AGENTS.md` from v8.3.28 (`CLAUDE.md` before it — section 3b moves it once).
+- PROJECT / STACK / MY COMMANDS / MY RULES: preserved verbatim. MY COMMANDS lines hold
+  bare shell commands (`- Test: npm test`) — the gate runs them. A value starting with
+  `none`, `n/a`, `tbd`, `todo` (also `(none)`, `N/A.`, `TODO: …`) or a dash, or an empty
+  one, means "no command". A line with backticks must START with one backtick pair — that
+  pair runs, the notes after it do not; backticks anywhere else BLOCK the gate as ambiguous
+  (v8.3.28). "Verbatim" stops there: a value that is neither a command nor one of those
+  words is rewritten to `none — <the old text>`, or the gate runs it as shell.
 - Non-CORE structural changes: propose as a diff.
 - CORE block: only with my explicit OK + a Kernel Change Rationale, then
   re-baseline via `./scripts/core-baseline.sh`.
@@ -122,7 +134,48 @@ conflicted hunks and keeps every clean template change.
   v8.3.25 DOES change it (AUTOMODE paragraph, one SAFETY line): show the owner the
   CORE diff, get the OK for THIS project, then re-baseline. One OK per project —
   a baseline is the attestation that a human approved, so it is never batched.
+  v8.3.25 -> v8.3.26 leaves CORE byte-identical again — all of `CLAUDE.md`, in fact,
+  and `.claude/settings.json` too — so no ceremony and no merge apply to either.
+  v8.3.26 -> v8.3.27: CORE and all of `CLAUDE.md` byte-identical again (no ceremony);
+  `.claude/settings.json` changes by ONE word — the PreToolUse matcher becomes
+  `Write|Edit|Bash|PowerShell` — merge that line and keep your own permissions.
+  v8.3.27 -> v8.3.28: CORE changes by ONE word (SELF-MONITORING's banner names
+  `AGENTS.md`), and the kernel moves file — section 3b. Owner OK per project, then
+  re-baseline; `.claude/settings.json` is unchanged.
+  v8.3.28 -> v8.3.29: CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are
+  byte-identical (no ceremony). From v8.3.27 or older, the v8.3.28 line above applies.
+  v8.3.28 itself is withdrawn — never install it; what its gate misread, the reader's
+  threat model and the field impact are in the CHANGELOG's v8.3.29 entry.
 - `.claude/settings.json`: merge (I may have added permissions/hooks).
+
+## 3b. v8.3.28 — the kernel moves into AGENTS.md (once per project)
+Until v8.3.28 the kernel was `CLAUDE.md` and `AGENTS.md` a Codex adapter pointing at it.
+Now `AGENTS.md` IS the kernel and `CLAUDE.md` is the template's 3-line stub that imports
+it (`@AGENTS.md`). Claude Code's own AGENTS.md fallback never fires below a directory
+that has a `CLAUDE.md` (live test 2026-09-30: an AGENTS.md-only project under a
+workspace `CLAUDE.md` loaded no kernel), so the stub is load-bearing — never delete it.
+On the upgrade branch, BEFORE section 2 replaces `scripts/check-core.sh` and
+`scripts/quality-gate.sh` (both read `AGENTS.md`; the hook only notes a CORE still in
+`CLAUDE.md`, the gate BLOCKS it until steps 2–4 are done):
+1. The old `AGENTS.md` (the adapter) first, while it is still on disk: equal to a template
+   adapter (CR-stripped) → drop it; its text lives on in `docs/CODEX.md` and the kernel's
+   `## CODEX` section. Lines the project added → carry them into `## CODEX` or
+   `docs/CODEX.md` by hand; never lose one.
+2. Merge the project's `CLAUDE.md` with the new template's `AGENTS.md` exactly as section
+   3 merges a kernel — PROJECT / STACK / MY COMMANDS / MY RULES verbatim, a deleted FIRST
+   RUN stays deleted, the CORE diff is the one word above — and write the result to
+   `AGENTS.md`. The title and the header comment come from the template (THEIRS): the old
+   `# CLAUDE.md …` title and its "Filename MUST be exactly CLAUDE.md" comment do not survive.
+   Then `wc -l AGENTS.md` must be ≤ 250 — over it, trim per SELF-MONITORING before commit.
+3. `CLAUDE.md` becomes the template's stub, byte for byte. Anything else the project had
+   put in it went into `AGENTS.md` in step 2.
+4. Re-baseline CORE with `./scripts/core-baseline.sh` (it reads `AGENTS.md` now) after
+   the owner's OK for this project.
+5. Prove the kernel loads — from the project root:
+   `claude -p "Quote the heading of the KERNEL PROTECTION section of your project instructions, or reply NONE."`
+   → the heading, never NONE. The gate checks the stub on every run (`CLAUDE.md is the
+   kernel stub`) and SessionStart warns when it loses the import (`/init` rewrites it) or
+   carries anything beside it.
 
 ## 4. Adapt, don't just copy
 The new version may assume a different model era than this project's config.
@@ -131,7 +184,9 @@ vendor guides, not the ones frozen in the new template): crutches the new
 changelog says to cut, cut here too — my veto, then a survival test.
 
 ## 5. Verify + record + clean up
-- `bash scripts/test-hooks.sh` → GREEN; `./scripts/quality-gate.sh --trivial`.
+- `bash scripts/test-hooks.sh` → GREEN; `./scripts/quality-gate.sh --trivial`,
+  run AFTER the merge is committed on the upgrade branch: on an uncommitted merge it
+  always BLOCKS on "working tree DIRTY", which proves nothing about the upgrade.
   **`--trivial` is the acceptance form, and a missing `latest.json` is not an
   upgrade regression.** `_reports/runs/latest.json` is RUN STATE and is gitignored,
   so it never travels with the repo: a fresh clone, a worktree, or any project
@@ -162,7 +217,10 @@ changelog says to cut, cut here too — my veto, then a survival test.
 - Append to `.agent/state/decisions.md`: `upgraded template vFROM→vTO, <date>,
   notable merges/vetoes`. If step 4 ran, update `Last audited:` in
   `.agent/state/model-audit.md`.
-- Delete `temp/template-new/`. Merge the branch only after my OK.
+- Delete `temp/template-new/`. Merge the branch only after my OK, with
+  `git merge --no-ff -m "<message>" <branch>` — never `-F -`: `git merge` reads no
+  message from stdin, so a script piping one in dies after the switch to the main branch,
+  with the upgrade commit made and the merge not.
 
 ## T. Major-version gap (e.g. v7 → v8) — transplant, don't merge
 Across majors the layouts differ too much to patch, and FROM-era instructions
@@ -179,7 +237,7 @@ KNOWLEDGE into it. On the checkpoint branch:
      skills, commands — the new machinery wins wholesale, no merging.
 2. **Stand up the new skeleton clean** (copy the TO template onto the branch),
    then pour knowledge into its homes per the `memory-router` skill: facts →
-   CLAUDE.md PROJECT/STACK/MY COMMANDS; my rules → MY RULES; decisions/
+   AGENTS.md PROJECT/STACK/MY COMMANDS; my rules → MY RULES; decisions/
    lessons/risks/open loops → `.agent/state/` + `tasks/lessons.md`; specs/
    tasks/reports → their folders.
 3. **Every transplanted instruction passes the devops audit BEFORE entering

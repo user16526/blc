@@ -45,7 +45,7 @@ one-line reason each, then let me edit before you create the files.
 A short proposed roster: `role — why — risks covered`, plus shared skills, plus
 default reviewer count (2). On my OK, create/activate only the agreed roles; move
 any core role this project won't use to `.claude/agents/_archive/`. Record the
-active team in CLAUDE.md → PROJECT.
+active team in AGENTS.md → PROJECT.
 
 ## Domain roles to RECOMMEND (don't create files until needed)
 Core agents already exist as files (BA, plan-compiler, architect, test-designer,

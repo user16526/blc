@@ -11,7 +11,7 @@ ONE external pass by a different-vendor model and ONE arbiter for deadlocks.
 Insurance, not bureaucracy: three agents, and the third almost never fires.
 
 ## Pluggable — the PROJECT toggle
-`CLAUDE.md → PROJECT → SHERIFF cross-review: on | off` (asked at onboarding,
+`AGENTS.md → PROJECT → SHERIFF cross-review: on | off` (asked at onboarding,
 default off).
 - **on** — the skill fires automatically per "When SHERIFF fires" below.
 - **off / empty** — the skill is dormant; nothing changes in normal flow.
@@ -70,7 +70,7 @@ meaning looks identical to the probe.
 
 ## The cycle — one pass
 1. **Package**: finished diff + the task's acceptance criteria +
-   `prompts/sheriff-review.md`. Sheriff sees ONLY this — no CLAUDE.md, no
+   `prompts/sheriff-review.md`. Sheriff sees ONLY this — no AGENTS.md/CLAUDE.md, no
    skills, no state files. Independence needs less context, not more.
 2. **SHERIFF** returns ≤5 findings, severity-tagged, most severe first, numbered [1]–[5].
 3. **AUTHOR** answers every finding, strictly one of:
@@ -88,6 +88,16 @@ meaning looks identical to the probe.
 
 **One-liner:** author → high-risk? → SHERIFF ≤5 findings → ✅ fix / 🧪 test /
 ❌ (≤2) → unresolved ❌ anonymously → ARBITER → done. Owner veto: rare, silent.
+
+## Decision packets — the same sheriff, before an owner question (v8.3.26)
+With the PROJECT toggle on, a question to the owner that the RISK MATRIX does not require
+goes to the sheriff first, as a decision packet instead of a diff:
+`bash scripts/sheriff-review.sh --author claude --mode decision`. Same wrapper, same
+isolation, same exit contract; only the prepended prompt differs
+(`prompts/sheriff-decision.md`: AGREE / DISAGREE / CANNOT-JUDGE on the first line).
+AGREE → the recommendation is taken, logged and vetoable; anything else → the owner
+decides. When to send one, what never goes through it, and how calls are counted:
+`.claude/rules/decision-sheriff.md`.
 
 ## Arbitration
 - OWNER rewrites both positions in their own words (raw model text deanonymizes

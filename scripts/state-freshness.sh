@@ -38,6 +38,24 @@ case "$source" in
     ;;
 esac
 
+# (1b) Kernel load check (v8.3.28, #42). The kernel is AGENTS.md; Claude Code reaches it
+#      only through the one-line import in CLAUDE.md — its own AGENTS.md fallback never
+#      fires below a directory that has a CLAUDE.md. No import = a session with NO kernel.
+#      The stub is exactly that import: anything else loads beside the kernel, unhashed.
+if [ -f AGENTS.md ]; then
+  stub_body="$( [ -f CLAUDE.md ] && tr -d '\r' < CLAUDE.md | awk '{ out = ""; s = $0
+      while (s != "") { if (inc) { i = index(s, "-->"); if (!i) { s = ""; break }; s = substr(s, i + 3); inc = 0; continue }
+        i = index(s, "<!--"); if (!i) { out = out s; s = ""; break }; out = out substr(s, 1, i - 1); s = substr(s, i + 4); inc = 1 }
+      print out }' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' | grep -v '^$')"
+  if ! printf '%s\n' "$stub_body" | grep -qx '@AGENTS\.md'; then
+    echo "⚑ ATTENTION: CLAUDE.md does not import AGENTS.md (no '@AGENTS.md' line) — this"
+    echo "  session did NOT load the project kernel. Restore the one-line stub, then restart."
+  elif [ "$stub_body" != "@AGENTS.md" ]; then
+    echo "⚑ ATTENTION: CLAUDE.md carries more than the '@AGENTS.md' line — that extra text"
+    echo "  loaded beside the kernel, outside the CORE hash. Move it into AGENTS.md or delete it."
+  fi
+fi
+
 # (2) Freshness reminder (always).
 cur=".agent/state/current.md"
 upd="$(grep -m1 -E '^Last updated:' "$cur" 2>/dev/null)"
@@ -45,7 +63,7 @@ checker="scripts/check_live_state.py"
 stub=1
 [ -f "$checker" ] && ! grep -q "TODO: implement live checks" "$checker" 2>/dev/null && stub=0
 cat <<'EOF'
-[state-freshness] current.md / CLAUDE.md hold NOTES about live systems (deployed or
+[state-freshness] current.md / AGENTS.md hold NOTES about live systems (deployed or
 published versions, external APIs, provider/cloud config) that DECAY. A stale note is
 a pointer, not evidence. Before concluding or recommending on ANY live-system fact,
 re-pull it live first, then trust live over the notes.

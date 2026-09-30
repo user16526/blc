@@ -1,16 +1,16 @@
 ---
 name: memory-router
-description: Decide WHERE a new piece of information belongs before persisting it. Use whenever you're about to "remember", record, or write down something — so CLAUDE.md stays a kernel, not a junk drawer.
+description: Decide WHERE a new piece of information belongs before persisting it. Use whenever you're about to "remember", record, or write down something — so AGENTS.md stays a kernel, not a junk drawer.
 ---
 
 # Memory Router
 
-Before writing anything down, classify it. CLAUDE.md is the kernel — it almost never
+Before writing anything down, classify it. AGENTS.md is the kernel — it almost never
 grows. Route by this table:
 
 | The info is… | Goes to | Mode |
 |---|---|---|
-| A permanent operating/safety rule or command | CLAUDE.md (CORE) — **needs my OK + re-baseline** | rare |
+| A permanent operating/safety rule or command | AGENTS.md (CORE) — **needs my OK + re-baseline** | rare |
 | Current project state ("what's true now") | `.agent/state/current.md` | overwrite, keep ≤250 lines |
 | An important decision + why | `.agent/state/decisions.md` | append-only |
 | An active risk | `.agent/state/risks.md` | update; close when resolved |
@@ -22,7 +22,7 @@ grows. Route by this table:
 | Throwaway scratch | `temp/` | not committed |
 
 ## Rules
-- Default assumption: it does NOT belong in CLAUDE.md. Prove it's a permanent kernel
+- Default assumption: it does NOT belong in AGENTS.md. Prove it's a permanent kernel
   rule before touching CORE — otherwise route it elsewhere.
 - A "capsule" is created only when a domain actually has durable facts (don't
   pre-create empty ones). Format = see `.agent/capsules/_TEMPLATE.md`.
@@ -36,4 +36,4 @@ grows. Route by this table:
 
 ## When asked to "remember X"
 Say which bucket it goes to, write it there, and confirm in one line. Do NOT silently
-expand CLAUDE.md.
+expand AGENTS.md.

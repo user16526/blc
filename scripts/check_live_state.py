@@ -4,7 +4,7 @@ READ-ONLY  —  TEMPLATE STUB, IMPLEMENT FOR THIS PROJECT.
 
 Print the LIVE truth for the facts that go stale fastest in this project and that a
 wrong note would make costly. Run this BEFORE trusting any live-system fact in
-current.md / CLAUDE.md. See .claude/rules/verify-external-state.md.
+current.md / AGENTS.md. See .claude/rules/verify-external-state.md.
 
 Fill in checks for your stack, e.g.:
   - the deployed app version / git SHA actually running in production
@@ -23,7 +23,7 @@ def main():
     print(f"=== LIVE STATE (source of truth) — {now} ===")
     print("TODO: implement live checks for this project's external systems.")
     print("Until implemented, verify each live-system fact by hand before acting on a note.")
-    print("If current.md / CLAUDE.md disagree with the live system, THEY are stale — trust live.")
+    print("If current.md / AGENTS.md disagree with the live system, THEY are stale — trust live.")
 
 
 if __name__ == "__main__":

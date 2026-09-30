@@ -1,5 +1,5 @@
 # Plugins & MCP — when to use (reference)
-<!-- No paths: this loads every session but it's short. Move to docs/ if CLAUDE.md gets tight. -->
+<!-- No paths: this loads every session but it's short. Move to docs/ if AGENTS.md gets tight. -->
 
 A **plugin** is a one-command install that bundles ready-made skills + agents +
 hooks + MCP servers — like installing an app. A plugin is a *delivery method*, not

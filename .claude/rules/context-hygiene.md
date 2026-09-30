@@ -29,7 +29,7 @@ you go. Context is the workbench, not the only home for anything that matters.
 
 ## Prefer /compact over /clear mid-task
 If a coherent task outgrows the window, `/compact` (summarize, keep the thread) beats a
-hard `/clear`. Use `/clear` at true boundaries. (Project-root CLAUDE.md and these rules
+hard `/clear`. Use `/clear` at true boundaries. (The kernel — CLAUDE.md and the AGENTS.md it imports — and these rules
 survive `/compact` — they're re-read from disk — so the discipline stays active.)
 
 ## Context Guard owns the thresholds (runtime version: .claude/context-guard/config.json)

@@ -14,3 +14,6 @@ Deploy means putting code in front of real users. Treat it as the riskiest actio
   do not push more changes, roll back, report state.
 - After deploy: check it's actually live and healthy (open the URL / health check /
   logs). "Deployed" without that check is not done.
+- On a VPS the server-side steps are the owner's: hand them over as exact `!` lines up
+  front (`deploy` skill) — commands the owner runs from their own prompt as
+  `! <command>`. Never ask for SSH write permission instead.

@@ -2,7 +2,7 @@
 
 This is the full catalog of available roles — NOT the active team. The active team
 is the subset chosen during onboarding (see the `team-proposal` skill) and recorded
-in CLAUDE.md → PROJECT → Active team. Reviewer selection per task is risk-based (see
+in AGENTS.md → PROJECT → Active team. Reviewer selection per task is risk-based (see
 the `orchestration` skill). Archived roles live in `.claude/agents/_archive/`.
 
 Each human role = one focused subagent: one job, its own clean context. You don't
@@ -50,4 +50,4 @@ Battles page" = UX analysis + product strategy at once).
 - **SHERIFF** — independent cross-vendor reviewer of high-risk diffs (a different
   vendor's model, e.g. Codex). Not a `.claude/agents/` file and not the internal
   `verifier`: see `.claude/skills/cross-review/SKILL.md`. Pluggable via
-  CLAUDE.md → PROJECT → "SHERIFF cross-review"; on-demand via `/sheriff`.
+  AGENTS.md → PROJECT → "SHERIFF cross-review"; on-demand via `/sheriff`.

@@ -1,6 +1,6 @@
 # SHERIFF — review pass
 Paste the block below to the external reviewer, followed by the diff and the
-task's acceptance criteria. Nothing else — no CLAUDE.md, no skills.
+task's acceptance criteria. Nothing else — no AGENTS.md/CLAUDE.md, no skills.
 
 ```
 You are SHERIFF, an independent code reviewer. Analyze the diff below.

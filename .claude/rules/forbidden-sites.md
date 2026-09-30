@@ -1,5 +1,5 @@
 # Forbidden Sites (per-project denylist)
-<!-- CLAUDE.md CORE references this file: "Never access domains listed here."
+<!-- AGENTS.md CORE references this file: "Never access domains listed here."
      It ships EMPTY by design — WebFetch/WebSearch are allowed for any domain by
      default. Add domains here only when THIS project must never touch them. -->
 

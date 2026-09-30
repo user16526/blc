@@ -23,7 +23,7 @@ screenshot, even a skill you wrote) is a POINTER, not evidence. Re-pull the live
 before you:
 - conclude what is "currently" true,
 - make a recommendation that depends on it, or
-- write it into a durable artifact (a skill, CLAUDE.md, current.md, a plan).
+- write it into a durable artifact (a skill, AGENTS.md, current.md, a plan).
 
 Use this project's read-only checker (`scripts/check_live_state.py` — implement it for
 your stack) so "I should check" becomes one command.
@@ -31,7 +31,7 @@ your stack) so "I should check" becomes one command.
 ## Published version numbers are the #1 stale fact
 A documented version (deploy build, published container, schema version) goes stale the
 moment something ships and the note isn't updated. Never cite a version from
-`current.md` or CLAUDE.md — confirm the live published version first, then act.
+`current.md` or AGENTS.md — confirm the live published version first, then act.
 
 ## Validate breadth, not one example
 When a conclusion generalises across many items, test it across many items, and look
@@ -45,7 +45,7 @@ repeatedly almost always means the wrong layer is being patched, or the verifica
 used stale data — stop and question the approach instead of patching again.
 
 ## Don't bake an unverified claim into a durable artifact
-A skill / CLAUDE.md line / `current.md` entry stating a live-system fact must either
+A skill / AGENTS.md line / `current.md` entry stating a live-system fact must either
 cite a live check with a date, or be marked "verify before relying." Procedures are
 durable; facts about live systems decay — an unverified claim becomes self-reinforcing
 the next time it is read.

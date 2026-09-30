@@ -13,3 +13,5 @@ failure cases (empty/invalid input, error paths, boundaries, auth state). Run th
 real checks and show output — a claim with no evidence is itself a finding. Report
 findings severity-tagged (🔴/🟡/🟢) with location + concrete fix. End with PASS or
 NEEDS-FIX. Don't nitpick style; focus on whether it actually works.
+Tag every finding `introduced` (this diff caused it) or `pre-existing` (it was there
+before this diff).
