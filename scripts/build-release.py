@@ -20,9 +20,9 @@ what the 4.2.1 reconciliation was about:
                                 is the fan-out artifact: installed once per
                                 machine, never copied into a project.
 
-Two files are in BOTH, and they are what keeps the split maintainable:
-`.claude/settings.json` (the suite asserts it registers no Context Guard) and
-`.claude/context-guard/config.json` (the project opt-in the installer copies).
+One file is in BOTH: `.claude/context-guard/config.json`, the project opt-in the
+installer copies. `.claude/settings.json` is template payload only (v8.3.26) — see
+SHARED below.
 
 Release gate: after building, run scripts/release-check.sh — it verifies the
 UNPACKED artifact (never the tree). Green there is the only "ship" signal.
@@ -60,8 +60,11 @@ EXCLUDE_PATHS = {".agent/state/handoff.md", "_reports/runs/latest.json"}
 CG_ONLY = ("context-guard/", "scripts/install-context-guard.py",
            "scripts/test-context-guard.sh", "scripts/test-onboarding.sh",
            "scripts/cg-acceptance.sh")
-# In both artifacts.
-SHARED = (".claude/settings.json", ".claude/context-guard/config.json")
+# In both artifacts. `.claude/settings.json` left this list in v8.3.26: the Context Guard
+# artifact carried the TEMPLATE's settings, so every template-only settings edit gave new
+# bytes under an already-published runtime name (4.2.7 was a version bump with no code
+# change). Hook and statusLine wiring is the installer's job, never a payload copy's.
+SHARED = (".claude/context-guard/config.json",)
 
 
 def included(rel):

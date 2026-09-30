@@ -1,5 +1,329 @@
 # Template Changelog
 
+## v8.3.29 — the verdict reader never picks one of two (2026-09-30)
+**Replaces v8.3.28, which must not be installed:** its gate read three kinds of report as
+GREEN that are not. Only `scripts/quality-gate.sh` (the verdict reader), its suite rows and
+one comment in `docs/RUN_REPORT_TEMPLATE.md` change; CORE, `AGENTS.md`, `CLAUDE.md` and
+`.claude/settings.json` are byte-identical to v8.3.28. Upgrading from v8.3.27 or older:
+everything in the v8.3.28 entry below applies unchanged (UPGRADE §3, §3b).
+
+- **A verdict that names two values BLOCKS.** `~~GREEN~~ RED` and `GREEN → RED` were read
+  as GREEN (the first token). The value is still the first token, but the text it sits in —
+  hidden parts included — naming a SECOND of GREEN/YELLOW/RED now BLOCKS with its own
+  message, and so does striking a value out (`## Verdict: ~~GREEN~~`). The same word twice
+  (`GREEN — security GREEN, functional GREEN`) is one value.
+- **HTML comments are read one way or not at all.** v8.3.28 stripped `<!-- … -->` before
+  parsing, so a `<!--` inside a code span swallowed the lines after it and a RED under it
+  vanished. Now a line STARTING with `<!--` (indent 0–3, outside code) hides everything up
+  to the line holding `-->`, and text after that `-->` BLOCKS; inside a line only a complete
+  `<!-- … -->` is hidden, and a `<!--` left open mid-line BLOCKS — a renderer hides what
+  follows it, a code span does not, and the gate cannot tell which it is. The report
+  template's own `research:` comment was exactly that shape and now sits on its own lines;
+  the suite feeds the shipped template through the reader (LF and CRLF), so the two cannot
+  drift apart again.
+- **The reader's threat model is now written down: honest mistakes** (owner ruling) — a
+  stale section, another run's heading, a corrected or struck value, the template's own
+  comment. A report CRAFTED to hide its verdict is out of scope: the same author writes
+  `latest.json`, and an awk reader is not a Markdown renderer. The review of this release
+  reproduced about 40 such inputs that v8.3.28 reads the same way — raw HTML blocks and
+  link definitions holding GREEN, a Verdict heading inside a list item or a quote, a fence
+  opened inside a list item, entities spelling a verdict word, a second line under the
+  value. They stay open as one backlog item, not as forty patches.
+- **A setext Verdict heading BLOCKS.** A line holding "Verdict" underlined with `---` or
+  `===` is a heading to a renderer but went uncounted, so a second `## Verdict` was read
+  as the only one.
+- **Field impact, measured on 486 existing reports in 11 projects:** 3 that v8.3.28 read as
+  GREEN now BLOCK (a verdict line that also names an earlier RED round); 1 RED now BLOCKS
+  under the new message; nothing moved toward GREEN. Fix is one edit: keep only the final
+  value on the verdict line.
+
+## v8.3.28 — AGENTS.md is the kernel, the gate reads this run's verdict, choices get researched (2026-09-30)
+**CORE changes by ONE word, and the kernel moves file.** `AGENTS.md` is now the project
+contract (the kernel, CORE included); `CLAUDE.md` is a 3-line stub that imports it with
+`@AGENTS.md`. The CORE diff is SELF-MONITORING's banner, which now names `AGENTS.md`.
+Kernel Change Rationale: one contract file for every agent — Codex and other agents read
+`AGENTS.md` natively, Claude Code reads it through the stub — instead of a kernel plus an
+adapter that could drift. Owner OK per project, then `./scripts/core-baseline.sh`
+(UPGRADE §3, §3b). `.claude/settings.json` is unchanged. Scope: BACKLOG-v8.3.28 #26, #28,
+#29, #30–#32, #35 A–D, #40, #42; #33/#34 wait for field confirmation, #36–#39/#41 are
+direction only.
+
+- **#42 — the kernel is `AGENTS.md`; `CLAUDE.md` is a stub, and the stub is load-bearing.**
+  Live test (Claude Code 2.1.285): an AGENTS.md-only project UNDER a workspace
+  `CLAUDE.md` loaded no kernel at all (Claude Code's AGENTS.md fallback fires only when
+  no `CLAUDE.md` exists anywhere in the directory chain), while the stub loaded it every
+  time. So the owner's option A (no `CLAUDE.md`) became option B (the stub). Everything
+  that read the kernel follows it: `check-core.sh`, `core-baseline.sh`,
+  `check-claude-md-size.sh` (name kept, so no settings change), `quality-gate.sh` (CORE
+  hash, MY COMMANDS), `state-freshness.sh`, `precompact-snapshot.sh`, `project-map.py`,
+  skills, rules, commands, onboarding docs. The Codex adapter text moved to
+  `docs/CODEX.md`; the kernel carries a 1-line `## CODEX` pointer. Guards against a silent
+  kernel loss: the gate BLOCKS when `CLAUDE.md` is anything but the one `@AGENTS.md` import
+  (a second import would load unhashed text beside the kernel), or when `AGENTS.md` lost
+  its CORE block — or is gone — while a baseline exists (`check-core.sh` STOPs too, except mid-upgrade
+  while CORE still sits in `CLAUDE.md`); SessionStart warns on both stub faults (`/init`
+  rewrites the stub). The sheriff still sees neither file.
+- **#40 — the gate reads THIS run's verdict.** It reads the report `latest.json` names
+  (not the newest file), and when that report holds several Verdict headings — a
+  `/run-spec` report appends one per step — only the heading that names `latest.json`'s
+  `run_id` as a whole token; none or several naming it BLOCKS. It used to print GREEN
+  from a stale first section while that night's run was RED (field, 2026-09-20).
+  `/run-spec` writes `### Verdict — run <run_id>` per step. The report is read by a STRICT
+  grammar that BLOCKS on anything it cannot read one way: HTML comments are removed first
+  (the template's own comment names all three words and used to be read as GREEN — a
+  v8.3.27 defect); code is skipped (CommonMark fences, unclosed BLOCKS; 4-column indent); a
+  heading names a run only as `Verdict`, non-letters, `run <id>`, and the id must EQUAL the
+  run_id; the verdict is the first token (`[A-Za-z0-9_-]+`, so `green-S02` is no verdict) of
+  the heading after `Verdict` and its run, else of the first prose line under it — "Not
+  GREEN" BLOCKS. A Verdict heading is any heading holding the word (`## Final verdict`).
+  No Verdict heading: exactly one line starting with "Verdict" or carrying a `Verdict:` label
+  (`- **Verdict:** 🟢 GREEN`, `… · **Verdict:** GREEN · …`), else BLOCK. **Field impact,
+  measured on 264 existing reports in 11 projects:** 208 read GREEN exactly as before; 22 that
+  v8.3.27 read as GREEN now BLOCK — a sentence as the first line under `## Verdict`, a bold
+  `**Verdict**` pseudo-heading, several verdict lines, one unclosed fence. Fix is one edit:
+  put GREEN/YELLOW/RED first under the heading.
+  A report whose only heading names ANOTHER run BLOCKS. The named report must be
+  repo-relative, under `_reports/runs/`, a regular file (100644/100755) committed in HEAD,
+  and it is READ from HEAD — a skip-worktree copy or a committed symlink cannot supply the
+  verdict. (Six sheriff rounds and one stand-in review hardened this reader; the grammar
+  replaced a lexical reader that leaked a new bypass every round. The final grammar itself
+  shipped without an independent review — the head check found three false GREENs in it,
+  fixed in v8.3.29.)
+- **#35 — design choices are researched inside `/write-spec`, never by the owner.** Steps
+  carry `Kind: fix | build | choice` (checkable triggers for `choice`; max 2 per spec). A
+  `choice` step gets a fresh-context read-only researcher, a box (≤8 searches, ≤5 fetches,
+  ≤1 experiment) and a brief `specs/NNN/research/Sxx.md` (`docs/RESEARCH_BRIEF_TEMPLATE.md`);
+  the recommendation goes into the step. Enforced twice: `plan-compiler` refuses to
+  compile, and the gate lints the spec `latest.json` names (`Spec format: 2` specs only —
+  older specs are named as not linted): no Kind, a choice without a complete brief, or a
+  third choice BLOCKS; research on a fix, or a bare number next to a cap/limit/timeout in
+  a fix/build step, WARNs. Run report metric `research: {choice_steps, briefs,
+  owner_trips}`. Escalation to an external deep-research chat (E) is NOT shipped. The lint
+  reads spec and briefs from HEAD (repo-relative paths only), and a lint that crashes or
+  never prints its completion line BLOCKS — a crash or an interrupt is not a pass. Step
+  headings count indented 0-3 spaces; fenced examples are not steps.
+- **#30 — findings are tagged `introduced` or `pre-existing`.** Only `introduced`
+  findings count toward GREEN; `pre-existing` ones go to `tasks/board.md` with a
+  priority (no `@auto`), and `/write-spec` lists those touching the ask first.
+- **#31/#32 — decision packets carry sources and a falsifier.** Every claim behind a
+  recommendation cites a log line, a test or a command + output, or says `unverified`;
+  every packet ends with `What would change this recommendation:` — a checkable thing.
+  The decision-sheriff answers CANNOT-JUDGE without it.
+- **#29 — the MY COMMANDS line format is defined.** A value starting with `none`, `n/a`,
+  `tbd`, `todo` (also `(none)`, `N/A.`, `TODO: …`) or a dash, or an empty one, is no
+  command (`none yet` used to run as shell). A line with backticks must START with one
+  pair — it runs, the notes after it do not; backticks anywhere else BLOCK as ambiguous
+  (``false  # run with `CI=1` `` used to run `CI=1` and pass). HTML comments are stripped
+  first, multi-line ones included.
+- **#26 — the redaction sed survives a `/` in a project's secret regex** (delimiter
+  `\001`; it crashed the gate on the MY COMMANDS label).
+- **#28 — the hook suite no longer fails on other processes' temp files.** The hard
+  assertion is its own sandbox; new entries in the shared temp dir are named, not failed.
+- **Review hardening.** A security finding of any origin stops the run (a pre-existing
+  flaw in code the diff touches counts as `introduced`) — `orchestration`, `verifier`.
+
+## v8.3.27 — the spec writes itself, the approval survives a restart, the guard reads both shells (2026-09-17)
+**No CORE change, and `CLAUDE.md` is whole-file identical to v8.3.26.** The CORE block
+hashes as v8.3.26's and `.claude/core.sha` is byte-identical, so a project on v8.3.26
+takes this release with no Kernel Change Rationale, no OK and no re-baseline. One
+project-owned file changes by ONE word: `.claude/settings.json`'s PreToolUse matcher
+gains `PowerShell` (below) — merge that line, keep your own permissions. Everything else
+is a new file or a template-owned file outside the kernel. Field findings from four
+`/run-spec` runs and one polygon run drove every item (BACKLOG-v8.3.27 #6–#25).
+
+- **`/write-spec` (new command).** One owner paragraph in, `specs/NNN-slug/spec.md` out,
+  shaped by `docs/SPEC_TEMPLATE.md`: it reads the board, the newest run reports and the
+  lessons first; every Deliverable is a path, every `Touches` comes from a recorded grep,
+  every log-based context line is quoted verbatim, and every delete/overwrite step fills
+  `Persist before act`. Ambiguities become `## Open questions` with a recommended answer —
+  never a guess. It commits the spec alone and hands over to `/run-spec`, stopping at
+  that command's plan-OK pause: ONE pause for spec and plan together; the owner's one
+  reply answers the questions and OKs the plan. Spec-writing leaves the owner's loop.
+- **A plan OK recorded on the board survives a restart** (`go-ahead-scope.md`,
+  `/run-spec` steps 3/5, `automode-queue.md`). The approval marker now carries
+  `plan:<sha12>` — sha256 of the spec file, CR-stripped, as committed. A new session
+  re-hashes the spec: equal → the recorded OK holds, no second question; different, or
+  a marker written before v8.3.27 → that OK is void and the session asks a one-line OK
+  on the remaining steps. An approval not recorded this way still expires with its
+  session. (Field: a run resumed on "go S03-S04" because the plan OK had gone to an
+  earlier session.)
+- **`/run-spec` preflight** (step 0): `TEMPLATE_VERSION` ≥ v8.3.26, the spec path exists,
+  `docs/SPEC_TEMPLATE.md` exists — fail on the first miss, before compiling.
+- **Tick the board in the same commit as the work** (`no-confirmation-prompts.md`,
+  `/run-spec` step 6): the commit that records a step's proof flips its line to
+  `[done]`; the step's gate then runs on that commit (it needs a clean tree and a
+  report bound to HEAD). A shipped feature sat as `[todo]` for 12 days until a sweep
+  found it. A re-approved, changed spec is recompiled and its not-`[done]` lines
+  rewritten with the marker, so the queued lines always match the spec the hash names.
+- **`SPEC_TEMPLATE.md`:** `## Open questions`; `Touches` by grep, with the grep recorded;
+  `Persist before act`, REQUIRED on any step that deletes or overwrites (a failed backup
+  copy let a write-back destroy the only copy); log context quoted verbatim (a synthetic
+  example got a fix for a case the real recording never produces); and the stock stop
+  condition exempts the files every run writes anyway — `tasks/board.md`,
+  `tasks/lessons.md`, `_reports/runs/` (incl. `latest.json`), `.agent/state/` — so the
+  template's own LEARN and report writes are never scope drift.
+- **Pause pushes the state** (`pause-and-resume.md`, `handoff` skill): the pause
+  instruction is the go-ahead for exactly one push — the pause commit, the current
+  branch, its tracked remote, never a force, never another branch; no tracked remote →
+  say so and leave it. At a pause `current.md` is held to its 250-line limit: over it,
+  archive verbatim and rewrite (one was found at 1,251 lines).
+- **VPS deploys hand the owner the `!` lines up front** (`deploy` skill, `deploy.md`):
+  the server-side steps are the owner's from the start, each with its expected output;
+  never "allow SSH writes" as an option. A guard block on a server command means the
+  line was the owner's to run, not that a permission is missing.
+- **Decision-sheriff reviews a stop's packet** (`decision-sheriff.md`): the stop itself
+  always goes to the owner, but the packet (question, facts, options, recommendation)
+  passes the sheriff first and the verdict is shown beside the recommendation. A session
+  had recommended "push anyway, docs only" on a BLOCKED gate. Counted like every call.
+- **`plan-compiler` reads the SHERIFF toggle from `CLAUDE.md`** and prints the source
+  line in the plan header — never from a prior run's `decision_sheriff: 0 calls`.
+- **`guard.sh` inspects the PowerShell tool** (`settings.json` matcher `Write|Edit|Bash|
+  PowerShell`). Until now only `"tool_name":"Bash"` got the command checks, so on a
+  Windows host a PowerShell tool call could stage `.env` or force-push past the guard.
+  Same git rules for both shells; a PowerShell-native list only for that tool: a
+  recursive forced delete (`Remove-Item`/`rm`/`ri`/`del`/`erase`/`rd`/`rmdir` with
+  `-Recurse` AND `-Force`, any abbreviation, either order, the pipeline form
+  `Get-ChildItem -Recurse | Remove-Item -Force`, and an en/em dash as the parameter
+  prefix), the cmd.exe switches (`rd /s /q`, `del /s`), and the disk-level commands
+  (`Format-Volume`, `Clear-Disk`, `Remove-Partition`, `Initialize-Disk`). The command is
+  decoded from the hook JSON and each newline becomes a separator — a command on the
+  second line of a script is seen, two safe lines never fuse into one destructive-looking
+  command, a backtick line continuation does not sever the pair, and a `–`-escaped dash
+  counts — decoded and matched as UTF-8 bytes on both sides, since a bare `print()` on a
+  cp1252 host emitted one byte the pattern never saw (security review + re-checks 2–3).
+  The sheriff pass on the diff added: `-Re` counts as `-Recurse` (every unambiguous
+  prefix, not a hand-picked list), and a quoted path may carry `;` `|` `&`
+  (`Remove-Item 'C:\R&D\project' -Recurse -Force`) without ending the command. Known
+  limit, documented in the file like the bash lists: splatting, backtick-split or
+  string-built cmdlet names, flags in variables, aliases, anything inside a called
+  `.ps1`, and — without python3 — a `\uXXXX`-escaped dash are not recognised.
+- **`guard.sh` decides forced pushes from parsed tokens.** The `.env` tokenizer (shlex)
+  now also reads `push`: a force flag in any cluster, `--force*`, or a `+refspec` — so a
+  QUOTED flag is caught, the shape each of two sheriff rounds on v8.3.26 found missing.
+  The text regexes stay as the backstop and are the whole answer without python3 —
+  where a quoted flag is still not recognised, as in v8.3.26. Known limit: a force
+  carried in git config (`-c remote.origin.push=+refs/heads/main`) is invisible to both.
+- **`guard.sh` blocks `git merge` with a message from stdin** (`-F -`, `-F-`, `--file -`,
+  `--file=-`, behind any global option): git merge reads no message from stdin and the
+  merge dies after the branch switch. Sessions typed it live despite the UPGRADE prose,
+  so it is a rule, with a no-python text form. `git commit -F -` stays allowed.
+  Known limit, unchanged (#9): without python3 the `.env` text rule is coarser than the
+  tokenizer — any `.env` beside `git add` blocks; the prose exemption needs python3.
+  Accepted as-is (#25): the guard scans a heredoc's CONTENT written by the Bash tool, so
+  a handoff quoting a destructive command is blocked as the command — handoffs, reports
+  and lessons DESCRIBE such an action, never quote it (shipped as a `tasks/lessons.md`
+  line).
+- **`quality-gate.sh`:** (a) self-location — the tree the script lives in must BE the
+  cwd, or it refuses with "never mix trees" (a gate run from another project's root had
+  certified that project's git state against its own roster; a gate run from a
+  subdirectory reads that subdirectory's files against the whole repo's git state); a
+  project that is a directory inside a larger repository gates from its own root like
+  any other; (b) the verdict value is read with awk, not `grep -A1 -m1`, which drops a
+  trailing context line that itself contains "verdict" — a valid report BLOCKed with "no
+  parsable verdict"; the `## Verdict` heading wins over a prose line above it that
+  mentions an earlier verdict; (c) the test runner comes from `CLAUDE.md` MY COMMANDS
+  first (`- Test: …`; empty, a `<placeholder>`, `n/a`, `none`, `TBD` fall through) — the
+  command is printed in the step label with secret-shaped text redacted, the step log is
+  keyed by step rather than by label, and the line is read from the COMMITTED blob
+  (`git show HEAD:./CLAUDE.md`, a regular file in HEAD), never from the working file:
+  untracked, dropped-in or staged-only files are ignored visibly, an edited working copy
+  runs the committed line and names the edit, and neither `assume-unchanged` nor a
+  committed symlink to an untracked target can put an unreviewed string into `bash -c`
+  (security review + re-checks, sheriff) — then npm/make/just, then by FILE TYPE —
+  `tests/test_*.py` → pytest, `tests/*.test.{mjs,js,cjs}` → `node --test`; a `tests/`
+  directory alone selects nothing (it selected pytest, so a node project got a RED it
+  could not pass).
+- **`test-hooks.sh` contains its temp files.** Everything the suite creates lands under
+  one directory in the real temp folder (TMPDIR redirected; siblings of the sandbox,
+  never inside it), read-only bits are cleared before cleanup, and the suite's last two
+  assertions are that its directory is gone and the real temp folder holds nothing new.
+  The v8.3.26 suite left three `tmp.*` directories per run on a Windows host.
+- **`release-check.sh` runs both Context Guard suites on the canonical tree**
+  (`test-context-guard.sh`, `test-onboarding.sh`): the second was RED from v8.3.15 to
+  v8.3.25 with nobody seeing it, because no gate ran it and the unpacked artifact prints
+  SKIPPED by design. A SKIPPED or missing verdict line scores as a failure.
+- Context Guard stays **4.2.8** — no runtime change; the artifact rebuilds byte-identical
+  to the published one.
+- **Deferred to v8.3.28** with backlog #1/#2 (owner ruling D1): the Ponytail FIRST RUN
+  check (#3). It only matters at onboarding; existing projects would gain nothing and
+  lose the zero-touch upgrade, and `CLAUDE.md` stays whole-file identical.
+
+Upgrading a project: one merge — the single word `PowerShell` in `settings.json`'s
+PreToolUse matcher. Every other change is a new file or template-owned.
+
+## v8.3.26 — one approval per spec, a second opinion before an open question (2026-09-14)
+**No CORE change — and no change to `CLAUDE.md` or `.claude/settings.json` at all.** The
+CORE block hashes as v8.3.25's and the shipped `.claude/core.sha` is byte-identical, so a
+project on v8.3.25 takes this release with no Kernel Change Rationale, no OK and no
+re-baseline. Everything below is a new file or a template-owned file outside the kernel.
+
+- **`/run-spec` (new command) and `docs/SPEC_TEMPLATE.md`.** One plan OK per spec instead
+  of one approval per step: `plan-compiler` turns a spec's steps into board lines
+  (`[todo] … @auto @spec:<id> row:<ROW> DoD: …`), the command writes them to
+  `tasks/board.md` only after the owner approves the plan, and the queue runs each step at
+  its declared row — reviewers and gate included — to the end of the spec or the first
+  stop, strictly in step order. The budget is the approved spec (exactly its steps), not
+  3 items per session; the plan OK covers each step up to the row it declares, a step
+  found to be higher stops the run, and a DESTRUCTIVE step is written as a stop line
+  (no `@auto`), so the run halts there instead of skipping it. Resuming in a new session
+  asks a one-line OK on the remaining steps — a plan OK binds the session it was given
+  in. `automode-queue.md` carries the spec budget and the `@spec` ownership rule; the
+  stop list stays the one list. Works with automode on or off — the plan OK is the
+  go-ahead.
+- **Decision-sheriff (new rule `decision-sheriff.md`).** With SHERIFF on, a question to
+  the owner that the RISK MATRIX does not require goes to the external sheriff first, as a
+  decision packet: AGREE → the recommendation is taken, logged in `decisions.md` and
+  stays vetoable; DISAGREE / CANNOT-JUDGE / any failure → the owner decides, as before.
+  It covers engineering choices inside the scope already granted, nothing else: matrix
+  approvals, stops, facts only the owner has, ambiguity about what the owner asked for,
+  and scope changes always go straight to the owner. Same wrapper, same isolation:
+  `sheriff-review.sh --mode decision` (closed set, default `review`) only swaps the prompt
+  (`cross-review/prompts/sheriff-decision.md`). **Projects that already run with SHERIFF
+  on start using it on upgrade, and every call is billable** — run reports count them
+  (`decision_sheriff: <calls> calls, <tokens> tokens`). The wrapper now refuses, in both
+  modes, a package holding secret-shaped text (nothing is sent and no manual package is
+  printed), and a value flag given no value exits 2 instead of looping forever.
+- **Finish the task is template policy.** `no-confirmation-prompts.md` absorbs the
+  field-proven finish-the-task rule, its "before ending a turn, check the last paragraph"
+  sentence verbatim, and names a genuine blocker as a reason to ask, matching the kernel.
+  A project carrying its own `finish-the-task.md` may delete it: the text now lives here.
+- **`cwd-scope.md` (new, always on): a session writes only inside its own project.** A
+  write aimed at another project is echoed back as `not my project: <dir>` and nothing of
+  it runs; reads stay allowed; the one exception is the owner naming that project in this
+  session. A rule, not a hook — the guard does not try to parse `cd` / `-C` targets.
+- **`communication.md`: maximal honesty and directness is policy**, including naming the
+  owner's own process when it is the bottleneck; the two old Don'ts it covers are folded in.
+- **`guard.sh`: `.env` is a `git add` path argument, not text.** The rule fired on any
+  `git add -A` / `git add .` / dot-path plus ".env" anywhere, so a commit message
+  describing the blocker was refused with nothing staged — and `.env.example` anywhere in
+  the command cleared a real `.env` beside it. It now TOKENIZES the command as the shell
+  would (python `shlex`: quotes, escapes, `;` `&` `|`), expands brace lists, strips git
+  pathspec magic, matches dot-led globs, covers `git stage` and `git.exe`, and tests only
+  the path arguments of each add, with the pre-commit hook's rule. `git add -f` of the
+  whole tree (`.`, `././`, `-A`, `:/`, an exclude-only pathspec `:!x`) is refused too —
+  `-f` bypasses `.gitignore` wholesale. Two shapes keep the v8.3.25 answer (any `.env` in
+  the command blocks) because the path alone cannot say what gets staged: a path holding
+  an unresolved `$`/backtick expansion, and a FORCED add (`git add -f config/` may pull in
+  `config/.env`). The prose exemption is for unforced adds. (A first regex cut was bypassed by exactly that shell
+  syntax in the security review, and the sheriff pass found the expansion and `././`
+  cases; every bypass is now a suite case.) Without a working python3 a text rule runs:
+  any `.env` beside `git add`/`stage` other than `.env.example`, and any forced whole-tree
+  add, blocks. **Forced pushes are caught behind any git global option** (`--no-pager`,
+  `-P`, `--git-dir=…`, a quoted `-C` path, a quoted value holding `;`), closing the limit
+  the v8.3.25 security review accepted. All cases are in the suite.
+- **Context Guard 4.2.8: the runtime artifact no longer carries `settings.json`** (see its
+  entry). `release-check.sh` now also opens the Context Guard artifact: no settings.json,
+  config.json present, and no field project named outside its suites.
+- **`.gitignore` ignores `__pycache__/` and `*.pyc`**: a compile check followed by a
+  directory `git add` committed bytecode into a field project's upgrade.
+- **`UPGRADE.md`:** a `*.template` skeleton inside a project-owned folder is template-owned
+  (§2 — skipping `latest.json.template` turned a field suite RED); the acceptance gate
+  runs after the merge is committed (§5); `git merge -m`, never `-F -` (§5); §3 records
+  that v8.3.25 → v8.3.26 leaves the kernel identical.
+
+Upgrading a project: no ceremony. Files are new or template-owned; the one likely merge
+is `.gitignore` (two appended lines).
+
 ## v8.3.25 — a stop that has to be judged is not a stop (2026-09-10)
 **This is a CORE release.** Two things change inside the hash-protected block — the
 AUTOMODE paragraph and one SAFETY line — so every project takes it ATTENDED: Kernel
@@ -866,6 +1190,24 @@ Three agents, the third almost never fires. Off by default.
   files are template-owned bucket-1, the CLAUDE.md/AGENTS.md lines merge per
   step 3 (CORE line needs Kernel Change Rationale + re-baseline). Enable per
   project by setting the PROJECT toggle to `on` — no other edits.
+
+## Context Guard 4.2.8 — the runtime artifact stops carrying template settings (2026-09-14)
+Runtime `4.2.8`, schema **`1` — unchanged**. **No runtime behaviour change.** The artifact
+no longer ships `.claude/settings.json`: it was the template's file, riding along "shared
+by design", and it is why 4.2.6 could not be rebuilt byte-identical once v8.3.24 edited
+those settings and why 4.2.7 was a bump with no code. Hook and statusLine wiring was
+always the installer's (`~/.claude/settings.json`), never this copy's. The one shared
+file left is `.claude/context-guard/config.json`, the project opt-in the installer copies.
+- `test-context-guard.sh`: the two template-settings assertions (env window == config
+  window; no Context Guard wiring in project settings) run where that file exists — the
+  canonical tree — and print a visible skip line inside the unpacked artifact.
+- The usage examples in `verify-install.py` and `install-context-guard.py` name
+  `<project-dir>` instead of a field project, and the release gate now checks the
+  artifact's prose for field-project names (its suites excepted: they test against real
+  project configs by path, which is their point).
+- `test-onboarding.sh` names the template zip from `TEMPLATE_VERSION`. It hard-coded
+  `v8_2_0-cg4.zip`, the pre-v8.3.15 name, and had been RED ever since without anyone seeing
+  it: no gate runs it, and from an unpacked artifact it prints SKIPPED by design.
 
 ## Context Guard 4.2.7 — a new name for new bytes (2026-09-10)
 Runtime `4.2.7`, schema **`1` — unchanged**. **No runtime code change.** The Context

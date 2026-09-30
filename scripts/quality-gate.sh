@@ -32,6 +32,22 @@ note() { echo "  $1"; }
 bad()  { echo "✗ $1"; fail=1; }
 ok()   { echo "✓ $1"; }
 
+# 0) self-location (v8.3.27, BACKLOG #24): this script gates the tree it lives in. Run
+#    from another project's root it would mix trees — that project's git state against
+#    this tree's roster and CORE — and certify something nobody built (field, 2026-09-15).
+#    This script's parent must BE the cwd: every read below is relative to the cwd
+#    (AGENTS.md, _reports/, package.json, the CORE hash), so a gate run from any other
+#    directory — another project, or a subdirectory of its own — reads one tree's files
+#    against another's git state (security re-check). A project that is a directory
+#    inside a larger repository gates from its own root, like any other. `-ef` compares
+#    the directory, not the spelling (`pwd -P` on both sides).
+here="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd -P)"
+cwd="$(pwd -P)"
+if [ -z "$here" ] || [ ! "$here" -ef "$cwd" ]; then
+  echo "✗ never mix trees: this gate lives in $here but the cwd is $cwd — run the gate from its own project root: cd $here && ./scripts/quality-gate.sh"
+  echo "GATE: BLOCKED 🔴 — wrong tree. Task is NOT done."; exit 1
+fi
+
 echo "── quality gate ──"
 
 # 1) working tree MUST be clean — proof binds to a commit, so any uncommitted
@@ -77,21 +93,87 @@ run_if() { # $1 = label, $2.. = command
   local label="$1"; shift
   checks_run=$((checks_run+1))
   local log=/dev/null
-  [ -n "$qg_logs" ] && log="$qg_logs/$(printf '%s' "$label" | tr -c 'A-Za-z0-9' '-' | tr -s '-').log"
+  # The log is keyed by the STEP (first word of the label), never by the label text: a
+  # label may carry a command line, and a command line may carry a token (re-check).
+  [ -n "$qg_logs" ] && log="$qg_logs/${label%% *}.log"
   if "$@" >"$log" 2>&1; then ok "$label passed"; else bad "$label FAILED (log: $log)"; fi
 }
 has_npm_script() { [ -f package.json ] && grep -q "\"$1\"" package.json; }
+any_file() { for f in "$@"; do [ -e "$f" ] && return 0; done; return 1; }   # unmatched globs stay literal
+# HTML comments out, multi-line ones included: a `- Test:` line commented out across
+# several lines is invisible in the rendered file, so it must be invisible to the gate too.
+STRIP_HTML_COMMENTS='{ out = ""; s = $0
+  while (s != "") {
+    if (inc) { i = index(s, "-->"); if (!i) { s = ""; break }; s = substr(s, i + 3); inc = 0; continue }
+    i = index(s, "<!--"); if (!i) { out = out s; s = ""; break }
+    out = out substr(s, 1, i - 1); s = substr(s, i + 4); inc = 1 }
+  print out }'
+# The owner's own command from AGENTS.md MY COMMANDS (`- Test: …`): the line's raw value.
+my_cmd_value() { # $1 = Test|Build|Lint; the markdown on stdin
+  tr -d '\r' | awk "$STRIP_HTML_COMMENTS" | sed -n '/^## MY COMMANDS/,/^## /p' \
+    | grep -m1 -iE "^- ${1}:" | sed -E 's/^- [^:]*:[[:space:]]*//; s/[[:space:]]+$//'
+}
+# Line format (v8.3.28, #29). Empty, a `<placeholder>`, or a value that STARTS with the word
+# none / n/a / tbd / todo or a dash = no command (auto-detection runs, and the gate says so);
+# the word may sit in `(…)` or `*…*` and carry punctuation (`(none)`, `N/A.`, `TODO: …`), but
+# `todo_lint.sh` or `todo.sh` is a command.
+# A value that starts with a backtick pair = that pair's content; backticks anywhere else,
+# or an empty/unpaired pair = AMBIGUOUS (exit 3) and the step BLOCKS: guessing which part is
+# the command let `false  # run with \`CI=1\`` run `CI=1` and pass (security review). Only
+# exact `n/a` used to count as no command; the field had `none yet` run as shell.
+MYCMD_NONE='^[(*_]*((n/?a|none|tbd|todo)([^A-Za-z0-9_./-]|[.]([^A-Za-z0-9_/-]|$)|$)|-|—|–)'
+my_cmd_parse() { # the value on stdin -> the command on stdout, nothing = no command
+  local v; IFS= read -r v; [ -n "$v" ] || return 0
+  printf '%s\n' "$v" | grep -qiE "$MYCMD_NONE" && return 0
+  case "$v" in '<'*) return 0 ;; esac
+  case "$v" in
+    '`'*) v="$(printf '%s\n' "$v" | sed -nE 's/^`([^`]+)`.*$/\1/p')"; [ -n "${v//[[:space:]]/}" ] || return 3 ;;
+    *'`'*) return 3 ;;
+  esac
+  printf '%s\n' "$v" | grep -qiE "$MYCMD_NONE" && return 0
+  printf '%s\n' "$v"
+}
 
 # 4/5/6 — lint, test, build. Auto-detect the stack; run a check only if it exists.
-# Order of preference: npm script → Makefile target → justfile → python → docker.
+# Order of preference (v8.3.27, #10): AGENTS.md MY COMMANDS → npm script → Makefile
+# target → justfile → by FILE TYPE → docker. A `tests/` directory alone selects nothing:
+# it used to select pytest, so a node project with tests/*.test.mjs got a RED test step
+# it could not pass (field, first /run-spec polygon run, 2026-09-14).
+. "$(dirname "$0")/secret-patterns.sh" 2>/dev/null || SECRET_REGEX='(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'
+# Secret-shaped text out of anything the gate prints. sed delimiter = \001 (v8.3.28, #26):
+# a project SECRET_REGEX holding a `/` ended the `s/…/` early and crashed the gate (field,
+# 2026-09-17); \001 and newlines are removed from the regex first, so it can never close
+# the s-command and append one of its own (sheriff).
+redact() { local re="${SECRET_REGEX//[$'\001'$'\n']/}"
+  printf '%s' "$1" | sed -E "s"$'\001'"$re"$'\001'"<redacted>"$'\001'"g"; }
 gate_step() { # $1 = step name (lint|test|build)
-  local step="$1"
+  local step="$1" raw cmd prc
+  # The MY COMMANDS line runs through `bash -c`, so it is shown in the output (it lands in
+  # the run report) with secret-shaped text redacted, and it is read from the COMMITTED
+  # blob only (HEAD must hold a regular file): a working-tree edit, an assume-unchanged or
+  # skip-worktree flag, a symlink or an untracked file must not put an unreviewed string
+  # into `bash -c` (security review + re-check + sheriff, v8.3.27). Untracked: ignored,
+  # visibly; edited: the committed line counts and the edit is named.
+  if git ls-tree HEAD ./AGENTS.md 2>/dev/null | grep -q '^100[67][0-9][0-9] blob '; then
+    raw="$(git show HEAD:./AGENTS.md 2>/dev/null | my_cmd_value "$step")"
+    cmd="$(printf '%s\n' "$raw" | my_cmd_parse)"; prc=$?
+    [ -f AGENTS.md ] && [ "$(my_cmd_value "$step" < AGENTS.md)" != "$raw" ] \
+      && note "MY COMMANDS ${step}: the working AGENTS.md differs from HEAD — the committed line counts"
+    if [ "$prc" -eq 3 ]; then
+      bad "MY COMMANDS ${step}: ambiguous line '$(redact "$raw")' — put the command first, bare or in one pair of backticks, notes after it"; return
+    fi
+    if [ -n "$cmd" ]; then run_if "$step (AGENTS.md MY COMMANDS: $(redact "$cmd"))" bash -c "$cmd"; return; fi
+    [ -n "$raw" ] && note "MY COMMANDS ${step}: '$(redact "$raw")' reads as no command — auto-detection runs"
+  elif [ -f AGENTS.md ] && [ -n "$(my_cmd_value "$step" < AGENTS.md)" ]; then
+    note "MY COMMANDS ${step} ignored: AGENTS.md is not a committed, regular, tracked file"
+  fi
   if has_npm_script "$step"; then run_if "$step (npm)" npm run -s "$step" 2>/dev/null || run_if "$step (npm)" npm "$step" --silent; return; fi
   if [ -f Makefile ] && grep -q "^${step}:" Makefile; then run_if "$step (make)" make "$step"; return; fi
   if [ -f justfile ] && grep -q "^${step}" justfile; then run_if "$step (just)" just "$step"; return; fi
   case "$step" in
     test)
-      if [ -f pyproject.toml ] || ls tests/ >/dev/null 2>&1; then run_if "test (pytest)" python3 -m pytest -q; return; fi ;;
+      if [ -f pyproject.toml ] || any_file tests/test_*.py tests/*_test.py test/test_*.py; then run_if "test (pytest)" python3 -m pytest -q; return; fi
+      if any_file tests/*.test.mjs tests/*.test.js tests/*.test.cjs test/*.test.mjs test/*.test.js test/*.test.cjs; then run_if "test (node --test)" node --test; return; fi ;;
     lint)
       if [ -f pyproject.toml ] && command -v ruff >/dev/null 2>&1; then run_if "lint (ruff)" ruff check .; return; fi ;;
     build)
@@ -114,23 +196,187 @@ fi
 
 # 7) + 8) run report present & well-formed (skipped for trivial tasks)
 if [ "$TRIVIAL" -eq 0 ]; then
-  latest=$(ls -t _reports/runs/*.md 2>/dev/null | head -1)
-  if [ -z "$latest" ]; then
+  # WHICH report, and which verdict in it (v8.3.28, #40): the report latest.json names, and
+  # in it the Verdict heading bound to latest.json's run_id. The newest file and its FIRST
+  # Verdict heading used to win, so a /run-spec report — one file, a section appended per
+  # step — was read at its oldest section: "report verdict: GREEN" printed while that
+  # night's run was RED (field, 2026-09-20; only latest.json blocked it).
+  run_id=""; latest=""
+  if [ -f _reports/runs/latest.json ] && command -v python3 >/dev/null 2>&1; then
+    IFS=$'\037' read -r run_id latest < <(python3 -c 'import json, sys
+sys.stdout.reconfigure(encoding="utf-8")
+d = json.load(open("_reports/runs/latest.json", encoding="utf-8"))
+d = d if isinstance(d, dict) else {}
+def f(k):   # exact, never normalised (sheriff: "run  02.md" must not become "run 02.md")
+    v = d.get(k, "")
+    v = v if isinstance(v, str) else str(v)
+    return "\001INVALID" if any(ord(c) < 32 for c in v) else v
+print(f("run_id") + "\037" + f("report"))' 2>/dev/null)
+    latest="${latest%$'\r'}"   # Windows python ends the line with CR LF
+    if [ "$run_id" = $'\001INVALID' ] || [ "$latest" = $'\001INVALID' ]; then
+      bad "latest.json run_id/report holds a control character — write them as plain text"
+      run_id=""; latest=$'\001INVALID'
+    fi
+  fi
+  # The named report must be a COMMITTED file under _reports/runs/: a path outside the repo,
+  # a `..` path or a gitignored file would let an unreviewed GREEN stand in for the real
+  # report (security review: an absolute path to a GREEN file beat a committed RED report).
+  # It is READ from HEAD too (sheriff): a skip-worktree working copy saying GREEN over a
+  # committed RED, or a committed symlink pointing out of the repo, must not be the proof.
+  # The object READ must be the regular file: `x/` or `x/.` resolve to a tree whose first
+  # child is a blob, a symlink is a blob of mode 120000 (sheriff rounds 3-4).
+  committed_file() { [ "$(git cat-file -t "HEAD:./$1" 2>/dev/null)" = blob ]     && git ls-tree HEAD -- "./$1" 2>/dev/null | grep -qE '^100(644|755) blob '; }
+  rep_bad=0; rep_src=""
+  if [ -n "$latest" ]; then
+    case "$latest" in
+      /*|*..*|*\\*|[A-Za-z]:*) rep_bad=1 ;;
+      _reports/runs/*) committed_file "$latest" || rep_bad=2 ;;
+      *) rep_bad=1 ;;
+    esac
+    [ "$rep_bad" -eq 1 ] && bad "latest.json report '$latest' must be a repo-relative path under _reports/runs/"
+    [ "$rep_bad" -eq 2 ] && bad "latest.json report '$latest' is not a regular file committed in HEAD — commit the report before the proof"
+    if [ "$rep_bad" -eq 0 ]; then
+      rep_src="${qg_logs:+$qg_logs/run-report.md}"
+      { [ -n "$rep_src" ] && git show "HEAD:./$latest" > "$rep_src" 2>/dev/null; } \
+        || { rep_bad=3; bad "cannot read the committed report '$latest' from HEAD"; }
+    fi
+  else
+    latest=$(ls -t _reports/runs/*.md 2>/dev/null | head -1); rep_src="$latest"   # pre-v8.3.28 behaviour
+  fi
+  if [ "$rep_bad" -ne 0 ]; then
+    :
+  elif [ -z "$latest" ]; then
     bad "no run report in _reports/runs/ for a non-trivial task"
   else
     ok "run report: $latest"
     for sec in Verdict Inputs Findings Artifacts; do
-      grep -qi "$sec" "$latest" || bad "run report missing section: $sec"
+      grep -qi "$sec" "$rep_src" || bad "run report missing section: $sec"
     done
-    # The VALUE of the verdict matters, not the word "Verdict". field project C finding D2
-    # (2026-09-01): the shipped report template puts the value on the line AFTER
-    # "## Verdict", so the gate reads the header line AND the next one.
-    rv=$(grep -iEA1 -m1 'verdict' "$latest" | grep -oEi 'GREEN|YELLOW|RED' | head -1 | tr '[:lower:]' '[:upper:]')
-    case "$rv" in
-      GREEN) ok "report verdict: GREEN" ;;
-      YELLOW|RED) bad "report verdict is $rv — the run itself says it is not done" ;;
-      *) bad "report has no parsable verdict value (expected GREEN/YELLOW/RED)" ;;
-    esac
+    # The VALUE of the verdict matters, not the word "Verdict" (field D2, 2026-09-01). Which
+    # report and which section (#40): the report latest.json names; with several Verdict
+    # headings only the one naming this run's run_id, none or several naming it BLOCK; one
+    # heading naming ANOTHER run BLOCKS. v8.3.28 review rounds kept finding bypasses in a
+    # lexical reader, so the report is read by a strict grammar that BLOCKS on anything it
+    # cannot read one way.
+    # THREAT MODEL (owner ruling, v8.3.29): HONEST MISTAKES — a stale section, another run's
+    # heading, a corrected or struck value, the template's own comment. A report CRAFTED to
+    # hide its verdict (raw HTML blocks, entities, headings inside lists or quotes) is out of
+    # scope: the same author writes latest.json, and this is awk, not a Markdown renderer.
+    # The grammar:
+    #  - code is not prose: CommonMark fences (``` or ~~~, 3+, indent 0-3 or after a list
+    #    marker; a backtick opener carries no other backtick; closed only by the same char,
+    #    at least as long, alone on its line; unclosed BLOCKS) and 4-column-indented lines;
+    #  - HTML comments as CommonMark renders them: a line STARTING with `<!--` (indent 0-3,
+    #    outside code) hides everything up to the line holding `-->` — text after that `-->`
+    #    BLOCKS; inside a line only a complete `<!-- … -->` is hidden, and a `<!--` left open
+    #    there BLOCKS (a renderer hides the lines after it, a code span does not: v8.3.29);
+    #  - a Verdict heading is any heading holding the word "verdict" ("## Final verdict" too);
+    #    a setext one (a paragraph line underlined with --- or ===) BLOCKS — it would go
+    #    uncounted; under a list item or a quote that --- is a rule, not an underline;
+    #  - a heading names a run ONLY as `Verdict`, non-letters, `run <id>` — the id is the next
+    #    word minus trailing `:),.;` and must EQUAL the run_id (no substring search);
+    #  - the verdict is the first TOKEN ([A-Za-z0-9_-]+, so `green-S02` is not GREEN) of the
+    #    heading after `Verdict` and its run, else of the first prose line after the heading
+    #    (a leading word "Verdict" is skipped). Not GREEN/YELLOW/RED there → BLOCK: "Not GREEN"
+    #    is not a verdict. That text naming a SECOND verdict word, hidden parts included
+    #    (`~~GREEN~~ RED`, `GREEN → RED`), or striking anything out (`~~`), BLOCKS: the
+    #    reader never picks one of two;
+    #  - no Verdict heading: exactly one prose line starting with "Verdict" or carrying a
+    #    "Verdict:" label, else BLOCK;
+    #  - the run_id reaches awk through ENVIRON: awk escape-processes `-v` values.
+    vawk() { QG_RID="$1" awk -v mode="$2" "$VAWK" "$rep_src"; }   # $1 = run_id, $2 = mode
+    VAWK='BEGIN { rid = ENVIRON["QG_RID"] }
+      function afterv(s,  t) {   # the text after the first whole word "verdict", else ""
+        t = tolower(s); if (!match(t, /(^|[^a-z])verdict/)) return ""
+        return substr(s, RSTART + RLENGTH) }
+      function runof(s,  t) {   # the run a Verdict heading names (`Verdict`, non-letters, `run <id>`), else ""
+        t = afterv(s); if (!match(tolower(t), /^[^a-z0-9]*run[ \t]+/)) return ""
+        t = substr(t, RSTART + RLENGTH); sub(/[ \t].*$/, "", t); sub(/[:),.;]+$/, "", t); return t }
+      function token(s) {   # the first token (a letter or digit, then [A-Za-z0-9_-]*), upper-cased; TREST = the rest
+        if (!match(s, /[A-Za-z0-9][A-Za-z0-9_-]*/)) { TREST = ""; return "" }
+        TREST = substr(s, RSTART + RLENGTH); return toupper(substr(s, RSTART, RLENGTH)) }
+      function nverd(s,  w, g, y, x) {   # how many DIFFERENT verdict words s holds
+        while ((w = token(s)) != "") { if (w == "GREEN") g = 1; else if (w == "YELLOW") y = 1; else if (w == "RED") x = 1; s = TREST }
+        return g + y + x }
+      function verdict_of(s, r,  w) {   # GREEN/YELLOW/RED if s STARTS with one (after a word "Verdict"), else "";
+        w = token(s); if (w == "VERDICT") w = token(TREST)   # MANYV when r (s with its comments) names two
+        if (w != "GREEN" && w != "YELLOW" && w != "RED") return ""
+        return (nverd(r) > 1 || index(r, "~~")) ? "MANYV" : w }
+      function after_heading(s,  t) {   # the heading after `verdict` and the run it names
+        t = afterv(s); if (runof(s) != "") sub(/^[^A-Za-z0-9]*[Rr][Uu][Nn][ \t]+[^ \t]+/, "", t)
+        return t }
+      function inline(s,  i, j, o) {   # s without its complete one-line <!-- ... --> comments
+        o = ""; while ((i = index(s, "<!--")) && (j = index(substr(s, i + 2), "-->"))) { o = o substr(s, 1, i - 1); s = substr(s, i + j + 4) }
+        return o s }
+      function rest(s) { if (inline(s) !~ /^[ \t]*$/) junk++ }   # text after a block comment closes
+      function opener(s,  f) {
+        if (!match(s, /^ ? ? ?(([-*+]|[0-9]+[.)])[ \t]+)?(```+|~~~+)/)) return ""
+        f = substr(s, RSTART, RLENGTH); sub(/^[^`~]*/, "", f)
+        if (substr(f, 1, 1) == "`" && index(substr(s, RSTART + RLENGTH), "`")) return ""
+        return f }
+      function closes(s,  c) {
+        if (s !~ /^ ? ? ?(```+|~~~+)[ \t]*$/) return 0
+        c = s; gsub(/[ \t]/, "", c)
+        return substr(c, 1, 1) == substr(fence, 1, 1) && length(c) >= length(fence) }
+      { raw = $0; sub(/\r$/, "", raw)   # a CRLF report: the CR is never text
+        if (inc) { i = index(raw, "-->"); if (!i) next; inc = 0; rest(substr(raw, i + 3)); next }
+        if (fence != "") { if (closes(raw)) fence = ""; pv = 0; next }
+        if (raw ~ /^ ? ? ?<!--/) { i = index(raw, "<!--"); j = index(substr(raw, i + 2), "-->"); pv = 0
+          if (j) rest(substr(raw, i + j + 4)); else inc = 1
+          next }
+        o = opener(raw); if (o != "") { fence = o; pv = 0; next }
+        if (raw ~ /^(\t| \t|  \t|   \t|    )/) { pv = 0; next }
+        line = inline(raw); if (index(line, "<!--")) junk++   # opens mid-line, closes on a later one
+        if (pv && line ~ /^ ? ? ?(=+|-+)[ \t]*$/) sx++   # a setext underline under a line holding "verdict"
+        pv = line !~ /^[ \t]*$/ && line !~ /^ ? ? ?(#|>|[-*+][ \t]|[0-9]+[.)][ \t])/ && tolower(line) ~ /(^|[^a-z])verdict([^a-z]|$)/ }
+      want && line !~ /^[ \t]*$/ {   # read: the first prose line after the selected heading
+        if (line ~ /^ ? ? ?#/) { print "NONE"; done = 1; exit }
+        v = verdict_of(line, raw); print (v != "" ? v : "NONE"); done = 1; exit }
+      line ~ /^ ? ? ?#/ && tolower(line) ~ /(^|[^a-z])verdict([^a-z]|$)/ {   # a heading holding the word "verdict"
+        n++; if (runof(line) != "") r++; if (rid != "" && runof(line) == rid) m++
+        if (mode == "read" && !want && (rid == "" || runof(line) == rid)) {
+          v = verdict_of(after_heading(line), after_heading(raw)); if (v != "") { print v; done = 1; exit }
+          want = 1 }
+        next }
+      mode == "fallback" && token(line) == "VERDICT" { k++; fv = verdict_of(line, afterv(raw)); next }
+      mode == "fallback" && match(tolower(line), /(^|[^a-z])verdict[*_]*[ \t]*:/) { k++; fv = verdict_of(substr(line, RSTART + RLENGTH), afterv(raw)) }
+      END {
+        if (mode == "count") print (fence != "" ? -1 : sx ? -2 : junk ? -3 : n + 0)
+        if (mode == "runs") print r + 0
+        if (mode == "named") print m + 0
+        if (mode == "read" && !done) print "NONE"
+        if (mode == "fallback") print (k + 0) " " (fv != "" ? fv : "NONE") }'
+    nv=$(vawk "" count); rid_use=""; vread=1
+    if [ "$nv" -eq -1 ]; then
+      vread=0; bad "run report has an unclosed code fence — everything after it is code, so no verdict can be read"
+    elif [ "$nv" -eq -2 ]; then
+      vread=0; bad "run report has a setext Verdict heading (a line holding 'Verdict' underlined with --- or ===) — write it as '## Verdict'"
+    elif [ "$nv" -lt 0 ]; then
+      vread=0; bad "run report has an HTML comment the gate cannot read one way (text after its '-->', or a '<!--' opened mid-line and not closed on that line) — put each comment on its own lines"
+    elif [ "$nv" -gt 1 ]; then
+      nm=0; [ -n "$run_id" ] && nm=$(vawk "$run_id" named)
+      if [ "$nm" -eq 1 ]; then rid_use="$run_id"; note "report holds $nv Verdict headings — reading the one that names this run ($run_id)"
+      else vread=0; bad "report holds $nv Verdict headings and $nm name this run's run_id (${run_id:-none in latest.json}) — write each run's heading as 'Verdict — run <run_id>', exactly once"; fi
+    elif [ "$nv" -eq 1 ] && [ -n "$run_id" ] && [ "$(vawk "" runs)" -gt 0 ] && [ "$(vawk "$run_id" named)" -ne 1 ]; then
+      # One heading that names a run (`### Verdict — run <id>`) must name THIS one: a step
+      # that never appended its section must not pass on the previous step's (review F1).
+      vread=0; bad "the report's only Verdict heading names another run, not this run_id ($run_id) — append this run's section"
+    fi
+    if [ "$vread" -eq 1 ]; then
+      if [ "$nv" -gt 0 ]; then rv=$(vawk "$rid_use" read)
+      else
+        read -r nf rv < <(vawk "" fallback)
+        [ "${nf:-0}" -gt 1 ] && rv="MANY"
+      fi
+      case "$rv" in
+        GREEN) ok "report verdict: GREEN" ;;
+        YELLOW|RED) bad "report verdict is $rv — the run itself says it is not done" ;;
+        MANY) bad "report has no Verdict heading and several lines starting with 'Verdict' — add one '## Verdict' heading" ;;
+        MANYV) bad "the report's verdict names more than one of GREEN/YELLOW/RED or strikes a value out (a corrected value, an arrow, ~~) — write only the final one" ;;
+        *) bad "report has no parsable verdict value — the Verdict heading, or the first prose line under it, must START with GREEN/YELLOW/RED" ;;
+      esac
+    fi
+    [ -n "$qg_logs" ] && rm -f "$qg_logs/run-report.md"   # the HEAD copy; never kept as evidence
     # machine-readable state: must exist AND match schema AND bind to THIS commit
     if [ ! -f _reports/runs/latest.json ]; then
       # Name the cause (v8.3.25): "no run yet" and "run state lost" look identical here.
@@ -260,6 +506,118 @@ sys.exit(1 if errs else 0)
 PY
       then ok "latest.json schema + verdict GREEN + bound to HEAD + independent review (F2)"
       else bad "latest.json failed validation (see lines above)"; fi
+      # 8b) spec lint (v8.3.28, #35 D) — the spec latest.json names, when it is written in
+      #     spec format 2: every step has a Kind; a `choice` step has a research brief with
+      #     a recommendation, evidence, a falsifier and a confidence; at most 2 choices.
+      #     A spec without `Spec format: 2` predates the lint and is named, not failed.
+      #     Spec and briefs are read from HEAD (the proof binds to a commit) and must be
+      #     repo-relative; a lint that crashes or says nothing BLOCKS (security review).
+      lint_done=0
+      while IFS= read -r l; do
+        l="${l%$'\r'}"
+        case "$l" in
+          BAD\ *) bad "spec lint: ${l#BAD }" ;;
+          WARN\ *) note "spec lint WARN: ${l#WARN }" ;;
+          OK\ *) ok "spec lint: ${l#OK }" ;;
+          NONE) : ;;
+          LINT-END) lint_done=1 ;;
+          *) note "$l" ;;
+        esac
+      done < <(python3 - <<'PY' 2>&1
+import json, os, re, subprocess, sys
+sys.stdout.reconfigure(encoding="utf-8")          # non-ASCII messages; Windows default is cp1252
+
+def committed(path):
+    """Text of a repo-relative path as committed in HEAD, or None."""
+    p = path                          # exact: a backslash is refused, never rewritten
+    if not p or "\\" in p or any(ord(c) < 32 for c in p) or p.startswith("/") or re.match(r"^[A-Za-z]:", p) or ".." in p.split("/"):
+        return None
+    t = subprocess.run(["git", "ls-tree", "HEAD", "./" + p], capture_output=True)
+    k = subprocess.run(["git", "cat-file", "-t", "HEAD:./" + p], capture_output=True)
+    if k.stdout.strip() != b"blob" or not re.match(rb"^100(644|755) blob ", t.stdout):
+        return None                    # the object read is a regular file: never a tree, a symlink
+    r = subprocess.run(["git", "show", "HEAD:./" + p], capture_output=True)
+    return r.stdout.decode("utf-8").replace("\r", "") if r.returncode == 0 else None
+
+def main():
+    try:
+        d = json.load(open("_reports/runs/latest.json", encoding="utf-8"))
+    except Exception:
+        print("NONE"); return                         # already reported above
+    spec = d.get("spec", "") if isinstance(d, dict) else ""   # exact: never normalised (sheriff)
+    spec = spec if isinstance(spec, str) else str(spec)
+    if not spec:
+        print("NONE"); return                         # not a spec run: nothing to lint
+    text = committed(spec)
+    if text is None:
+        print(f"BAD latest.json names spec {spec}: not a repo-relative file committed in HEAD"); return
+    if not re.search(r"^- \*\*Spec format:\*\*\s*2\b", text, re.M):
+        print(f"spec lint skipped: {spec} has no 'Spec format: 2' line (written before v8.3.28)"); return
+    FIELD = lambda body, name: re.search(r"^- \*\*" + name + r":\*\*[ \t]*(.*)$", body, re.M)
+    NUM_NEAR = re.compile(r"\b(caps?|limits?|max(imum)?|min(imum)?|thresholds?|timeouts?)\b\W+(\w+\W+){0,2}?\d"
+                          r"|\d[\w.]*\W+(\w+\W+){0,2}?(caps?|limits?|max(imum)?|min(imum)?|thresholds?|timeouts?)\b", re.I)
+    # code is not structure: fenced examples go first; a step heading may be indented 0-3
+    # spaces and be h3-h6 (sheriff: " ### S02" hid a step from every check)
+    kept, fence = [], None      # CommonMark: closes on the same char, at least as long, alone
+    for line in text.split("\n"):
+        m = re.match(r"^ {0,3}(`{3,}|~{3,})", line)
+        if fence is None:
+            o = re.match(r"^ {0,3}(?:(?:[-*+]|\d+[.)])[ \t]+)?(`{3,}|~{3,})(.*)$", line)
+            if o and not (o.group(1)[0] == "`" and "`" in o.group(2)):   # backtick info: no backtick
+                fence = o.group(1)
+            else: kept.append(line)
+        elif m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) \
+                and re.match(r"^ {0,3}(`{3,}|~{3,})[ \t]*$", line):
+            fence = None
+    if fence is not None:
+        print(f"BAD {spec}: unclosed code fence — every step after it would be hidden"); return
+    text = "\n".join(kept)
+    parts = re.split(r"^ {0,3}#{3,6}[ \t]+(S\d+)\b.*$", text, flags=re.M)
+    steps = [(parts[i], re.split(r"^ {0,3}## ", parts[i + 1], maxsplit=1, flags=re.M)[0])
+             for i in range(1, len(parts) - 1, 2)]
+    bad = 0; choices = []
+    for sid, body in steps:
+        m = FIELD(body, "Kind")
+        kind = re.sub(r"<!--.*?-->", "", m.group(1)).strip().lower() if m else ""
+        if kind not in ("fix", "build", "choice"):
+            print(f"BAD {sid}: Kind is {'missing' if not m else repr(kind)} — exactly one of fix | build | choice"); bad = 1; continue
+        r = FIELD(body, "Research")
+        rpath = re.sub(r"<!--.*?-->", "", r.group(1)).strip().strip("`") if r else ""
+        rpath = "" if rpath in ("", "-", "—", "–") else rpath
+        if kind == "choice":
+            choices.append(sid)
+            brief = committed(rpath) if rpath else None
+            if brief is None:
+                print(f"BAD {sid}: Kind choice needs a Research brief committed in HEAD — "
+                      f"{'no Research line' if not rpath else rpath + ' not found'}"); bad = 1; continue
+            for need in ("Recommendation:", "What would change this recommendation:", "Confidence:"):
+                if not re.search(r"^" + re.escape(need), brief, re.M):
+                    print(f"BAD {sid}: brief {rpath} has no '{need}' line"); bad = 1
+            ev = re.search(r"^Evidence:[^\n]*\n((?:[ \t]*- [^\n]*\n?)*)", brief, re.M)
+            if not ev or not ev.group(1).strip():
+                print(f"BAD {sid}: brief {rpath} has zero Evidence lines"); bad = 1
+        else:
+            if kind == "fix" and rpath:
+                print(f"WARN {sid}: research on a fix = scope creep ({rpath})")
+            for name in ("Deliverable", "DoD"):
+                f = FIELD(body, name)
+                if f and NUM_NEAR.search(f.group(1)):
+                    print(f"WARN {sid}: {name} has a bare number next to a cap/limit/threshold/timeout — constant or formula? mark choice or cite derivation")
+    if len(choices) > 2:
+        print(f"BAD {len(choices)} choice steps ({', '.join(choices)}) — max 2 per spec: split: design spec first"); bad = 1
+    if not steps:
+        print(f"BAD {spec}: no '### Sxx' steps found"); bad = 1
+    if not bad:
+        print(f"OK {spec} — {len(steps)} step(s), {len(choices)} choice")
+
+try:
+    main()
+except Exception as e:                               # a lint that crashed has not passed
+    print(f"BAD spec lint crashed: {type(e).__name__}: {e}")
+print("LINT-END", flush=True)   # not reached on an interrupt: an unfinished lint BLOCKS (sheriff)
+PY
+)
+      [ "$lint_done" -eq 1 ] || bad "spec lint did not finish — no completion line from python3"
     else
       # SHERIFF [2], v8.3.23: a validator that did not run is not a pass. Without it
       # nothing checks the verdict, the HEAD binding or the independent review.
@@ -271,16 +629,31 @@ else
 fi
 
 # 9) control-state / memory health
-# A missing CLAUDE.md used to crash awk ("fatal: cannot open file") on stderr and SKIP
+# A missing kernel used to crash awk ("fatal: cannot open file") on stderr and SKIP
 # the CORE check without a line on stdout — a check that vanishes reads as a pass
 # (v8.3.25). No kernel here means this is not a project root, and the gate says so.
-if [ ! -f CLAUDE.md ]; then
-  bad "no CLAUDE.md here — not a project root, so the CORE check cannot run (run the gate from the project root)"
-elif awk '/CORE:START/{f=1} f{c++} /CORE:END/{f=0} END{exit !c}' CLAUDE.md; then
-  if [ -f .claude/core.sha ]; then
-    cur=$(awk '/CORE:START/{f=1} f{print} /CORE:END/{f=0}' CLAUDE.md | sha256sum | awk '{print $1}')
-    [ "$cur" = "$(cat .claude/core.sha)" ] && ok "CORE matches baseline" || bad "CORE changed vs baseline — needs approval + re-baseline"
-  else note "no CORE baseline yet — run ./scripts/core-baseline.sh"; fi
+# The kernel is AGENTS.md (v8.3.28, #42); CLAUDE.md is a stub that imports it. Claude Code
+# reads AGENTS.md only through that import — its own AGENTS.md fallback never fires below a
+# directory holding a CLAUDE.md — so a stub that lost the import is a session with NO
+# kernel, silently. The gate checks the stub for exactly that.
+if [ ! -f AGENTS.md ]; then
+  bad "no AGENTS.md here — not a project root, so the CORE check cannot run (run the gate from the project root)"
+else
+  if awk '/CORE:START/{f=1} f{c++} /CORE:END/{f=0} END{exit !c}' AGENTS.md; then
+    if [ -f .claude/core.sha ]; then
+      cur=$(awk '/CORE:START/{f=1} f{print} /CORE:END/{f=0}' AGENTS.md | sha256sum | awk '{print $1}')
+      [ "$cur" = "$(cat .claude/core.sha)" ] && ok "CORE matches baseline" || bad "CORE changed vs baseline — needs approval + re-baseline"
+    else note "no CORE baseline yet — run ./scripts/core-baseline.sh"; fi
+  elif [ -f .claude/core.sha ]; then
+    bad "AGENTS.md has no CORE block but a CORE baseline exists — the protected kernel was removed"
+  fi
+  # The stub is exactly one import: anything else in it loads unreviewed instructions
+  # beside the kernel, outside the CORE hash (security review, v8.3.28).
+  stub="$( [ -f CLAUDE.md ] && tr -d '\r' < CLAUDE.md | awk "$STRIP_HTML_COMMENTS" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' | grep -v '^$')"
+  if [ "$stub" = "@AGENTS.md" ]; then ok "CLAUDE.md is the kernel stub (@AGENTS.md)"
+  elif printf '%s\n' "$stub" | grep -qx '@AGENTS\.md'; then
+    bad "CLAUDE.md carries more than the '@AGENTS.md' line — the stub holds that one import and comments only"
+  else bad "CLAUDE.md has no '@AGENTS.md' line — Claude Code would run this project WITHOUT its kernel"; fi
 fi
 [ -f .agent/state/current.md ] && ok "current.md present" || note "no .agent/state/current.md yet"
 if [ -f _reports/runs/latest.json ]; then

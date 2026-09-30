@@ -115,6 +115,17 @@ else
   rmdir "$bwork" 2>/dev/null
 fi
 
+# ---- the Context Guard suites, on the canonical tree (v8.3.27, BACKLOG #6) ------
+# test-onboarding.sh was RED from v8.3.15 to v8.3.25 and nobody saw it: no gate ran it,
+# and from the unpacked artifact it prints SKIPPED by design (it tests the BUILD, so it
+# needs the canonical tree). Both suites run HERE, on the tree they test; their last line
+# is the verdict. A SKIPPED or missing line scores as a failure — never as a pass.
+for suite in test-context-guard.sh test-onboarding.sh; do
+  cgline="$(cd "$root" && timeout 900 bash "scripts/$suite" 2>&1 | tail -1)"
+  echo "$cgline" | grep -q 'GREEN' && ok "$suite on the canonical tree: $cgline" \
+                                   || no "$suite on the canonical tree: ${cgline:-<no output>}"
+done
+
 # ---- everything below runs INSIDE the unpacked artifact -----------------------
 ( cd "$work" && unzip -q "$out/$tname" ) || { no "artifact does not unzip"; exit 1; }
 ex="$work/$tv"
@@ -153,6 +164,35 @@ else
   no "release-blocklist.txt missing on the canonical tree — blankness check cannot run"
 fi
 
+# ---- the Context Guard artifact (v8.3.26) -------------------------------------
+# It carried the template's .claude/settings.json until v8.3.26, so a template-only settings
+# edit changed its bytes under an already-published runtime name. Its payload is the runtime,
+# the installer, the suites and the one shared file, config.json. Its prose is held to the
+# blankness rule too; its SUITES are not — they test against real project configs by path,
+# which is the point of them.
+# Read from the tree root, relatively: $root is an MSYS path (/d/...) on Windows, which a
+# native python cannot open.
+cgz="$out/context-guard-$(cd "$root" && python3 -c "import json;print(json.load(open('context-guard/version.json',encoding='utf-8'))['runtime_version'])").zip"
+if [ -f "$cgz" ]; then
+  cgw="$(mktemp -d)"
+  ( cd "$cgw" && unzip -q "$cgz" ) || no "Context Guard artifact does not unzip"
+  [ -z "$(find "$cgw" -path '*/.claude/settings.json')" ] \
+    && ok "Context Guard artifact carries no settings.json (wiring is the installer's)" \
+    || no "Context Guard artifact carries .claude/settings.json — template payload leaked into the runtime artifact"
+  [ -n "$(find "$cgw" -path '*/.claude/context-guard/config.json')" ] \
+    && ok "Context Guard artifact carries the project opt-in config.json" \
+    || no "Context Guard artifact lost .claude/context-guard/config.json"
+  if [ -n "${field_projects:-}" ]; then
+    cgleak="$(grep -rn -i -I -E "$field_projects" "$cgw" \
+               --exclude=test-context-guard.sh --exclude=test-onboarding.sh --exclude=cg-acceptance.sh 2>/dev/null || true)"
+    [ -z "$cgleak" ] && ok "no field project named in the Context Guard artifact (suites excepted)" \
+                     || no "field project named in the Context Guard artifact: $(echo "$cgleak" | head -3 | tr '\n' ' ')"
+  fi
+  chmod -R u+w "$cgw" 2>/dev/null; find "$cgw" -mindepth 0 -delete 2>/dev/null
+else
+  no "Context Guard artifact not produced: $cgz"
+fi
+
 head -3 CHANGELOG.md | grep -q "## $tv" && ok "CHANGELOG top entry is $tv" || no "CHANGELOG top entry is not $tv"
 
 # ---- optional: an all-in-one wrapper folder must EQUAL the PRISTINE unpack -----
@@ -164,7 +204,7 @@ fi
 
 bash setup.sh >/dev/null 2>&1
 [ -x scripts/pre-commit ] && ok "setup.sh restores exec bits inside the artifact" || no "setup.sh did not make pre-commit executable"
-th="$(timeout 300 bash scripts/test-hooks.sh 2>&1 | tail -2 | head -1)"
+th="$(timeout 900 bash scripts/test-hooks.sh 2>&1 | tail -2 | head -1)"   # v8.3.27: ~4.5 min on a Windows host; 300 s was one flake away
 echo "$th" | grep -q 'FAIL: 0' && ok "test-hooks from artifact: $th" || no "test-hooks from artifact: $th"
 python3 scripts/state-patch.py --self-test 2>&1 | grep -q 'GREEN' \
   && ok "state-patch self-test from artifact (utf-8)" || no "state-patch self-test failed"

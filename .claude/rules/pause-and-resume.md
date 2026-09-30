@@ -12,7 +12,13 @@ deliberately detached keeps running.**
 
 1. **Persist.** Patch the execution state (`state-patch` skill), then write the handoff
    (`handoff` skill). This overrides that skill's "do not stop working" step: on an
-   explicit pause, stopping is the instruction.
+   explicit pause, stopping is the instruction. At a pause `.agent/state/current.md` is
+   held to its 250-line limit (`memory-router`): over it → archive the old file verbatim
+   as `.agent/state/archive/current_<YYYY-MM-DD>.md`, rewrite it to what is true now.
+   Commit the state (`chore(state): pause — …`) and PUSH that commit — the pause
+   instruction is the go-ahead for exactly this push, no separate GO: the current branch,
+   to its tracked remote, never a force, never another branch. No tracked remote → say
+   so in the handoff and leave it unpushed.
 2. **Stop the observers.** Every monitor, watcher, polling loop and background tail this
    session armed. They re-pay the whole session context per fire and die on resume
    anyway (`.claude/rules/loops-and-watchers.md`).

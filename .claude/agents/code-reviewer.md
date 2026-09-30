@@ -10,3 +10,5 @@ unnecessary complexity or abstraction (flag over-engineering), and new dependenc
 (are they justified, maintained, safe?). Report findings severity-tagged with
 location + concrete fix. End PASS or NEEDS-FIX. Prefer the simplest change that
 works; do not demand abstraction the task doesn't need.
+Tag every finding `introduced` (this diff caused it) or `pre-existing` (it was there
+before this diff).

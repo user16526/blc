@@ -62,7 +62,7 @@ mkdir -p .agent/state 2>/dev/null || true
   echo "- Machine run state: _reports/runs/latest.json"
   echo "- Decisions: .agent/state/decisions.md   |   Risks: .agent/state/risks.md"
   echo "- Active lessons: tasks/lessons.md"
-  echo "- Protocol: CLAUDE.md > MEMORY — read current.md + latest.json + the active spec,"
+  echo "- Protocol: AGENTS.md > MEMORY — read current.md + latest.json + the active spec,"
   echo "  pick up from the last completed phase. The artifacts are the checkpoint."
 } > "$out" 2>/dev/null || true
 

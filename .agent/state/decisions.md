@@ -206,3 +206,5 @@ aa3b34b: CRLF-normalised 3-way merge, CLAUDE.md FIRST RUN/PROJECT conflicts reso
 byte-identical to v8.3.25 (core.sha 96ebc17f…). Gate --trivial GREEN (run in a clean worktree at
 212d386, because the checkout keeps the untracked reports), test-hooks 260/0. No git remote exists,
 so nothing was pushed. — supersedes none.
+
+- 2026-09-30 — upgraded template v8.3.25 → v8.3.29 (owner-approved fan-out from devops-local): the kernel moved to AGENTS.md, CLAUDE.md is its one-line @AGENTS.md stub; CORE re-baselined (one word, SELF-MONITORING). Merge buckets in the upgrade commit message.

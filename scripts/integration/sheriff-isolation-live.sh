@@ -185,7 +185,8 @@ trap 'rm -rf "$SCRATCH"' EXIT
 # ── A. project-context isolation ───────────────────────────────────────────────
 # The canary asks the reviewer to report what instruction files it can see. A model
 # with the repo as its working root loads AGENTS.md and says so; an isolated one
-# cannot. We assert on the ADAPTER'S OWN distinctive heading, not on the word
+# cannot. We assert on the KERNEL'S OWN distinctive heading (AGENTS.md is the kernel
+# since v8.3.28; the pre-v8.3.28 adapter heading is kept), not on the word
 # "AGENTS.md" — the question itself contains that word, so matching it would score
 # the echo instead of the leak.
 echo "── A. project-context isolation (live) ──"
@@ -198,8 +199,8 @@ if printf '%s\n' "$CANARY" | bash "$ROOT/scripts/sheriff-review.sh" \
      --author claude --scratch "$SCRATCH/a" --out "$OUT_A" >/dev/null 2>&1; then
   ans="$(cat "$OUT_A" 2>/dev/null)"
   echo "  reviewer said: $(printf '%s' "$ans" | head -2)"
-  if printf '%s' "$ans" | grep -qi "Codex Adapter"; then
-    no "LEAK — the reviewer quoted the repo's own adapter file. Isolation is BROKEN."
+  if printf '%s' "$ans" | grep -qiE "Team Project Contract|Codex Adapter"; then
+    no "LEAK — the reviewer quoted the repo's own kernel file. Isolation is BROKEN."
   elif printf '%s' "$ans" | grep -qiE "NO PROJECT FILE|no such file|do not have"; then
     ok "reviewer sees no project instruction file"
   else

@@ -2,6 +2,7 @@
 # SHERIFF wrapper — owns the ENTIRE external-reviewer invocation.
 #
 #   printf '%s' "$criteria_and_diff" | scripts/sheriff-review.sh --author claude
+#   printf '%s' "$decision_packet"   | scripts/sheriff-review.sh --author claude --mode decision
 #
 # WHY THIS SCRIPT EXISTS
 # Reviewer independence used to live as prose in .claude/commands/sheriff.md, i.e.
@@ -30,6 +31,8 @@
 # EXIT CODES  (every refusal is loud, and every refusal still yields a review)
 #   0  review ran; findings written to the --out path (printed on the last line)
 #   1  the codex invocation itself failed
+#   2  usage error, or REFUSED: secret-shaped text in the package (v8.3.26) — nothing
+#      sent, no manual package printed
 #   3  REFUSED: a package/findings path is unsafe — it resolves inside the repo
 #      root, or the target already exists (see refuse_if_exists)
 #   4  REFUSED: same-vendor author and sheriff
@@ -67,19 +70,29 @@ has_flag(){ # $1 = help text, $2 = flag
   printf '%s' "$1" | grep -qE -- "(^|[[:space:],])$2([[:space:],=]|\$)"
 }
 
-AUTHOR=""; OUT=""; PKG=""; SCRATCH=""; DRY=0; PROBE=0
+AUTHOR=""; OUT=""; PKG=""; SCRATCH=""; DRY=0; PROBE=0; MODE="review"
 while [ $# -gt 0 ]; do
   case "$1" in
-    --author)  AUTHOR="${2:-}";  shift 2 ;;
-    --out)     OUT="${2:-}";     shift 2 ;;
-    --package) PKG="${2:-}";     shift 2 ;;
-    --scratch) SCRATCH="${2:-}"; shift 2 ;;
+    # `shift 2` with one argument left fails WITHOUT shifting, and nothing here uses
+    # `set -e`, so a trailing value flag used to spin this loop forever (v8.3.26).
+    --author)  AUTHOR="${2:-}";  shift 2 || die 2 "$1 needs a value" ;;
+    --out)     OUT="${2:-}";     shift 2 || die 2 "$1 needs a value" ;;
+    --package) PKG="${2:-}";     shift 2 || die 2 "$1 needs a value" ;;
+    --scratch) SCRATCH="${2:-}"; shift 2 || die 2 "$1 needs a value" ;;
+    --mode)    MODE="${2:-}";    shift 2 || die 2 "$1 needs a value" ;;
     --dry-run) DRY=1; shift ;;
     --probe)   PROBE=1; shift ;;
-    -h|--help) sed -n '2,27p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,28p' "$0"; exit 0 ;;
     *) die 2 "unknown argument: $1" ;;
   esac
 done
+# --mode picks the PROMPT and nothing else (v8.3.26): `review` — a diff, the default — or
+# `decision` — a decision packet (.claude/rules/decision-sheriff.md). Every boundary below
+# is identical for both. Closed set, fail closed: a typo must not silently pick a prompt.
+case "$MODE" in
+  review|decision) ;;
+  *) die 2 "unknown --mode '$MODE' (review | decision)" ;;
+esac
 
 # ── 0. --probe: is automation available on THIS machine? ───────────────────────
 # Standalone readiness check — no author, no stdin, no review. Run it after an
@@ -310,10 +323,15 @@ mkdir -p "$WORKDIR" || die 2 "cannot create the isolated work root"
 # stdin carries the acceptance criteria + the diff. The canonical prompt is
 # prepended HERE so it can never be dropped, and so the automatic and the manual
 # path send byte-identical content.
-PROMPT_FILE="${REPO_ROOT:-.}/.claude/skills/cross-review/prompts/sheriff-review.md"
+PROMPT_FILE="${REPO_ROOT:-.}/.claude/skills/cross-review/prompts/sheriff-$MODE.md"
 {
   if [ -f "$PROMPT_FILE" ]; then
     awk '/^```$/{n++; next} n==1' "$PROMPT_FILE"
+  elif [ "$MODE" = "decision" ]; then
+    echo "You are SHERIFF, an independent reviewer of ONE engineering decision. Judge only"
+    echo "whether the author's recommendation below is the sound choice on the stated facts."
+    echo "FIRST line, exactly one of: AGREE / DISAGREE: <option> - <reason> /"
+    echo "CANNOT-JUDGE: <the missing fact>. Then at most three short lines. No code, no questions."
   else
     echo "You are SHERIFF, an independent code reviewer. Analyze the diff below."
     echo "Report ONLY functional bugs, logic errors, security issues, data loss or"
@@ -324,6 +342,18 @@ PROMPT_FILE="${REPO_ROOT:-.}/.claude/skills/cross-review/prompts/sheriff-review.
   echo
   cat
 } > "$PRIV_PKG" || die 2 "cannot write the review package"
+# ── 3b. NOTHING SECRET-SHAPED LEAVES THE MACHINE (v8.3.26) ─────────────────────
+# The package goes to a third-party vendor. guard.sh sees a secret in an inline command or
+# a file write, never in a package assembled from files (`cat temp/packet.md | …`), and
+# decision mode sends packages without the owner in the loop. Same patterns as the guard;
+# fail closed — refused before the CLI call AND before any manual package is printed.
+if [ -f "$SELF_DIR/secret-patterns.sh" ]; then . "$SELF_DIR/secret-patterns.sh"; else
+  SECRET_REGEX='(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'
+fi
+if grep -Eq "$SECRET_REGEX" "$PRIV_PKG"; then
+  die 2 "REFUSED — secret-shaped text in the package; nothing was sent and no manual package
+  is printed. Remove the credential from the diff or packet and run again."
+fi
 # Round 8: the canonical package is $PRIV_PKG. $PKG is only ever WRITTEN, and only
 # through the O_EXCL descriptor opened above — it is never reopened by name, which is
 # what round-7 finding [1] was about. Everything that READS the package (the reviewer

@@ -10,3 +10,5 @@ cost), and the biggest technical risks. Reuse existing patterns in the repo; fla
 where the plan reinvents something. Output: a short risk list (severity-tagged) +
 concrete recommendations + any blocking concern. Don't design gold-plated systems —
 the simplest architecture that meets the NFRs wins.
+Tag every finding `introduced` (this diff caused it) or `pre-existing` (it was there
+before this diff).

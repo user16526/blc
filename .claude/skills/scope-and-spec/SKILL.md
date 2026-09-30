@@ -26,10 +26,14 @@ Rules:
   `plan.md` / `tasks.md` beside it when the task warrants them). This folder is
   the browsable feature history — it answers "why is it built this way" later.
   Timestamped names (artifact-versioning rule) remain for drafts and one-off docs.
+- A spec meant for `/run-spec` follows `docs/SPEC_TEMPLATE.md`: numbered steps with an
+  exact deliverable, a DoD and a row each, non-goals, and stop conditions.
+  `/write-spec <one paragraph>` drafts one from the board, the run reports and the
+  lessons, and stops at `/run-spec`'s plan-OK pause.
 - A spec must say how the result will be **verified**, not only what to build.
 - If it's a repeated action, consider turning it into a skill instead of redoing it.
 
-This pairs with plan mode in CLAUDE.md: classify scope → write the sized spec →
-plan → implement → verify. Scope also picks the RISK MATRIX row (CLAUDE.md):
+This pairs with plan mode in AGENTS.md: classify scope → write the sized spec →
+plan → implement → verify. Scope also picks the RISK MATRIX row (AGENTS.md):
 trivial → LOW (one proof, no run-report); client/infra/prod/irreversible →
 HIGH or DESTRUCTIVE with full gates.

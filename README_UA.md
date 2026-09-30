@@ -17,13 +17,13 @@
 > Unix-біт виконання. Далі `git init && ./scripts/install-git-hooks.sh` і
 > `bash scripts/test-hooks.sh` → GREEN.
 >
-> **Крок 1:** onboarding цього шаблону — це блок FIRST RUN у CLAUDE.md, він
-> канонічний. Не регенеруй CLAUDE.md через `/init`: файл уже існує і його CORE
+> **Крок 1:** onboarding цього шаблону — це блок FIRST RUN у AGENTS.md (kernel; CLAUDE.md — однорядковий stub `@AGENTS.md`), він
+> канонічний. Не запускай `/init`: він перепише stub CLAUDE.md, а CORE у AGENTS.md
 > захищений хешем. У звичайному чаті Claude Code напиши:
->     Прочитай CLAUDE.md і виконай блок FIRST RUN — проведи зі мною onboarding-інтервʼю.
-> (англійською: `Run the FIRST RUN onboarding interview from CLAUDE.md.`)
-> Якщо `/init` уже відпрацював — нічого відкочувати не треба; просто дай команду
-> вище. На першому старті може вискочити банер ⚑ про застарілий model-audit —
+>     Прочитай AGENTS.md і виконай блок FIRST RUN — проведи зі мною onboarding-інтервʼю.
+> (англійською: `Run the FIRST RUN onboarding interview from AGENTS.md.`)
+> Якщо `/init` уже відпрацював — поверни в CLAUDE.md один рядок `@AGENTS.md` і дай
+> команду вище. На першому старті може вискочити банер ⚑ про застарілий model-audit —
 > це каденція працює, а не помилка: зроби `/devops-audit` у межах онбордингу.
 
 Один шаблон під усе (vibe-coding / агентство / VPS), сумісний і з Claude Code, і з
@@ -91,7 +91,7 @@ Codex. Команда збирається під час онбордингу, �
 ## Економія контексту
 Спільне (definition-of-done, формат звіту, orchestration, artifact-versioning) —
 раз у скілах, які читають усі агенти. У файлі агента — лише унікальне для ролі.
-CLAUDE.md — kernel (ліміт 250 рядків, хук попередить). Гігієна контексту —
+AGENTS.md — kernel (CLAUDE.md лише імпортує його; ліміт 250 рядків, хук попередить). Гігієна контексту —
 `.claude/rules/context-hygiene.md`: коли `/clear`, коли `/compact`, коли тримати
 контекст теплим.
 

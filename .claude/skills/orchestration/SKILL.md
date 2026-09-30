@@ -29,7 +29,7 @@ Before assigning reviewers, name which risk types the change actually touches:
 - **infra** — deploy, VPS, config, services
 - **content** — copy, brand voice, claims, consent/legal
 
-## Step 2 — Agent count comes from the RISK MATRIX row (CLAUDE.md)
+## Step 2 — Agent count comes from the RISK MATRIX row (AGENTS.md)
 LOW: no reviewers. NORMAL: `verifier` at the end; a specialist ONLY if their risk
 is touched. HIGH: one independent reviewer per touched risk + `verifier`.
 DESTRUCTIVE: full pipeline, best-of-N planning allowed. Never review risks the
@@ -60,7 +60,9 @@ present, minimum one independent, escalate to 3 for releases or irreversible act
 ## Step 3 — Run reviewers in PARALLEL and INDEPENDENTLY
 Each reviewer sees the RESULT and its EVIDENCE, in its own fresh context. They do
 NOT see each other's verdicts — independence is what prevents rubber-stamping.
-Each returns: findings (severity-tagged) + PASS/NEEDS-FIX + evidence checked.
+Each returns: findings (severity-tagged) + PASS/NEEDS-FIX + evidence checked. Every
+finding also carries its origin: `introduced` (this diff caused it) or `pre-existing` (it
+was there before this diff).
 
 **Honest limit of "independence":** all reviewers run on the same base model, so
 they are CORRELATED — a blind spot one has, the others may share. Fresh context
@@ -82,6 +84,13 @@ reviewers to `sonnet` in their agent files; keep `opus` for security/data/infra.
 - Any NEEDS-FIX, any RED, or any claim without evidence → **send the task back to
   the builder with the specific findings** (feedback loop), then re-review only what
   changed. Repeat until GREEN or until it hits me.
+- Only `introduced` findings count toward GREEN / NEEDS-FIX. `pre-existing` findings never
+  block the run: append each to `tasks/board.md` as
+  `- [todo] <finding> — pre-existing, P1|P2|P3, found <YYYY-MM-DD> by <reviewer> (<report path>)`
+  — no `@auto`, so it is not queue-eligible until the owner tags it. A finding with no
+  origin tag is `introduced`. A pre-existing flaw in code this diff touches, or makes
+  newly reachable, counts as `introduced`. **A security finding of any origin still
+  triggers the stop below** — tell me in this run; the board line is extra.
 - Never upgrade a verdict to pass a claim that has no proof. "Looks done" ≠ done.
 
 ## Escalation to the human — verifier is the FILTER, not a relay
@@ -95,7 +104,10 @@ Raw reviewer verdicts never go to the human. Order of operations:
 | Reviewer | Verdict | Key argument | What would clear their objection |
 |---|---|---|---|
 
-   ...plus the verifier's own recommendation + why. The human decides in one pass.
+   ...plus the verifier's own recommendation + why. The recommendation cites its evidence
+   (a log line, a test, or a command + its output) or says `unverified`, and ends with
+   `What would change this recommendation: <one concrete check or fact>` — a checkable
+   thing, never "new information". The human decides in one pass.
 3. Automode never applies here: an escalated disagreement always waits for the human.
 
 ## Stop conditions (override the matrix row)

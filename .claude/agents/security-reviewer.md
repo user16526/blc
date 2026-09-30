@@ -23,3 +23,5 @@ Also apply SSDF / secure-by-design thinking (NIST SP 800-218):
 
 Report findings severity-tagged with location + concrete fix. A security gap is RED
 until fixed. End PASS / NEEDS-FIX / STOP. Don't pass anything you can't verify.
+Tag every finding `introduced` (this diff caused it) or `pre-existing` (it was there
+before this diff).

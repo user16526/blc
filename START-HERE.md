@@ -8,7 +8,8 @@ no wrapper and no second folder to choose from. Lineage and per-release
 changes: `CHANGELOG.md`.
 
 This tree is BLANK on purpose: every `.agent/state/*`, `tasks/*`, `_reports/*`
-file is a stub, and `CLAUDE.md` still holds its FIRST RUN placeholders. No
+file is a stub, and `AGENTS.md` (the kernel; `CLAUDE.md` is its one-line `@AGENTS.md` stub) still holds
+its FIRST RUN placeholders. No
 field project is named in any entry doc — the release gate asserts it.
 
 ## Standup, in order
@@ -34,14 +35,14 @@ field project is named in any entry doc — the release gate asserts it.
    <new-project>`, then `python3 ~/.claude/context-guard/verify-install.py
    --project .` → GREEN. The project owns exactly one CG file:
    `.claude/context-guard/config.json`.
-6. In Claude Code: **"Run the FIRST RUN onboarding interview from CLAUDE.md."**
-   Do NOT use `/init` — `CLAUDE.md` already exists and its CORE block is
-   hash-protected. The interview fills PROJECT / STACK / MY COMMANDS, sets the
+6. In Claude Code: **"Run the FIRST RUN onboarding interview from AGENTS.md."**
+   Do NOT use `/init` — it rewrites the `CLAUDE.md` stub (if it already ran, restore
+   the one line `@AGENTS.md`), and the kernel's CORE block is hash-protected. The interview fills PROJECT / STACK / MY COMMANDS, sets the
    automode default and the SHERIFF toggle, and proposes the starting team.
    The first SessionStart may print a ⚑ model-audit banner: the template's own
    audit date has aged out — that is the cadence working, run `/devops-audit`
    as part of onboarding.
-7. After editing CLAUDE.md's CORE block (only with an explicit Kernel Change
+7. After editing AGENTS.md's CORE block (only with an explicit Kernel Change
    Rationale): `./scripts/core-baseline.sh` to re-baseline `.claude/core.sha`.
 
 ## Two defaults worth setting deliberately at step 6

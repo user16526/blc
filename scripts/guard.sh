@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PreToolUse guard: blocks secrets being written + destructive SHELL commands.
-# Exit !=0 = block. Windows: run Claude Code from Git Bash/WSL, or port to PowerShell.
+# Exit !=0 = block. Inspects the Bash tool and (v8.3.27) the PowerShell tool a Windows
+# host exposes: same git rules for both, plus a PowerShell-native destructive list.
 set -euo pipefail
 p="$(cat || true)"
 
@@ -12,13 +13,17 @@ if [ -f "$d/secret-patterns.sh" ]; then . "$d/secret-patterns.sh"; else
 fi
 
 # Detect the calling tool. The destructive-command and git-staging checks only make
-# sense for actual shell commands (Bash). Scanning file CONTENT (Write/Edit) for
-# command-like words false-positives on docs and analysis (and trains people to reword
-# around the guard, which is worse for safety), so we skip them there. Secrets are
-# still checked for every tool below.
+# sense for actual shell commands (Bash, PowerShell). Scanning file CONTENT (Write/Edit)
+# for command-like words false-positives on docs and analysis (and trains people to
+# reword around the guard, which is worse for safety), so we skip them there. Secrets
+# are still checked for every tool below. Until v8.3.26 only Bash was inspected, so a
+# PowerShell tool call got the secret check and nothing else (BACKLOG-v8.3.27 #7a).
+# PowerShell is tested FIRST: a payload naming both tools gets more rules, never fewer
+# (security review: a nested "tool_name":"Bash" key must not switch the PS list off).
 case "$p" in
-  *'"tool_name":"Bash"'*|*'"tool_name": "Bash"'*) is_bash=1 ;;
-  *) is_bash=0 ;;
+  *'"tool_name":"PowerShell"'*|*'"tool_name": "PowerShell"'*) is_shell=1; is_ps=1 ;;
+  *'"tool_name":"Bash"'*|*'"tool_name": "Bash"'*) is_shell=1; is_ps=0 ;;
+  *) is_shell=0; is_ps=0 ;;
 esac
 
 # Secrets being written into the repo (all tools)
@@ -27,7 +32,7 @@ if echo "$p" | grep -Eq "$SECRET_REGEX"; then
 fi
 
 # Everything past here targets shell commands only (secrets were already checked above).
-[ "$is_bash" = "1" ] || exit 0
+[ "$is_shell" = "1" ] || exit 0
 
 # What the command-shape checks below read (v8.3.25). A commit or tag MESSAGE fed from a
 # heredoc with a QUOTED delimiter is prose, not a command: the shell expands nothing in
@@ -84,12 +89,229 @@ if printf '%s' "$p" | grep -q '<<' && printf '%s' "$p" | grep -Eq 'git[[:space:]
   if s="$(printf '%s' "$p" | python3 -c "$GUARD_MSG_PY" 2>/dev/null)" && [ -n "$s" ]; then scan="$s"; fi
 fi
 
-# Block committing a real .env (gitignore can be bypassed with -f)
-if echo "$scan" | grep -Eiq 'git add (-f |--force )?[^&|]*\.env([^.]|$)|git add (-f|--force|-A|\.)([^&|]*\.env)?'; then
-  if echo "$scan" | grep -Eiq '\.env([^.]|$)' && ! echo "$scan" | grep -Eiq '\.env\.example'; then
-    echo "BLOCKED: refusing to stage a real .env. It must stay gitignored; commit .env.example instead." >&2; exit 2
+# Any git global options before a subcommand (v8.3.26): `-C <dir>`, `-c <k=v>`,
+# `--no-pager`, `-P`, `--git-dir=…`, a value in double or single quotes, or double quotes
+# as they appear JSON-escaped in the raw hook input — each quoted value may run on into a
+# bare suffix (`'/d/my'/repo`). v8.3.25 recognised only -C/-c with a bare value, so
+# `git --no-pager push --force` or a quoted -C path hid a forced push.
+# A word is any run of bare characters and whole quoted segments, so a quote attached
+# mid-word (`-c alias.x='!a;b'`) is consumed with the ; inside it (sheriff pass).
+GITW='(\\"[^"]*\\"|"[^"]*"|'"'"'[^'"'"']*'"'"'|\\\\.|\\.|[^ ;&|"'"'"'])+'   # \\\\. / \\. = escaped char, JSON / decoded
+# Only the options that take a value consume a following word — otherwise the prefix
+# could swallow a subcommand and its argument (`git --no-pager log --grep push --force`).
+GITPFX='git( -(C|c|-git-dir|-work-tree|-namespace|-config-env) '"$GITW"'| -'"$GITW"')*'
+
+# Block staging a real .env (gitignore can be bypassed with -f).
+# v8.3.26: `.env` is tested as a PATH ARGUMENT of `git add` / `git stage`, with the
+# pre-commit hook's rule — (^|/)\.env($|\.), minus .env.example — never as text anywhere
+# in the command. The v8.3.25 rule fired on any command holding `git add -A`, `git add .`
+# or a dot-path plus the letters ".env" anywhere, so `git add x && git commit -m "…the .env
+# blocker…"` was refused with nothing staged; and `.env.example` anywhere cleared a real
+# .env beside it. A first regex cut of this rule was itself bypassed by shell syntax
+# (a brace list, git pathspec magic, a ; or newline inside quotes — security review), so
+# the command is TOKENIZED as the shell would (python shlex: quotes, escapes, ; & |),
+# brace lists are expanded, pathspec magic (`:(top)`, `:!`, `:/`) is stripped, and a
+# dot-led glob is matched against .env. `git add -f` of the whole tree (`.`, `-A`, `:/`,
+# `*`) is refused too: -f bypasses .gitignore wholesale, which is how a .env gets staged
+# without being named. An unbalanced quote cannot be segmented, so every token is tested.
+# A staging path holding an unresolved `$`/backtick expansion falls back to the v8.3.25
+# text answer: any .env in the command blocks. A forced whole tree is normalised (`././`).
+# KNOWN LIMIT (text, not a git model; the pre-commit hook is the backstop): a pathspec
+# from a file (`--pathspec-from-file`), a variable set in an EARLIER command, a glob not
+# led by a dot, a forced directory (`git add -f config/`), a git alias. A commit message
+# quoting "git add .env" inline is still blocked.
+# Without python3 (or with a broken one) a text rule runs instead: fail closed, never open.
+# v8.3.27: the same tokenizer decides two more subcommands (BACKLOG-v8.3.27 #8, #19).
+#   push  — a force flag (`-f` in any cluster, `--force`, `--force-with-lease[=…]`) before
+#           `--`, or a `+refspec` anywhere, is BLOCK-PUSH. Two sheriff rounds on v8.3.26
+#           each found one shell-word shape the text regex missed; the tokens are what the
+#           shell hands git, so a QUOTED flag (`push "--force"`) is caught here too. The
+#           text regexes further down stay as the backstop (and the no-python answer).
+#           KNOWN LIMIT: a force carried in git CONFIG rather than on the command line —
+#           `-c remote.origin.push=+refs/heads/main`, a `push.default`/alias set earlier,
+#           a `.git/config` entry — is invisible to both layers (security review).
+#   merge — a message from stdin (`-F -`, `-F-`, `--file -`, `--file=-`) is BLOCK-MERGE:
+#           git merge reads no message from stdin, the merge dies AFTER the branch switch
+#           (2026-09-14, field). Sessions typed it live despite the prose; a rule it is.
+GUARD_ENV_PY="$(cat <<'PY'
+import fnmatch, json, posixpath, re, shlex, sys
+raw = sys.stdin.read()
+if sys.argv[1] == "json":
+    d = json.loads(raw)
+    t = d.get("tool_input") if isinstance(d.get("tool_input"), dict) else d
+    c = t.get("command") if isinstance(t, dict) else None
+    if not isinstance(c, str):
+        sys.exit(1)
+else:
+    c = raw
+c = c.replace("\\\r\n", " ").replace("\\\n", " ")
+ENV = re.compile(r"(^|/)\.env($|\.)", re.I)
+EXAMPLE = re.compile(r"(^|/)\.env\.example$", re.I)
+BRACE = re.compile(r"^(.*?)\{([^{}]*,[^{}]*)\}(.*)$")
+SEP = set(";&|\n")
+VALUED = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env"}
+WHOLE = {".", "./", ":/", ":(top)", "*", "'*'"}
+# An exclude-only pathspec (`:!x`, `:^x`, `:(exclude)x`) means "everything except x":
+# with -f that is the whole tree past .gitignore (security re-check 2).
+EXCL = re.compile(r"^:(\(([^)]*,)?exclude(,[^)]*)?\)|[!^])")
+
+def expand(t, n=0):
+    m = BRACE.match(t)
+    if not m or n > 5:
+        return [t]
+    return [x for a in m.group(2).split(",") for x in expand(m.group(1) + a + m.group(3), n + 1)]
+
+def norm(t):
+    t = t.strip("$\"'`").rstrip(")`")   # $: shlex reads ANSI-C $'.env' as $.env
+    t = re.sub(r"^:(\([^)]*\)|[!^/]*)", "", t)
+    return t.replace("\\", "/")
+
+def envish(tok):
+    for x in expand(tok):
+        p = norm(x)
+        if EXAMPLE.search(p):
+            continue
+        if ENV.search(p):
+            return p
+        base = p.rsplit("/", 1)[-1].lower()
+        if base.startswith(".") and any(ch in base for ch in "*?["):
+            if fnmatch.fnmatchcase(".env", base) or fnmatch.fnmatchcase(".env.local", base):
+                return p
+    return None
+
+def is_sep(t):
+    return set(t) <= SEP
+
+try:
+    # A newline ends a command as ; does; a # comment stays in the tokens, so .env text
+    # in it still blocks, as in v8.3.25 (both from the sheriff re-check).
+    lx = shlex.shlex(c, posix=True, punctuation_chars=";&|\n")
+    lx.whitespace = " \t\r"
+    lx.commenters = ""
+    lx.whitespace_split = True
+    toks = list(lx)
+except ValueError:
+    if re.search(r"\bgit(\.exe)?\b", c) and re.search(r"\b(add|stage)\b", c):
+        hits = [h for h in (envish(t) for t in c.split()) if h]
+        if hits:
+            print("BLOCK " + hits[0])
+            sys.exit(0)
+    print("OK")
+    sys.exit(0)
+
+i = 0
+while i < len(toks):
+    t = toks[i].lstrip("$(`{")
+    if t.rsplit("/", 1)[-1].lower() not in ("git", "git.exe"):
+        i += 1
+        continue
+    j = i + 1
+    while j < len(toks) and toks[j].startswith("-") and not is_sep(toks[j]):
+        j += 2 if toks[j] in VALUED else 1
+    if j >= len(toks) or toks[j] not in ("add", "stage", "push", "merge"):
+        i = j
+        continue
+    k = j + 1
+    args = []
+    while k < len(toks) and not is_sep(toks[k]):
+        args.append(toks[k])
+        k += 1
+    if toks[j] == "push":
+        ended = False
+        for a in args:
+            if a == "--" and not ended:
+                ended = True
+            elif a.startswith("+") and len(a) > 1:
+                print("BLOCK-PUSH +refspec forces that ref: " + a)
+                sys.exit(0)
+            elif not ended and (a == "--force" or a.startswith("--force-with-lease")):
+                # --force-if-includes is a SAFETY flag, not a force (corpus, v8.3.27)
+                print("BLOCK-PUSH " + a)
+                sys.exit(0)
+            elif not ended and a.startswith("-") and not a.startswith("--") and "f" in a[1:]:
+                print("BLOCK-PUSH " + a)
+                sys.exit(0)
+        i = k
+        continue
+    if toks[j] == "merge":
+        for n, a in enumerate(args):
+            nxt = args[n + 1] if n + 1 < len(args) else ""
+            if a in ("-F-", "--file=-") or (a in ("-F", "--file") and nxt == "-"):
+                print("BLOCK-MERGE " + a)
+                sys.exit(0)
+        i = k
+        continue
+    force = whole = False
+    paths = []
+    ended = False
+    for a in args:
+        if not ended and a == "--":
+            ended = True
+        elif not ended and a.startswith("--"):
+            force = force or a == "--force"
+            whole = whole or a in ("--all", "--no-ignore-removal")
+        elif not ended and a.startswith("-") and len(a) > 1:
+            force = force or "f" in a[1:]
+            whole = whole or "A" in a[1:]
+        else:
+            paths.append(a)
+    for a in paths:
+        h = envish(a)
+        if h:
+            print("BLOCK " + h)
+            sys.exit(0)
+    # Two cases keep the v8.3.25 answer — any .env text in the command blocks — because
+    # the path alone cannot say what gets staged: an unresolved expansion
+    # (`f=.env; git add "$f"`), and a FORCED add (`git add -f config/` may pull in
+    # config/.env past .gitignore). The prose exemption (#9) is for unforced adds.
+    envtext = re.search(r"\.env(?!\.example)", c, re.I)
+    if envtext and (force or any(ch in a for a in paths for ch in "$`")):
+        print("BLOCK .env in the command with a forced add or an unresolved staging path")
+        sys.exit(0)
+    if force and (whole or any(a in WHOLE or norm(a) in WHOLE
+                               or posixpath.normpath(norm(a) or ".") == "." for a in paths)
+                  or (paths and all(EXCL.match(a.strip("\"'`")) for a in paths))):
+        print("BLOCK force-add of the whole tree (-f bypasses .gitignore)")
+        sys.exit(0)
+    i = k
+print("OK")
+PY
+)"
+envv=""
+if command -v python3 >/dev/null 2>&1; then
+  if [ "$scan" != "$p" ]; then   # already decoded, quoted-delimiter commit message dropped
+    envv="$(printf '%s' "$scan" | python3 -c "$GUARD_ENV_PY" text 2>/dev/null)" || envv=""
+  else
+    envv="$(printf '%s' "$p" | python3 -c "$GUARD_ENV_PY" json 2>/dev/null)" || envv=""
   fi
 fi
+case "$envv" in
+  "BLOCK "*)
+    echo "BLOCKED: refusing to stage a real .env or to force-add past .gitignore (${envv#BLOCK }). Stage exact paths; commit .env.example instead." >&2; exit 2 ;;
+  "BLOCK-PUSH "*)
+    echo "BLOCKED: forced push (${envv#BLOCK-PUSH }) overwrites published work. Needs explicit approval; run it manually." >&2; exit 2 ;;
+  "BLOCK-MERGE "*)
+    echo "BLOCKED: git merge does not read a message from stdin (${envv#BLOCK-MERGE }) — the merge dies after the branch switch. Use: git merge -m '<message>' <branch>." >&2; exit 2 ;;
+  OK) ;;
+  *)
+    # No verdict (python3 missing or broken): the text rule, with .env.example REMOVED
+    # before the test rather than clearing the whole command (v8.3.25 let
+    # `git add .env.example .env` through here). Coarse on purpose: any .env text beside a
+    # git add/stage blocks (.env.production included), and so does a forced whole-tree add.
+    if echo "$scan" | grep -Eiq 'git[^;&|]* (add|stage) '; then
+      if echo "$scan" | sed -E 's/\.env\.example//Ig' | grep -Eiq '\.env'; then
+        echo "BLOCKED: refusing to stage a real .env. It must stay gitignored; commit .env.example instead." >&2; exit 2
+      fi
+      if echo "$scan" | grep -Eq 'git[^;&|]* (add|stage) [^;&|]*(-[A-Za-z]*f|--force)' \
+         && echo "$scan" | grep -Eq 'git[^;&|]* (add|stage) [^;&|]*( -[A-Za-z]*A| --all| \.[./]*| :/| \*| :[!^]| :\(exclude)( |$|[;&|"a-z])'; then
+        echo "BLOCKED: refusing to force-add the whole tree past .gitignore." >&2; exit 2
+      fi
+    fi
+    # No-python answer for the merge rule (#19); the forced-push text rules below stay.
+    if echo "$scan" | grep -Eq 'git[^;&|]* merge [^;&|]*(-F ?-|--file[= ]-)( |$|[;&|<])'; then
+      echo "BLOCKED: git merge does not read a message from stdin (-F -). Use: git merge -m '<message>' <branch>." >&2; exit 2
+    fi ;;
+esac
 
 # ---- destructive commands (code + VPS/infra + work-erasing git) --------------
 # TWO lists, and the split is the whole point (v8.3.24, field lesson 2026-09-08).
@@ -150,22 +372,77 @@ fi
 
 # Case-insensitive: case carries no meaning in these.
 # A forced push is blocked wherever its flag sits after `push` (v8.3.25), and a `+refspec`
-# (which forces that one ref) is blocked too, also behind `git -C <dir>` / `git -c <k=v>`.
-# Still a text match, not a parser: a quoted flag is not recognised — see KNOWN LIMIT
-# above. `--force-with-lease`
+# (which forces that one ref) is blocked too, behind any git global option ($GITPFX above,
+# v8.3.26 — it was `-C`/`-c` only). From v8.3.27 the PARSED tokens decide first
+# (GUARD_ENV_PY, BLOCK-PUSH — a quoted flag included); these text rules are the backstop
+# and the whole answer when python3 is missing. `--force-with-lease`
 # is named explicitly: it only refuses when the remote moved since the last fetch, so a
 # fetch-then-push still overwrites someone's published work. It used to be caught only
 # as a prefix of `--force`, and only directly after `push` — a flag written after the
 # remote and branch (`git push origin main --force`) slipped through.
-DESTRUCTIVE_CI='rm -rf|mkfs|DROP DATABASE|TRUNCATE |docker volume rm|docker system prune -a|kubectl delete (namespace|pvc)|terraform destroy|git( -[Cc] [^ ;&|]+)* push[^;&|]* --force-with-lease|git( -[Cc] [^ ;&|]+)* push[^;&|]* --force|git( -[Cc] [^ ;&|]+)* push[^;&|]* \+[A-Za-z0-9_./:@-]|git reset --hard|git checkout -- |git checkout \.|git branch[^;&|]* --for(c|ce)?( |$)|git branch[^;&|]* -[A-Za-z]*f[A-Za-z]*( |$)|ufw --force reset|systemctl (stop|disable) (ssh|sshd)|> /etc/'
+DESTRUCTIVE_CI='rm -rf|mkfs|DROP DATABASE|TRUNCATE |docker volume rm|docker system prune -a|kubectl delete (namespace|pvc)|terraform destroy|'"$GITPFX"' push[^;&|]* --force-with-lease|'"$GITPFX"' push[^;&|]* --force|'"$GITPFX"' push[^;&|]* \+[A-Za-z0-9_./:@-]|git reset --hard|git checkout -- |git checkout \.|git branch[^;&|]* --for(c|ce)?( |$)|git branch[^;&|]* -[A-Za-z]*f[A-Za-z]*( |$)|ufw --force reset|systemctl (stop|disable) (ssh|sshd)|> /etc/'
 
 # Case-SENSITIVE: the flag letter is the danger; upper and lower are different commands.
 # The word boundary here must exclude BOTH cases: with `[^a-z]` an upper-case letter
 # would count as a boundary, so an ordinary word ending in "dd " ("Add ") would match.
-DESTRUCTIVE_CS='git branch[^;&|]* -[A-Za-z]*D[A-Za-z]*( |$)|git( -[Cc] [^ ;&|]+)* push[^;&|]* -[A-Za-z]*f|git clean -[A-Za-z]*f|(^|[^a-zA-Z])dd |iptables -F|chmod -R 777'
+DESTRUCTIVE_CS='git branch[^;&|]* -[A-Za-z]*D[A-Za-z]*( |$)|'"$GITPFX"' push[^;&|]* -[A-Za-z]*f|git clean -[A-Za-z]*f|(^|[^a-zA-Z])dd |iptables -F|chmod -R 777'
 
 if echo "$scan" | grep -Eiq "$DESTRUCTIVE_CI" || echo "$scan" | grep -Eq "$DESTRUCTIVE_CS"; then
   echo "BLOCKED: destructive/work-erasing command. Needs a backup/commit + explicit approval; run it manually." >&2; exit 2
+fi
+
+# PowerShell-native list (v8.3.27), applied ONLY to the PowerShell tool: its syntax is
+# case-insensitive and its parameters abbreviate to any unambiguous prefix, so a
+# recursive forced delete is Remove-Item / rm / ri / del / erase / rd / rmdir with
+# -Recurse (-r, -rec…) AND -Force (-fo…) in either order (-Force alone deletes one
+# file; -Recurse alone stops at read-only and hidden items — the pair is the work-eraser,
+# exactly as `rm -rf` is the pair above). Plus the disk-level commands, and the cmd.exe
+# switches (`rd /s /q`, `del /s`) PowerShell passes through. -Filter is not -Force: only
+# `-fo` prefixes count. The idiomatic pipeline form — `Get-ChildItem -Recurse |
+# Remove-Item -Force` — is the same pair split across a pipe and is blocked too;
+# PowerShell also accepts an en/em dash as a parameter prefix (functional review).
+# The hook input is JSON, where a newline is the two characters `\n` and a dash may
+# arrive as `–`: the command is DECODED (python3) and each newline becomes a `;`
+# — a separator, so a command on the second line of a script is seen (security review,
+# HIGH) and two safe lines never fuse into one destructive-looking command (re-check).
+# Without python3 the `\n` `\r` escapes are rewritten to `;` in the raw text instead.
+# KNOWN LIMIT, same class as the bash lists above: this is a TEXT match. Splatting
+# (`$p=@{Recurse=$true;Force=$true}; Remove-Item @p`), a backtick inside a cmdlet name,
+# a name built from strings (`&('Remove-'+'Item')`), flags held in variables, runtime
+# aliases, anything inside a `.ps1` the command merely calls, and — without python3 —
+# a `\uXXXX`-escaped dash are not recognised.
+# "It did not block" means "it did not recognise", here as everywhere in this file.
+ANCH='(^|[;|&({ "'"'"'])'
+PSD='(-|–|—|―)'
+PS_V='(remove-item|rm|ri|del|erase|rd|rmdir)'
+# An argument span: anything up to an UNQUOTED separator; a quoted path may carry ; | &
+# ('C:\R&D\project') without ending the command (sheriff, v8.3.27).
+PS_ARG="([^;|&\"']|'[^']*'|\"[^\"]*\")*"
+PS_RF="$PS_V"'["'"'"']?( '"$PS_ARG"')?'   # a quoted name (&'Remove-Item') closes with a quote
+PS_R=' '"$PSD"'(r|re[a-z]*)(:\$?[a-z]*)?'   # -r, -re, -rec…, -recurse: every unambiguous prefix
+PS_F=' '"$PSD"'fo[a-z]*(:\$?[a-z]*)?'
+PS_END='( |$|[;|&)}"])'
+PS_PIPE="$PSD"'(r|re[a-z]*)(:\$?[a-z]*)?( '"$PS_ARG"')?\|'"$PS_ARG$PS_RF$PS_F$PS_END"
+PS_CMD="$ANCH"'(cmd(\.exe)? /c )?(rd|rmdir|del|erase) '"$PS_ARG"'/s'"$PS_END"
+PS_DESTRUCTIVE="$ANCH$PS_RF$PS_R"'( '"$PS_ARG"')?'"$PS_F$PS_END"'|'"$ANCH$PS_RF$PS_F"'( '"$PS_ARG"')?'"$PS_R$PS_END"'|'"$PS_PIPE"'|'"$PS_CMD"'|format-volume|clear-disk|remove-partition|initialize-disk'
+GUARD_PS_PY="$(cat <<'PY'
+import json, sys
+# bytes in, UTF-8 out: on a cp1252 host a bare stdin/print would mangle a decoded en dash
+# (re-check round 3); a backtick before the newline is PowerShell's line continuation.
+d = json.loads(sys.stdin.buffer.read().decode("utf-8", "replace"))
+t = d.get("tool_input") if isinstance(d.get("tool_input"), dict) else d
+c = t.get("command") if isinstance(t, dict) else None
+c = c.replace("`\r\n", " ").replace("`\n", " ") if isinstance(c, str) else ""
+sys.stdout.buffer.write(c.replace("\r", ";").replace("\n", ";").replace("\t", " ").encode("utf-8"))
+PY
+)"
+ps_scan=""
+if [ "$is_ps" = "1" ] && command -v python3 >/dev/null 2>&1; then
+  ps_scan="$(printf '%s' "$p" | python3 -c "$GUARD_PS_PY" 2>/dev/null)" || ps_scan=""
+fi
+[ -n "$ps_scan" ] || ps_scan="$(printf '%s' "$scan" | sed 's/`\\r\\n/ /g; s/`\\n/ /g; s/\\[nr]/;/g; s/\\t/ /g')"
+if [ "$is_ps" = "1" ] && echo "$ps_scan" | grep -Eiq "$PS_DESTRUCTIVE"; then
+  echo "BLOCKED: destructive/work-erasing PowerShell command. Needs a backup/commit + explicit approval; run it manually." >&2; exit 2
 fi
 
 exit 0

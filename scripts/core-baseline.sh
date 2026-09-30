@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Baseline / verify the protected CORE block of CLAUDE.md.
+# Baseline / verify the protected CORE block of AGENTS.md (the kernel since v8.3.28).
 #
 #   ./scripts/core-baseline.sh           re-baseline: hash CORE, WRITE .claude/core.sha
 #   ./scripts/core-baseline.sh --check   verify only: compare, NEVER write
@@ -11,7 +11,7 @@
 #
 # Re-baselining is the LAST step of an approved kernel change, never a way to
 # make check-core.sh stop complaining. Writing a new baseline over an unapproved
-# edit does not fix the edit, it only destroys the evidence that CLAUDE.md moved.
+# edit does not fix the edit, it only destroys the evidence that the kernel moved.
 #
 # Why --check exists, and why an unknown argument is fatal (v8.3.24):
 # until now this script parsed nothing and re-baselined unconditionally, so ANY
@@ -40,7 +40,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-f="CLAUDE.md"
+f="AGENTS.md"
 out=".claude/core.sha"
 
 core=$(awk '/CORE:START/{flag=1} flag{print} /CORE:END/{flag=0}' "$f")

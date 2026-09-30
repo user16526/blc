@@ -16,11 +16,18 @@ does not travel.
   "fix the test" is not "and refactor what it touches".
 - **A new session after `/clear`, a restart or a `/continue-work`.** The handoff may
   record THAT the owner approved something and exactly what; the new session reads it
-  as history and asks again before any step the RISK MATRIX gates on approval.
+  as history and asks again before any step the RISK MATRIX gates on approval. The one
+  exception is an approval recorded on the board WITH the hash of what it approved (below).
 
 ## It does carry
 Within one session and one task: through a compaction and its automatic resume (the
 same conversation continues), and across steps that are all inside the named scope.
+
+**A plan OK recorded on the board with its plan hash** (`/run-spec` step 5: the marker's
+`plan:<sha12>`, sha256 of the spec file CR-stripped) carries across a restart. The board
+line is the approval and the hash is its scope: a new session re-hashes the spec and
+continues on a match, with no second OK; a mismatch voids it and the session asks again.
+An approval that was not recorded that way expires with the session, as above.
 
 ## When unsure
 Treat it as not given, and ask — one line, with the recommended answer. A question costs

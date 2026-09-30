@@ -32,7 +32,7 @@ def domains():
         if not d.is_dir() or d.name in SKIP or d.name in SERVICE or d.name.startswith("."):
             continue
         tag = ""
-        sub = read(f"{d.name}/CLAUDE.md")
+        sub = read(f"{d.name}/AGENTS.md") or read(f"{d.name}/CLAUDE.md")   # pre-v8.3.28 room
         if sub:
             first = sub.strip().splitlines()[0].lstrip("# ").strip()
             tag = re.sub(r"^[\w./-]+\s*[—-]\s*", "", first)[:60]
@@ -55,20 +55,20 @@ def board_tasks():
 def agents():
     """(active, available, archived). Rule: the map shows only what it can READ from
     recorded state — if a field doesn't parse, say 'не заповнено', NEVER guess.
-    Active team = the 'Active team:' field in CLAUDE.md (the onboarded subset);
+    Active team = the 'Active team:' field in AGENTS.md (the onboarded subset);
     available = files in .claude/agents/ (the catalog); archived = _archive/."""
     adir = ROOT / ".claude" / "agents"
     available = sorted(p.stem for p in adir.glob("*.md")) if adir.is_dir() else []
     archived = sorted(p.stem for p in (adir / "_archive").glob("*.md")) if (adir / "_archive").is_dir() else []
-    m = re.search(r"^- Active team:\s*(.*)$", read("CLAUDE.md"), re.M)
+    m = re.search(r"^- Active team:\s*(.*)$", read("AGENTS.md"), re.M)
     raw = re.sub(r"<!--.*?-->", "", m.group(1)).strip() if m else ""
     active = [a.strip() for a in re.split(r"[,;]", raw) if a.strip()] if raw else []
     return active, available, archived
 
 
 def automode():
-    """Default automode from CLAUDE.md PROJECT (session toggles are not recorded state)."""
-    m = re.search(r"^- Default automode:\s*(.*)$", read("CLAUDE.md"), re.M)
+    """Default automode from AGENTS.md PROJECT (session toggles are not recorded state)."""
+    m = re.search(r"^- Default automode:\s*(.*)$", read("AGENTS.md"), re.M)
     raw = re.sub(r"<!--.*?-->", "", m.group(1)).strip().lower() if m else ""
     return raw if raw in ("on", "off") else "не заповнено"
 
@@ -88,7 +88,7 @@ STATUS_UA = {"doing": "у роботі", "review": "на перевірці", "t
 def txt_map(name, stamp, aut, doms, per, root_bucket, roster):
     L = [f"ПРОЄКТ: {name}    знімок: {stamp} · automode (дефолт): {aut}",
          "=" * 62,
-         f"{name}/  ← дім проєкту (CLAUDE.md — правила дому)", "|"]
+         f"{name}/  ← дім проєкту (AGENTS.md — правила дому)", "|"]
     for d, tag in doms.items():
         mark, ts = ("·", ["вільно"]) if not per[d] else ("▶", [f"[{STATUS_UA[s]}] {t}" for s, t in per[d]])
         L.append(f"+-- {d + '/':<12} {tag:<28} {mark} {ts[0]}")
@@ -106,7 +106,7 @@ def txt_map(name, stamp, aut, doms, per, root_bucket, roster):
         if extra:
             L.append("Доступні (не активовані): " + ", ".join(extra))
     elif available:
-        L += ["", "⚑ КОМАНДА НЕ СФОРМОВАНА — прожени FIRST RUN onboarding із CLAUDE.md.",
+        L += ["", "⚑ КОМАНДА НЕ СФОРМОВАНА — прожени FIRST RUN onboarding із AGENTS.md.",
               "  (у каталозі доступні: " + ", ".join(available) + ")"]
     if archived:
         L.append("В архіві: " + ", ".join(archived))
@@ -142,7 +142,7 @@ def html_map(name, stamp, aut, doms, per, root_bucket, roster):
     if not active and available:
         banner = ('<div style="background:#FDEBEC;border:1px solid #BF4D43;border-radius:8px;'
                   'padding:10px;margin-top:12px;font-size:13px;color:#8A2B24;">&#9873; Команда не '
-                  'сформована — прожени FIRST RUN onboarding із CLAUDE.md. Нижче — доступний каталог, НЕ активна команда.</div>')
+                  'сформована — прожени FIRST RUN onboarding із AGENTS.md. Нижче — доступний каталог, НЕ активна команда.</div>')
     return f"""<!DOCTYPE html><html lang="uk"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Карта проєкту — {html.escape(name)}</title></head>
 <body style="font-family:system-ui,sans-serif;background:#FAF9F5;color:#2C2C2A;max-width:860px;margin:2rem auto;padding:0 1rem;">
@@ -151,7 +151,7 @@ def html_map(name, stamp, aut, doms, per, root_bucket, roster):
 <div style="font-size:12px;color:#888780;">знімок: {stamp} &middot; automode (дефолт): {aut}</div></div>
 <div style="border:1px solid #D3D1C7;border-radius:12px;background:#fff;padding:14px;margin-top:14px;">
 <div style="font-size:14px;font-weight:600;margin-bottom:10px;">&#127968; {html.escape(name)}/ — дім проєкту
-<span style="font-weight:400;color:#5F5E5A;">(CLAUDE.md — правила дому)</span></div>
+<span style="font-weight:400;color:#5F5E5A;">(AGENTS.md — правила дому)</span></div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">{rooms}</div>{extra}
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px;">{svc}</div>
 {banner}{f'<div style="margin-top:12px;font-size:12px;color:#5F5E5A;">Команда (зелені = активні, сірі = доступні):</div><div>{chips}</div>' if chips else ''}</div>

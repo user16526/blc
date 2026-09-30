@@ -21,3 +21,8 @@ Do:
 Report: consolidated findings (severity-tagged, with location + fix), what you
 re-checked yourself, and the verdict: GREEN / NEEDS-FIX (→ back to builder) /
 STOP-ASK-HUMAN (RED that can't be auto-fixed in ≤2 loops, or anything irreversible).
+Keep each finding's origin tag (`introduced` / `pre-existing`). Only `introduced` findings
+count toward the verdict; route `pre-existing` ones to `tasks/board.md` (`orchestration`
+skill, step 4). A pre-existing flaw in code this diff touches or makes newly reachable
+counts as `introduced`. A security finding of any origin is STOP-ASK-HUMAN in this run;
+the board line is extra.

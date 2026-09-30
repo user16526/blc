@@ -14,7 +14,9 @@ description: Зберегти повний стан поточної задач�
 2. Якщо current.md існує і це НОВА задача — перенеси старий у
    `.claude/handoffs/archive/YYYY-MM-DD-HHMM.md`. Якщо та сама задача —
    просто онови розділи 2, 5, 6, 7 і метадані.
-3. Ціль: < 150 рядків.
+3. Ціль: < 150 рядків. На явній паузі також `.agent/state/current.md` ≤ 250 рядків —
+   старий файл в архів дослівно, потім commit + push стану
+   (`.claude/rules/pause-and-resume.md`, крок 1).
 4. Durable-висновки handoff НЕ замінює: важливі рішення → `.agent/state/decisions.md`,
    уроки → `tasks/lessons.md` (роутинг — skill `memory-router`). Handoff —
    ефемерний робочий стан, він локальний і не комітиться.
