@@ -28,12 +28,12 @@ grid back in the first deliverable table. No step/grid, no pool.
 | Step | prices strictly descending; with a step-built grid, realised gap to the place above within step ±3 pp |
 | Price source | our price = bloodycase.com item Price = `client_items.buyout_price`. Buff is the market reference only, never the price |
 | Stock | #1–3 any; #4–6 >100; #7–10 >200–300; repeating tiers: the cheaper, the bigger (>300) |
-| Rust | ≥1 skin near the bottom of the top 10 (max 2 if one is in the middle); stock ≥10 on Steam/Skinport (Buff has no Rust) |
+| Rust | count per Composition (≥1, ≤2); stock ≥10 on Steam/Skinport (Buff has no Rust) |
 | Market | listed on the market; price stable (7/30-day vs 90-day drift small) |
 | Demand | prefer strongest Buff buy orders + 90-day sales; our keep rate (withdrawn share of drops) where drops ≥30 |
 | Style | classic, recognisable skins |
 
-**Composition (top 10, hard rules — owner 2026-10-06; backups must keep them true when swapped in):**
+**Composition (top 10, hard rules — owner 2026-10-06; backups must keep them true when swapped in, or the report names the required second swap):**
 - **#1 or #2 is a knife or gloves** — that is the top.
 - **Knives + gloves together ≤2** in the top 10.
 - **Each weapon model ≤2** (AK-47, AWP, M4A1-S, M4A4, Desert Eagle, USP-S, …; M4A1-S ≠ M4A4).
@@ -67,5 +67,5 @@ Links: `/item/<slug>#<wear>` (CS2), `/rust/item/<slug>#unknown` (Rust).
 
 ## Done
 Every row inside the owner's tolerance or per-place range (and step rule), composition +
-neighbour rules true (also for each single backup swap), every row `fresh`, all IDs + prices
+neighbour rules true (also for each single backup swap, or the second swap it needs is named), every row `fresh`, all IDs + prices
 re-checked live (script output shown), page screenshot renders.
