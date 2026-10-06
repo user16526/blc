@@ -16,6 +16,7 @@ Data recipes (DB tables, reason-range index trick, item page SSR lookup, history
 1. **Which board** — case battle or event; how many places and which tiers (owner gives them).
 2. **The grid** — a target per place (owner list), or #1 price + step (% or $). Per tier if tiers differ.
 3. **The tolerance** — how far a pick may sit from its target (owner-set; default ±5%, e.g. ±10%).
+   A per-place range from the owner overrides it (e.g. #1 $1,000–1,100, #2 $500–650).
 Grid from a step: `target(n) = target(n−1) × (1 − step%)` or `target(n−1) − step$`. Show the
 grid back in the first deliverable table. No step/grid, no pool.
 
@@ -38,8 +39,13 @@ grid back in the first deliverable table. No step/grid, no pool.
 - **Each weapon model ≤2** (AK-47, AWP, M4A1-S, M4A4, Desert Eagle, USP-S, …; M4A1-S ≠ M4A4).
 - **Each finish ≤2** (e.g. Printstream, Tiger Tooth).
 - **Rust: ≥1, ≤2.**
+- **Neighbours differ (owner 2026-10-06):** two adjacent places never share a class — rifle
+  (AK-47, M4A1-S, M4A4, FAMAS, Galil AR, AUG, SG 553) · sniper (AWP, SSG 08, SCAR-20, G3SG1) ·
+  SMG · pistol · shotgun/MG · knife · gloves · Rust. Adjacent places never share a finish either.
+  Avoid runs of 3+ look-alike skins in a row, e.g. a run of long guns. No pistol/SMG fresh at a
+  slot's price → a 2nd Rust there breaks the run.
 - Then pick by stock → demand → variety. Show a composition check line under the table
-  (knives+gloves n/2 · models · finishes · Rust n).
+  (knives+gloves n/2 · models · finishes · Rust n · class sequence).
 - Our price vs Buff ask (`ours/buff`) is shown per row: a high ratio means the real market value
   is far below the displayed prize value — prefer the lower ratio when demand is similar.
 
@@ -60,5 +66,6 @@ Every number carries its label (e.g. "Buff stock 250", never a bare "(250)").
 Links: `/item/<slug>#<wear>` (CS2), `/rust/item/<slug>#unknown` (Rust).
 
 ## Done
-Every row inside the owner's tolerance (and step rule), every row `fresh`, all IDs + prices
+Every row inside the owner's tolerance or per-place range (and step rule), composition +
+neighbour rules true (also for each single backup swap), every row `fresh`, all IDs + prices
 re-checked live (script output shown), page screenshot renders.
