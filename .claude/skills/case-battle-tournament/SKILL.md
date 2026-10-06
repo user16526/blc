@@ -32,6 +32,17 @@ grid back in the first deliverable table. No step/grid, no pool.
 | Demand | prefer strongest Buff buy orders + 90-day sales; our keep rate (withdrawn share of drops) where drops ≥30 |
 | Style | classic, recognisable skins |
 
+**Composition (top 10, hard rules — owner 2026-10-06; backups must keep them true when swapped in):**
+- **#1 or #2 is a knife or gloves** — that is the top.
+- **Knives + gloves together ≤2** in the top 10.
+- **Each weapon model ≤2** (AK-47, AWP, M4A1-S, M4A4, Desert Eagle, USP-S, …; M4A1-S ≠ M4A4).
+- **Each finish ≤2** (e.g. Printstream, Tiger Tooth).
+- **Rust: ≥1, ≤2.**
+- Then pick by stock → demand → variety. Show a composition check line under the table
+  (knives+gloves n/2 · models · finishes · Rust n).
+- Our price vs Buff ask (`ours/buff`) is shown per row: a high ratio means the real market value
+  is far below the displayed prize value — prefer the lower ratio when demand is similar.
+
 ## 2. Steps
 1. Build the exclusion set: `db_query.py exclusions.sql > <scratch>/excl.tsv` (show the per-source counts).
 2. Screen candidates per slot inside the tolerance band → step check → freshness → stock → stability → demand.

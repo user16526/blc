@@ -21,7 +21,11 @@ if args[:1] == ['--exclude']:
 for u in (a.strip() for a in args):
     base, _, frag = u.partition('#')
     req = urllib.request.Request(base, headers={'User-Agent': 'Mozilla/5.0', 'Cookie': 'CurrencyCode=USD; lang=en'})
-    t = urllib.request.urlopen(req, timeout=40).read().decode('utf-8')
+    try:
+        t = urllib.request.urlopen(req, timeout=40).read().decode('utf-8')
+    except Exception as err:
+        print(f'?? {err}  {u}', flush=True)
+        continue
     s = json.loads(re.search(r'<script id="server_app-state" type="application/json">(.*?)</script>', t, re.S).group(1))
     d = next(v for k, v in s.items() if k.startswith('item_details'))
     ex = d['Exteriors']

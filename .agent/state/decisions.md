@@ -208,3 +208,4 @@ byte-identical to v8.3.25 (core.sha 96ebc17f…). Gate --trivial GREEN (run in a
 so nothing was pushed. — supersedes none.
 
 - 2026-09-30 — upgraded template v8.3.25 → v8.3.29 (owner-approved fan-out from devops-local): the kernel moved to AGENTS.md, CLAUDE.md is its one-line @AGENTS.md stub; CORE re-baselined (one word, SELF-MONITORING). Merge buckets in the upgrade commit message.
+- 2026-10-06 · event top-10 prizes v2 compliant with new composition rules (knives+gloves ≤2, model ≤2, finish ≤2, Rust 1-2)? · ship v2 as listed (_reports/event-prizes_2026-10-06_v2.html) · sheriff: AGREE (2nd call; 1st CANNOT-JUDGE: freshness evidence missing, added) · decision_sheriff: 2 calls, 9,555 tokens · /tmp/tmp.IHqvmkyH7S/sheriff-findings.txt
