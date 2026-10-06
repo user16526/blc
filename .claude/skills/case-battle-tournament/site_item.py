@@ -18,7 +18,7 @@ if args[:1] == ['--exclude']:
             excl.setdefault(int(f[0]), []).append(f[1] if len(f) > 1 else '')
     args = args[2:]
 
-for u in args:
+for u in (a.strip() for a in args):
     base, _, frag = u.partition('#')
     req = urllib.request.Request(base, headers={'User-Agent': 'Mozilla/5.0', 'Cookie': 'CurrencyCode=USD; lang=en'})
     t = urllib.request.urlopen(req, timeout=40).read().decode('utf-8')

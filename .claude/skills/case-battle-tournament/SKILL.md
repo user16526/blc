@@ -14,7 +14,8 @@ Data recipes (DB tables, reason-range index trick, item page SSR lookup, history
 
 ## 0. Ask FIRST (blocking — one message, before any research)
 1. **Which board** — case battle or event; how many places and which tiers (owner gives them).
-2. **The step** — #1 price + the step between places (% or $), or a full grid. Per tier if tiers differ.
+2. **The grid** — a target per place (owner list), or #1 price + step (% or $). Per tier if tiers differ.
+3. **The tolerance** — how far a pick may sit from its target (owner-set; default ±5%, e.g. ±10%).
 Grid from a step: `target(n) = target(n−1) × (1 − step%)` or `target(n−1) − step$`. Show the
 grid back in the first deliverable table. No step/grid, no pool.
 
@@ -22,8 +23,8 @@ grid back in the first deliverable table. No step/grid, no pool.
 | Rule | Limit |
 |---|---|
 | Freshness | **no skin from the last 5 case-battle boards OR the last 5 events** (running ones included) — any overlap rejects, **any wear** of the same skin counts. Set = `exclusions.sql`; checked by `site_item.py --exclude` (REPEAT flag) |
-| Price vs grid | our price within **±5%** of the slot target, aim ≤2% |
-| Step | realised gap to the place above within **step ±3 pp** (or ±3% of the $ step); prices strictly descending |
+| Price vs grid | our price within the **owner's tolerance** of the slot target (default ±5%), aim for the middle |
+| Step | prices strictly descending; with a step-built grid, realised gap to the place above within step ±3 pp |
 | Price source | our price = bloodycase.com item Price = `client_items.buyout_price`. Buff is the market reference only, never the price |
 | Stock | #1–3 any; #4–6 >100; #7–10 >200–300; repeating tiers: the cheaper, the bigger (>300) |
 | Rust | ≥1 skin near the bottom of the top 10 (max 2 if one is in the middle); stock ≥10 on Steam/Skinport (Buff has no Rust) |
@@ -33,7 +34,7 @@ grid back in the first deliverable table. No step/grid, no pool.
 
 ## 2. Steps
 1. Build the exclusion set: `db_query.py exclusions.sql > <scratch>/excl.tsv` (show the per-source counts).
-2. Screen candidates per slot inside the ±5% band → step check → freshness → stock → stability → demand.
+2. Screen candidates per slot inside the tolerance band → step check → freshness → stock → stability → demand.
 3. Every pick + backup: `python site_item.py --exclude <scratch>/excl.tsv <bloodycase item URLs…>` → ID, live price, `fresh`/`REPEAT`.
 4. 1 pick + 1 backup per slot, all `fresh`.
 5. Re-run step 3 on the final list right before delivering — prices move daily.
@@ -48,5 +49,5 @@ Every number carries its label (e.g. "Buff stock 250", never a bare "(250)").
 Links: `/item/<slug>#<wear>` (CS2), `/rust/item/<slug>#unknown` (Rust).
 
 ## Done
-Every row within ±5% of grid and the step tolerance, every row `fresh`, all IDs + prices
+Every row inside the owner's tolerance (and step rule), every row `fresh`, all IDs + prices
 re-checked live (script output shown), page screenshot renders.
