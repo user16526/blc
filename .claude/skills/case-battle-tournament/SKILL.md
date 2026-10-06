@@ -42,8 +42,8 @@ grid back in the first deliverable table. No step/grid, no pool.
 - **Neighbours differ (owner 2026-10-06):** two adjacent places never share a class — rifle
   (AK-47, M4A1-S, M4A4, FAMAS, Galil AR, AUG, SG 553) · sniper (AWP, SSG 08, SCAR-20, G3SG1) ·
   SMG · pistol · shotgun/MG · knife · gloves · Rust. Adjacent places never share a finish either.
-  Avoid runs of 3+ look-alike skins in a row, e.g. a run of long guns. No pistol/SMG fresh at a
-  slot's price → a 2nd Rust there breaks the run.
+  **No two long guns (rifle or sniper) adjacent** (owner chose this strict form). No pistol/SMG
+  fresh at a slot's price → a 2nd Rust there breaks the run.
 - Then pick by stock → demand → variety. Show a composition check line under the table
   (knives+gloves n/2 · models · finishes · Rust n · class sequence).
 - Our price vs Buff ask (`ours/buff`) is shown per row: a high ratio means the real market value
