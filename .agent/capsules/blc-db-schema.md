@@ -110,3 +110,13 @@ Last updated: 2026-09-09. Structural facts only; numbers decay — re-query.
   filter through `ix_client_items_reason_created` with reason RANGES (`reason >= 'main case win' and reason < 'main case wio'`).
 - Case-battle leaderboard = `stats.tournament` type 3; prizes in `stats.tournament_awards` (place, award_reference = item_id).
   Grid: places 1-10 unique, 11-20 / 21-50 / 51-100 one item each. Past boards: bloodycase.com/leaderboard/case-battle/history/<id>.
+
+## Multi-open (x1..x10) detection + MCP timeout patterns (mapped 2026-10-01)
+- No "open batch" id in the replica. One go = same client + same case `reason`, consecutive drops < 1 s apart
+  (drops inside a batch land 0.2-0.7 s apart; next spin >= 1 s, mostly 3-60 s). Sizes cluster at 1-5 and 10 = the UI options.
+- 90 d of `main case win` drops ≈ 3M rows (all users); the lag/running-sum window over all of it fits in 30 s ALONE.
+- TIMEOUT TRAPS (planner underestimates the reason-range scan ~10x → nested loops):
+  `c.id in (select … from <cte>)` and joining `clients` + `exists(deposits)` to fine-grained (client × case) rows.
+  Fix: aggregate to ONE row per client first (array_agg per-case stats if needed), join `clients`/`deposits` there, then `unnest`.
+- Parallel MCP queries contend on this host — run heavy ones sequentially.
+- Report: `_reports/blc-data_2026-10-01_2108_v1.md`.
