@@ -2392,6 +2392,51 @@ find "$G2REPO" "$G2TMP" "$G2HOOKS" "$FD8DIR" -mindepth 0 -delete 2>/dev/null
 
 
 cd "$ROOT" || true
+echo "── 8. the secret scans read a large input whole (v8.3.30) ──"
+# guard.sh, pre-commit and the gate piped the text into `grep -q` under pipefail: grep exits
+# at the first hit, the writer dies of SIGPIPE, and the pipeline reads as "no match". They
+# now search a here-string. The guard row fails on v8.3.29 (rc 0). The git-fed rows did not
+# miss on v8.3.29 under Windows (native git); they keep the large-input case covered.
+# Fixtures live under $TH_TMP and are built from the sandbox's scripts/.
+s8="$(mktemp -d)"; cd "$s8" || true
+mkfx(){ # $1 = fixture dir: a git repo holding the template scripts and nothing else
+  mkdir -p "$1" && cp -r "$SANDBOX/scripts" "$1/scripts" \
+    && git -C "$1" init -q && git -C "$1" add -A 2>/dev/null \
+    && git -C "$1" -c user.email=t@t -c user.name=t commit -qm init; }
+gx(){ ( cd "$1" && bash scripts/quality-gate.sh ${2:-} 2>&1 ); }
+mkfx fb
+tk="sk-""abcdefghijklmnop1234567890"            # split so this file holds no secret shape
+python3 - "$tk" > fb/big.json <<'PY'
+import sys
+rows = ['{"tool_name":"Write","tool_input":{"content":"key=%s"},' % sys.argv[1]]
+rows += ['"p%d":"%s",' % (i, "a" * 70) for i in range(20000)]
+rows.append('"end":1}')
+sys.stdout.write("\n".join(rows))
+PY
+( cd fb && bash scripts/guard.sh < big.json >/dev/null 2>&1 ); rc=$?; rm -f fb/big.json
+[ "$rc" = "2" ] && ok "guard: a secret on line 1 of a 1.6 MB input still blocks (here-string, no pipefail miss)" \
+                || no "guard: a secret on line 1 of a large input was missed (rc=$rc)"
+{ printf 'key = "%s"\n' "$tk"; python3 -c 'import sys; sys.stdout.write("x = 1\n" * 50000)'; } > fb/big.py
+git -C fb add big.py 2>/dev/null
+out="$(cd fb && bash scripts/pre-commit 2>&1)"; rc=$?
+qx="$(gx fb --trivial)"
+git -C fb rm -q --cached big.py >/dev/null 2>&1; rm -f fb/big.py
+[ "$rc" -ne 0 ] && case "$out" in *"hardcoded secret"*) true ;; *) false ;; esac \
+  && ok "pre-commit: a secret on line 1 of a large staged file still blocks" \
+  || no "pre-commit: a secret on line 1 of a large staged file was missed (rc=$rc)"
+case "$qx" in
+  *"possible secret in staged changes"*) ok "gate: a secret on line 1 of a large staged file is named" ;;
+  *) no "gate: a secret on line 1 of a large staged file was missed" ;;
+esac
+# A failed `git diff --cached` (here: a corrupt index, rc 128) is a failed check, never
+# "no obvious secrets staged" (sheriff finding on the here-string change).
+printf 'DIRC-broken' > fb/.git/index
+qx="$(gx fb --trivial)"
+case "$qx" in
+  *"staged-secret scan did not run"*) ok "gate: a failed git diff is a failed check, not 'no secrets'" ;;
+  *) no "gate: a failed git diff read as 'no obvious secrets staged'" ;;
+esac
+cd "$ROOT" || true
 # ── temp containment, closing assertions (v8.3.27, #11) ──
 th_cleanup
 TMP_AFTER="$(tmp_snapshot)"

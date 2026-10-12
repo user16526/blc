@@ -146,6 +146,9 @@ The kernel is `AGENTS.md` from v8.3.28 (`CLAUDE.md` before it — section 3b mov
   byte-identical (no ceremony). From v8.3.27 or older, the v8.3.28 line above applies.
   v8.3.28 itself is withdrawn — never install it; what its gate misread, the reader's
   threat model and the field impact are in the CHANGELOG's v8.3.29 entry.
+  v8.3.29 -> v8.3.30: CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are
+  byte-identical (no ceremony). Only `scripts/guard.sh`, `scripts/pre-commit`,
+  `scripts/quality-gate.sh` and `scripts/test-hooks.sh` change: take the template files.
 - `.claude/settings.json`: merge (I may have added permissions/hooks).
 
 ## 3b. v8.3.28 — the kernel moves into AGENTS.md (once per project)
