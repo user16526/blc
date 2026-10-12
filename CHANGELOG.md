@@ -1,5 +1,23 @@
 # Template Changelog
 
+## v8.3.30 — the secret scans read the whole input (2026-10-12)
+A fix-only release. CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are
+byte-identical to v8.3.29. Only `scripts/guard.sh`, `scripts/pre-commit`,
+`scripts/quality-gate.sh` and the suite (`scripts/test-hooks.sh`) change.
+
+- **A secret scan can no longer read a hit as a miss.** `guard.sh`, `pre-commit` and the
+  gate's staged-secret check piped the text into `grep -q` under `pipefail`: grep exits at
+  the first hit, the writer dies of SIGPIPE, and the pipeline reads as "no match". The guard
+  missed a secret on line 1 of a 1.6 MB payload (exit 0 instead of 2). The three scans now
+  read the text once and search a here-string. In the gate a failed `git diff --cached` is now
+  a failed check, never "no obvious secrets staged" (sheriff finding on this change). Suite
+  section 8: a secret on line 1 of a large input in the guard (fails on v8.3.29), in
+  `pre-commit` and in the gate; a corrupt index makes the gate's scan a failed check.
+- **Not in this release.** The planned v8.3.30 (local slots for project files, a sheriff pass
+  on every publish, the guard data pass, the scratch report) was built and reviewed; the
+  external review found two HIGH findings in the new code. Owner ruling 2026-10-11: this
+  release carries the fix above only; the rest moves to v8.3.31.
+
 ## v8.3.29 — the verdict reader never picks one of two (2026-09-30)
 **Replaces v8.3.28, which must not be installed:** its gate read three kinds of report as
 GREEN that are not. Only `scripts/quality-gate.sh` (the verdict reader), its suite rows and

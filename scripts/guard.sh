@@ -26,8 +26,9 @@ case "$p" in
   *) is_shell=0; is_ps=0 ;;
 esac
 
-# Secrets being written into the repo (all tools)
-if echo "$p" | grep -Eq "$SECRET_REGEX"; then
+# Secrets being written into the repo (all tools). A here-string, not `echo |`: under
+# pipefail a writer killed by an early `grep -q` exit turned a hit into "no match".
+if grep -Eq "$SECRET_REGEX" <<< "$p"; then
   echo "BLOCKED: looks like a hardcoded secret. Use an env var (.env / process.env)." >&2; exit 2
 fi
 

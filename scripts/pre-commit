@@ -25,7 +25,10 @@ fi
 # carries SYNTHETIC secrets as negative controls, so scanning it blocked every
 # v8 project's FIRST commit. The suite itself asserts this exclusion stays
 # narrow: a synthetic secret in any OTHER file must still block.
-if git diff --cached -U0 -- . ':(exclude)scripts/test-hooks.sh' | grep -Eq "^\+.*$SECRET_REGEX"; then
+# The diff is read once, then searched with a here-string: under pipefail,
+# `git diff | grep -q` exiting early could turn a hit into "no match".
+staged="$(git diff --cached -U0 -- . ':(exclude)scripts/test-hooks.sh')"
+if grep -Eq "^\+.*$SECRET_REGEX" <<< "$staged"; then
   echo "✋ COMMIT BLOCKED: a hardcoded secret appears in staged changes." >&2
   echo "Move it to .env (gitignored) and use an env var instead." >&2
   exit 1

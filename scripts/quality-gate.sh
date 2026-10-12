@@ -76,7 +76,11 @@ fi
 # 3) no obvious secrets in staged diff
 if git rev-parse --git-dir >/dev/null 2>&1; then
   . "$(dirname "$0")/secret-patterns.sh" 2>/dev/null || SECRET_REGEX='(sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'
-  if git diff --cached -U0 2>/dev/null | grep -Eq "^\+.*$SECRET_REGEX"; then
+  # read once, then a here-string: under pipefail an early `grep -q` exit could read as "no match".
+  # A failed `git diff` is a failed check, never "no secrets" (sheriff, v8.3.30).
+  if ! qg_staged="$(git diff --cached -U0 2>/dev/null)"; then
+    bad "staged-secret scan did not run: git diff --cached failed"
+  elif grep -Eq "^\+.*$SECRET_REGEX" <<< "$qg_staged"; then
     bad "possible secret in staged changes"
   else ok "no obvious secrets staged"; fi
 fi
