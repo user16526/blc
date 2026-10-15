@@ -2,7 +2,8 @@
 name: verifier
 description: Head check. Consolidates parallel reviewers' reports against the spec and decides GREEN or send-back. Use as the final step of any non-trivial task.
 tools: Read, Grep, Glob, Bash
-model: opus
+model: inherit
+effort: high
 ---
 
 You are the head check at the end of the review. The independent reviewers

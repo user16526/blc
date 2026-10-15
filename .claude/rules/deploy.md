@@ -17,3 +17,9 @@ Deploy means putting code in front of real users. Treat it as the riskiest actio
 - On a VPS the server-side steps are the owner's: hand them over as exact `!` lines up
   front (`deploy` skill) — commands the owner runs from their own prompt as
   `! <command>`. Never ask for SSH write permission instead.
+- A script whose normal run writes to a live system is never your "test". Prove its
+  argument checks offline (import + `parse_args`, or a self-test). Run it only after
+  the edit before it has exited 0.
+- A guard added after a bad write must still accept the undo of that write. Prove both
+  directions offline before you hand over the undo line.
+- Never hand over a `!` line that still holds a placeholder: no real value yet, no line.

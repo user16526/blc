@@ -228,6 +228,14 @@ def view_target(view=VIEW, alt=VIEW_ALT):
 
 
 def self_test():
+    # Every scratch file of the self-test lives in ONE directory that is removed on the
+    # way out (v8.3.31, #95): two bare mkdtemp() calls left 2 dirs in the system temp
+    # folder per run, and release-check runs the self-test twice.
+    with tempfile.TemporaryDirectory(prefix="state-patch-selftest-") as scratch:
+        return _self_test(scratch)
+
+
+def _self_test(scratch):
     import copy
     schema = dict(FALLBACK_SCHEMA)
     ok = [0]
@@ -261,7 +269,7 @@ def self_test():
     e = apply_patch(copy.deepcopy(s2), {"set": {"failed_rejected": ["approach A"],
                                                 "next": "x"}}, schema, allow_forget=True)
     t("--allow-forget permits a deliberate drop", not e)
-    bad = os.path.join(tempfile.mkdtemp(), "current.json")
+    bad = os.path.join(scratch, "current.json")
     with open(bad, "w", encoding="utf-8") as f:
         f.write("{ truncated")
     try:
@@ -280,7 +288,8 @@ def self_test():
     t("nested set into object works", not e)
     txt = render(s)
     t("render keeps 'Last updated:' line", "Last updated:" in txt)
-    d = tempfile.mkdtemp()
+    d = os.path.join(scratch, "view")
+    os.makedirs(d)
     v, alt = os.path.join(d, "current.md"), os.path.join(d, "state-view.md")
     t("view: absent current.md -> render in place", view_target(v, alt) == v)
     with open(v, "w", encoding="utf-8") as f:

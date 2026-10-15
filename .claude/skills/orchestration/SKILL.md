@@ -74,9 +74,13 @@ When the lead runs a different model than the reviewers (e.g. a Fable 5.1 lead w
 `opus` reviewers) the correlation is partial, not total — still not a substitute for
 the human on irreversible work.
 
-**Model cost (tunable):** reviewers default to `opus` for max quality (time >
-tokens). If a project's token budget matters more, downgrade the non-high-risk
-reviewers to `sonnet` in their agent files; keep `opus` for security/data/infra.
+**Model cost (tunable):** the effort level is the first lever, the model tier the
+second — vendor guidance is to sweep effort on the current model before switching
+tiers. Reviewer agents carry `model: inherit` (the model the owner picks in `/model`,
+so a newer model needs no edit) and `effort: high`. If a project's token budget
+matters more, lower the `effort:` of the non-high-risk reviewers first; keep `high`
+for security/data/infra. Pin a tier only on the owner's choice, and record it
+(`model-selection.md`).
 
 ## Step 4 — `verifier` is the head; it closes the loop
 `verifier` consolidates all reviewer reports against the spec and decides:

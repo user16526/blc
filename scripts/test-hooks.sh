@@ -24,7 +24,8 @@ REAL_TMP="${TMPDIR:-/tmp}"
 tmp_snapshot(){ ls -A "$REAL_TMP" 2>/dev/null | grep -E '^(tmp\.|qg\.|th\.)' | sort; }
 TMP_BEFORE="$(tmp_snapshot)"
 TH_TMP="$(mktemp -d "$REAL_TMP/th.XXXXXX")" || { echo "cannot create a temp dir in $REAL_TMP"; exit 1; }
-export TMPDIR="$TH_TMP"
+# TMP and TEMP too (v8.3.31, #95): native Windows tools read only those, never TMPDIR.
+export TMPDIR="$TH_TMP" TMP="$TH_TMP" TEMP="$TH_TMP"
 th_cleanup(){ cd "$ROOT" 2>/dev/null || cd /; chmod -R u+w "$TH_TMP" 2>/dev/null; rm -rf "$TH_TMP"; }
 
 # ── 0. scripts present AND executable ──
@@ -1624,6 +1625,74 @@ SR_RC="$(printf 'ACCEPTANCE: t\nDIFF: t\n' \
   | PATH="$STUBDIR/crippled:$PATH" bash scripts/sheriff-review.sh --author gemini >/dev/null 2>&1; echo $?)"
 [ "$SR_RC" = "5" ] && ok "a genuinely different vendor passes the vendor gate" \
                    || no "a different vendor was wrongly refused (rc=$SR_RC)"
+# #95 (v8.3.31): in a Claude Code session the default scratch lands in that session's own
+# scratchpad, and nothing else stays in the temp folder (the private dir goes on exit).
+# An id that is not a UUID is never a path component: the old place stays.
+SESS_TMP="$(mktemp -d)"; sid="0b5e1d2c-1111-4222-8333-444455556666"
+mkdir -p "$SESS_TMP/claude/D--x-proj/$sid"
+sr_sess(){ printf 'ACCEPTANCE: t\nDIFF: t\n' | TMPDIR="$SESS_TMP" CLAUDE_CODE_SESSION_ID="$1" \
+  PATH="$STUBDIR/good:$PATH" bash scripts/sheriff-review.sh --author claude 2>/dev/null | tail -1; }
+out="$(sr_sess "$sid")"
+case "$out" in
+  "$SESS_TMP/claude/D--x-proj/$sid/scratchpad/sheriff."*/sheriff-findings.txt)
+    grep -q "STUB FINDINGS" "$out" && [ "$(ls -A "$SESS_TMP")" = "claude" ] \
+      && ok "#95: in a session the sheriff scratch lands in its scratchpad; nothing else in the temp folder" \
+      || no "#95: session scratch: no findings, or the temp folder holds more: $(ls -A "$SESS_TMP" | tr '\n' ' ')" ;;
+  *) no "#95: in a session the sheriff scratch did not land in the session's scratchpad: $out" ;;
+esac
+out="$(sr_sess "../$sid")"
+case "$out" in
+  "$SESS_TMP"/tmp.*/sheriff-findings.txt) ok "#95: a session id that is not a UUID is never a path (old place)" ;;
+  *) no "#95: a malformed session id steered the sheriff scratch: $out" ;;
+esac
+# ...and a link on the path is never followed (sheriff, v8.3.31): a scratchpad link, then a
+# linked project dir. The old place is used and nothing lands in the link's target. A
+# junction on Windows (Git Bash `ln -s` copies), a symlink elsewhere.
+mklink_dir(){ # $1 = link, $2 = target
+  ln -s "$2" "$1" 2>/dev/null && [ -L "$1" ] && return 0
+  rm -rf "$1" 2>/dev/null
+  command -v cygpath >/dev/null 2>&1 \
+    && cmd //c "mklink /J $(cygpath -w "$1") $(cygpath -w "$2")" >/dev/null 2>&1 && [ -L "$1" ]; }
+OUTSIDE="$(mktemp -d)"; pad="$SESS_TMP/claude/D--x-proj/$sid/scratchpad"
+rm -rf "$pad"
+if mklink_dir "$pad" "$OUTSIDE"; then
+  out="$(sr_sess "$sid")"
+  case "$out" in
+    "$SESS_TMP"/tmp.*/sheriff-findings.txt) [ -z "$(ls -A "$OUTSIDE")" ] \
+        && ok "#95: a scratchpad that is a link is not followed (old place, link target untouched)" \
+        || no "#95: the scratchpad link's target received: $(ls -A "$OUTSIDE" | tr '\n' ' ')" ;;
+    *) no "#95: a scratchpad link steered the sheriff scratch: $out" ;;
+  esac
+  rm -f "$pad"; rm -rf "$SESS_TMP/claude/D--x-proj"
+  mkdir -p "$OUTSIDE/$sid"
+  if mklink_dir "$SESS_TMP/claude/D--link-proj" "$OUTSIDE"; then
+    out="$(sr_sess "$sid")"
+    case "$out" in
+      "$SESS_TMP"/tmp.*/sheriff-findings.txt) [ -z "$(ls -A "$OUTSIDE/$sid")" ] \
+          && ok "#95: a linked project dir above the session is not followed (old place)" \
+          || no "#95: the linked project dir received: $(ls -A "$OUTSIDE/$sid" | tr '\n' ' ')" ;;
+      *) no "#95: a linked project dir steered the sheriff scratch: $out" ;;
+    esac
+    rm -f "$SESS_TMP/claude/D--link-proj"
+  else
+    no "#95: a project-dir link could not be made although a scratchpad link could"
+  fi
+else
+  ok "#95: link cases SKIPPED (no symlink or junction support here) - known limit"
+fi
+find "$OUTSIDE" -mindepth 0 -delete 2>/dev/null
+find "$SESS_TMP" -mindepth 0 -delete 2>/dev/null
+# #95 (v8.3.31): the state-patch self-test leaves nothing in the temp folder (it left 2
+# dirs per run; release-check runs it twice).
+SP_TMP="$(mktemp -d)"
+spx="$(TMPDIR="$SP_TMP" python3 scripts/state-patch.py --self-test 2>&1)"
+case "$spx" in
+  *"self-test: GREEN"*) [ -z "$(ls -A "$SP_TMP")" ] \
+      && ok "#95: state-patch --self-test is GREEN and leaves nothing in the temp folder" \
+      || no "#95: state-patch --self-test left: $(ls -A "$SP_TMP" | tr '\n' ' ')" ;;
+  *) no "#95: state-patch --self-test is not GREEN: $(echo "$spx" | tail -2 | tr '\n' ' ')" ;;
+esac
+find "$SP_TMP" -mindepth 0 -delete 2>/dev/null
 
 find "$STUBDIR" -mindepth 0 -delete 2>/dev/null
 find "$SR_SCRATCH" -mindepth 0 -delete 2>/dev/null

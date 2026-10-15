@@ -35,11 +35,13 @@ one-line reason each, then let me edit before you create the files.
 - **Per-agent**: only what's unique to that role (its checklist, its output shape).
 - Keep each agent file lean; if two agents repeat the same paragraph, extract it to
   a shared skill.
-- **Model choice (cost lever):** agents default to `opus` for quality (time >
-  tokens). If THIS project's token cost matters more than reviewer depth, set
-  `model: sonnet` in the frontmatter of the non-high-risk roles (e.g. `ui-ux-qa`,
-  `code-reviewer`, `plan-compiler`); keep `opus` on `security-reviewer`,
-  `architect`, and anything touching data/infra. One line per file, easy to revert.
+- **Model choice (cost lever):** effort first, tier second. Thinking agents carry
+  `model: inherit` (they follow the owner's `/model`) and `effort: high`;
+  `block-executor` carries `model: sonnet` + `effort: medium` (it executes an approved
+  plan — `model-selection.md`). If THIS project's token cost still matters more than
+  reviewer depth, lower the effort of the non-high-risk roles (e.g. `ui-ux-qa`,
+  `code-reviewer`, `plan-compiler`) before pinning a tier. One line per file, easy to
+  revert.
 
 ## Output of this skill
 A short proposed roster: `role — why — risks covered`, plus shared skills, plus

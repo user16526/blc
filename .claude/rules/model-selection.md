@@ -20,6 +20,13 @@ Executing an already-approved task list can usually take a cheaper model in a
 FRESH context (pairs with the context-hygiene rule). Propose the split; the human
 decides the cost/quality trade.
 
+## Agent files: inherit + effort, then probe
+Thinking agents carry `model: inherit` (the session's `/model`) and an explicit
+`effort:`; `block-executor` carries `model: sonnet` (the phase split above). After any
+edit to an agent file, probe before you trust the next delegation: ask the agent for
+its model ID and compare it with the file. The first run after a hand-edit has used
+the OLD definition (model, tools, memory).
+
 ## Don't
 Don't hardcode a model name into agents/skills as eternal truth, and don't silently
 "upgrade" or "downgrade" a model mid-project without saying so.

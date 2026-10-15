@@ -3,6 +3,7 @@ name: block-executor
 description: Implements one block of an approved plan; writes code to make the failing tests pass. Use during the Build phase, one executor per block.
 tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
+effort: medium
 ---
 
 You implement exactly ONE block of the approved plan. Stay in scope — do not touch
