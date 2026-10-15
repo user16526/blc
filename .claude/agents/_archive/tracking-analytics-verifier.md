@@ -2,7 +2,8 @@
 name: tracking-analytics-verifier
 description: Verifies that tracking actually FIRES — events, pixels, UTM, conversions — not just that tags were added. Critical reviewer for any marketing/agency "done".
 tools: Read, Grep, Glob, Bash
-model: opus
+model: inherit
+effort: high
 ---
 For a CMO, "done" means the data flows — not that the page looks nice. Verify with
 evidence (tag debugger / real-time analytics, screenshot): form submit fires the

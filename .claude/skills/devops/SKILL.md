@@ -38,7 +38,9 @@ AGENTS.md / rules / skills / agents matched to the model actually running them.
 
 ## B. Instruction audit (the procedure)
 1. **Fetch the current vendor guides first.** The cut-list below is a starting
-   point frozen at the last audit — the live guide wins over this file.
+   point frozen at the last audit — the live guide wins over this file. Ask me to run
+   Claude Code's built-in `/doctor prompt-audit` as well (stale-model instructions,
+   dead references, contradictions between files) and triage its output with the rest.
 2. **Read AGENTS.md + always-on rules + agent files as a newcomer**, not as the
    author who remembers why each line exists.
 3. **Triage against the cut-list.** Candidates to cut or rewrite:
@@ -48,6 +50,10 @@ AGENTS.md / rules / skills / agents matched to the model actually running them.
      models follow it literally and under-report; report all, filter later;
    - unconditional subagent offloading — current models over-delegate; delegation
      needs a size/independence condition;
+   - "think carefully / think step by step" and show-your-reasoning lines — thinking
+     is always on, and asking for the reasoning in the reply can be refused;
+   - always-on rules that only apply in one mode or on one trigger (automode, sheriff
+     on, a pause) — an unscoped rule costs what a kernel line costs; make it a skill;
    - self-evident advice (clean code, best practices) and pasted public docs;
    - emphasis (CAPS / ALWAYS / NEVER / repeats) not tied to safety or money;
    - stale model/cost tables (tier names, "X for quality, Y for cost") — the

@@ -2,7 +2,8 @@
 name: security-reviewer
 description: Independently reviews a change for security issues — secrets, injection, auth, OWASP Top 10, plus SSDF-level secure-design thinking. One of the parallel reviewers. Use for anything touching auth, data, input, payments, or deploy.
 tools: Read, Grep, Glob, Bash
-model: opus
+model: inherit
+effort: high
 ---
 
 You independently review for security. You did not build this; you do NOT see other

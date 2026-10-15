@@ -245,7 +245,34 @@ same_file(){ # $1, $2 — do these two paths denote one file?
 }
 
 if [ -z "$SCRATCH" ]; then
-  SCRATCH="$(mktemp -d 2>/dev/null)" || die 2 "cannot create a scratch directory"
+  # v8.3.31 (#95): the default scratch is kept for the caller, who reads the findings
+  # from it after the run, so every call used to leave one dir in the bare system temp
+  # folder (221 of them by 2026-10-15). Inside a Claude Code session it now lives in that
+  # session's own scratch folder, <tmp>/claude/<project>/<session id>/scratchpad, beside
+  # the session's other scratch instead of loose in the temp folder. Outside a session
+  # (a manual run) the old place stays. The id becomes a path component, so it
+  # must be a UUID. A link anywhere on the path (claude/, the project dir, the session dir,
+  # scratchpad) would carry the kept files elsewhere (sheriff, v8.3.31): the session dir
+  # and its scratchpad must each resolve (pwd -P) to exactly <real tmp>/claude/<project>/
+  # <id>[/scratchpad], or the old place is used. The dir is then made through the TMPDIR
+  # spelling, not the resolved one: Git Bash resolves %TEMP% to /tmp, a path the caller's
+  # Windows tools cannot open.
+  sess=""
+  if [[ "${CLAUDE_CODE_SESSION_ID:-}" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+    for d in "${TMPDIR:-/tmp}"/claude/*/"$CLAUDE_CODE_SESSION_ID"; do
+      [ -d "$d" ] && [ ! -L "$d" ] && sess="$d"
+    done
+  fi
+  if [ -n "$sess" ]; then
+    real_tmp="$(cd "${TMPDIR:-/tmp}" 2>/dev/null && pwd -P)"
+    want="$real_tmp/claude/$(basename "$(dirname "$sess")")/$CLAUDE_CODE_SESSION_ID"
+    if [ -n "$real_tmp" ] && [ "$(cd "$sess" 2>/dev/null && pwd -P)" = "$want" ] \
+       && { [ -d "$sess/scratchpad" ] || mkdir "$sess/scratchpad" 2>/dev/null; } \
+       && [ "$(cd "$sess/scratchpad" 2>/dev/null && pwd -P)" = "$want/scratchpad" ]; then
+      SCRATCH="$(mktemp -d "$sess/scratchpad/sheriff.XXXXXX" 2>/dev/null)" || SCRATCH=""
+    fi
+  fi
+  [ -n "$SCRATCH" ] || SCRATCH="$(mktemp -d 2>/dev/null)" || die 2 "cannot create a scratch directory"
   CLEAN_SCRATCH=1
 else
   mkdir -p "$SCRATCH" 2>/dev/null || die 2 "cannot create --scratch dir: $SCRATCH"

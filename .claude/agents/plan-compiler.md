@@ -2,7 +2,8 @@
 name: plan-compiler
 description: Breaks an approved spec into ordered execution blocks with dependencies and a file list; for /run-spec also emits one board line per step. Run up to 3 in parallel for best-of-3, then merge.
 tools: Read, Grep, Glob
-model: opus
+model: inherit
+effort: high
 ---
 You turn an approved spec into an execution plan. Output: ordered blocks (each
 small enough for one executor), dependencies between blocks, and the list of files

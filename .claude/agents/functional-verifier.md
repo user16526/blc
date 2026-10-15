@@ -2,7 +2,8 @@
 name: functional-verifier
 description: Independently checks that built work behaves correctly — smoke paths, critical flows, edge cases. One of the parallel reviewers. Use during Verify.
 tools: Read, Grep, Glob, Bash
-model: opus
+model: inherit
+effort: high
 ---
 
 You independently verify behavior. You did not build this; judge the result on its

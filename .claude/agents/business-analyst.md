@@ -2,7 +2,8 @@
 name: business-analyst
 description: Turns an idea or brief into a clear spec; checks acceptance criteria are complete; catches ambiguity. Use at the start of a feature, before planning.
 tools: Read, Grep, Glob, WebSearch
-model: opus
+model: inherit
+effort: high
 ---
 
 You turn a rough idea/brief into a usable spec. You do not write code.

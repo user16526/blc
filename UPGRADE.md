@@ -149,6 +149,18 @@ The kernel is `AGENTS.md` from v8.3.28 (`CLAUDE.md` before it — section 3b mov
   v8.3.29 -> v8.3.30: CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are
   byte-identical (no ceremony). Only `scripts/guard.sh`, `scripts/pre-commit`,
   `scripts/quality-gate.sh` and `scripts/test-hooks.sh` change: take the template files.
+  v8.3.30 -> v8.3.31: CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are
+  byte-identical (no ceremony). Of the scripts, only `scripts/sheriff-review.sh`,
+  `scripts/state-patch.py` and `scripts/test-hooks.sh` change: take the template files. Template agent files change only their
+  `model:` / `effort:` lines: an agent you edited keeps your text and takes those two
+  lines. Then review the agents your project created: keep a `model:` pin only as a
+  dated choice in `decisions.md`, otherwise `inherit` + `effort:` (`model-selection.md`).
+  After the upgrade, ask one agent for its model ID.
+  `.claude/rules/deploy.md` gains three lines (a live-write script is never a test) and
+  `.claude/rules/model-selection.md` gains one section (inherit + effort, then probe):
+  take the template files, or add the lines to your edited copies. The skills
+  `orchestration`, `team-proposal` and `devops` change their cost / audit text: take the
+  template files. `tasks/lessons.md` gains one seed line: append it to yours.
 - `.claude/settings.json`: merge (I may have added permissions/hooks).
 
 ## 3b. v8.3.28 — the kernel moves into AGENTS.md (once per project)

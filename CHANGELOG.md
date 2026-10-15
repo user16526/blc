@@ -1,5 +1,43 @@
 # Template Changelog
 
+## v8.3.31 — agents run on the model you pick; scratch stays out of the system temp folder (2026-10-15)
+CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are byte-identical to v8.3.30.
+No hook changes. Three scripts change, for #95 only: `scripts/sheriff-review.sh`,
+`scripts/state-patch.py` and the suite (`scripts/test-hooks.sh`).
+
+- **Thinking agents follow `/model`.** Every template agent except `block-executor`
+  (archived roles included) now carries `model: inherit` + `effort: high` instead of
+  `model: opus`. The `opus` alias stays inside the Opus family, and the 2026-10-13 lineup
+  puts Claude Fable 5.1 above Opus 5.5; `inherit` uses the model the owner picks in
+  `/model`, so a new model needs no edit. Effort is explicit because a subagent's
+  inherited effort is unverified and Opus 5.5's API default is `medium`. Trade-off: a
+  Sonnet or Haiku session lowers the reviewers too.
+- **`block-executor` stays on `model: sonnet`**, now with `effort: medium`: it executes
+  an approved plan (`model-selection.md`, phase split).
+- **The cost advice is effort first.** `orchestration` and `team-proposal` no longer say
+  "agents default to `opus`": lower the effort of the non-high-risk roles before you pin
+  a tier. The `devops` audit also asks for Claude Code's `/doctor prompt-audit` and gains
+  two cut-list lines (reasoning-echo requests; always-on rules that apply to one mode).
+- **Probe after an agent edit.** `model-selection.md` and the lessons seed: the first
+  delegation after a hand-edit of an agent file has run the OLD definition. Ask the agent
+  for its model ID before you trust that run.
+- **A live-write script is never a test** (`deploy.md`; field report, 2026-10-15).
+  An agent ran a script whose normal run writes to the VPS, to check that its CLI refuses
+  a placeholder. The guard it meant to test did not exist, so the script wrote to the live
+  bot. Three new lines: prove argument checks offline and run a live script only after the
+  edit before it exited 0; a guard added after a bad write still accepts its undo; no `!`
+  line that holds a placeholder.
+- **Scratch no longer piles up in the system temp folder** (#95; measured 2026-10-15:
+  41,698 entries in `%TEMP%`, ~2,800 new dirs a day). Two template sources are closed:
+  the sheriff wrapper's default scratch (one dir per call, kept so the caller can read the
+  findings) now goes into the Claude Code session's own scratchpad, and stays where it was
+  only outside a session; the state-patch self-test (2 dirs per run) uses one self-removing
+  directory. The suite also points `TMP` and `TEMP` at its own folder, because native
+  Windows tools ignore `TMPDIR`. The gate is unchanged: a separate temp folder for its
+  lint/test/build steps also changes test tools that keep a cache in the temp folder
+  (pytest, dotnet), so it waits for a proof in such a project. Scratch that a project's own
+  tests leave behind is that project's fix.
+
 ## v8.3.30 — the secret scans read the whole input (2026-10-12)
 A fix-only release. CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are
 byte-identical to v8.3.29. Only `scripts/guard.sh`, `scripts/pre-commit`,

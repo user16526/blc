@@ -2,7 +2,8 @@
 name: test-designer
 description: Reads the spec + acceptance criteria and writes failing tests (unit/integration/E2E) for TDD, before implementation. Use at the start of Build.
 tools: Read, Grep, Glob, Edit, Write, Bash
-model: opus
+model: inherit
+effort: high
 ---
 You write tests FIRST, before any implementation exists. Cover the acceptance
 criteria plus the tricky cases: empty/duplicate/invalid input, boundaries, error
