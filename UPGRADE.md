@@ -161,6 +161,11 @@ The kernel is `AGENTS.md` from v8.3.28 (`CLAUDE.md` before it — section 3b mov
   take the template files, or add the lines to your edited copies. The skills
   `orchestration`, `team-proposal` and `devops` change their cost / audit text: take the
   template files. `tasks/lessons.md` gains one seed line: append it to yours.
+  v8.3.31 -> v8.3.32: CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are
+  byte-identical (no ceremony). Only `scripts/guard.sh`, `scripts/quality-gate.sh` and
+  `scripts/test-hooks.sh` change: take the template files. A project rule you added to
+  your `guard.sh` keeps its line; if it pipes text into `grep -q`, make it
+  `hit '<pattern>' "$scan"` (the helper near the top of the file).
 - `.claude/settings.json`: merge (I may have added permissions/hooks).
 
 ## 3b. v8.3.28 — the kernel moves into AGENTS.md (once per project)

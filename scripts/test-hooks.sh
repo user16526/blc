@@ -2506,6 +2506,109 @@ case "$qx" in
   *) no "gate: a failed git diff read as 'no obvious secrets staged'" ;;
 esac
 cd "$ROOT" || true
+echo "── 9. guard.sh fails closed (v8.3.32) ──"
+# Claude Code blocks a tool call ONLY on exit 2. v8.3.31 exited 1 on an unexpected error (the
+# call ran), read a hit as a miss on an input over ~64 KB (#113: `echo | grep -q` under
+# pipefail), and passed a BOM, a truncated or an empty input to its fallbacks (#99, Radion).
+# Every row here fails on v8.3.31 except two that pass there by design: the failing-python3 row
+# (the text fallback still holds) and the OK-printing-stub row. Fixtures live under $TH_TMP.
+s9="$(mktemp -d)"; cd "$s9" || true
+G9="$SANDBOX/scripts/guard.sh"
+mkdir -p nopy nogrep
+printf '#!/bin/sh\nexit 1\n' > nopy/python3; printf '#!/bin/sh\nexit 2\n' > nogrep/grep
+chmod +x nopy/python3 nogrep/grep
+g9(){ bash "$G9" < "$1" >/dev/null 2>&1; echo $?; }                     # the real python3
+g9s(){ PATH="$s9/nopy:$PATH" bash "$G9" < "$1" >/dev/null 2>&1; echo $?; }   # python3 broken
+big9(){ # $1 tool, $2 command, $3 out: the call on line 1, then ~1.6 MB of filler (valid JSON)
+  python3 - "$1" "$2" > "$3" <<'PY'
+import json, sys
+rows = ['{"tool_name":%s,"tool_input":{"command":%s},' % (json.dumps(sys.argv[1]), json.dumps(sys.argv[2]))]
+rows += ['"p%d":"%s",' % (i, "a" * 70) for i in range(20000)]
+rows.append('"end":1}')
+sys.stdout.write("\n".join(rows))
+PY
+}
+# #113: one row per rule — H1 (both lists), H2, and the three no-python text rules (M1).
+for row in \
+  "Bash|rm -rf /tmp/x|real|H1 destructive, case-insensitive list" \
+  "Bash|git branch -D feature/x|real|H1 destructive, case-sensitive list" \
+  "PowerShell|Remove-Item -Recurse -Force build|stub|H2 PowerShell destructive (no python3)" \
+  "Bash|git add .env|stub|M1 .env staging (no python3)" \
+  "Bash|git add -f .|stub|M1 forced whole-tree add (no python3)" \
+  "Bash|git merge -F - feature|stub|M1 merge -F - (no python3)"; do
+  IFS='|' read -r tool cmd py what <<< "$row"
+  big9 "$tool" "$cmd" big9.json
+  if [ "$py" = real ]; then rc="$(g9 big9.json)"; else rc="$(g9s big9.json)"; fi
+  [ "$rc" = "2" ] && ok "#113 $what: a hit on line 1 of a 1.6 MB input still blocks" \
+                  || no "#113 $what: a hit on line 1 of a large input was missed (rc=$rc)"
+done
+rm -f big9.json
+# #99: a fault blocks, whatever the command.
+printf '\357\273\277{"tool_name":"Bash","tool_input":{"command":"ls"}}' > f9.json
+[ "$(g9 f9.json)" = "2" ] && ok "#99 a UTF-8 BOM before the JSON blocks" || no "#99 a UTF-8 BOM let the call through"
+printf '{"tool_name":"Bash","tool_input":{"command":"ls"' > f9.json
+[ "$(g9 f9.json)" = "2" ] && ok "#99 a truncated JSON input blocks" || no "#99 a truncated JSON input let the call through"
+: > f9.json
+[ "$(g9 f9.json)" = "2" ] && ok "#99 an empty input blocks" || no "#99 an empty input let the call through"
+printf '{"tool_name":"Bash","tool_input":{"command":"ls"},}' > f9.json
+[ "$(g9 f9.json)" = "2" ] && ok "#99 malformed JSON inside the braces blocks (BADJSON)" \
+                          || no "#99 malformed JSON inside the braces let the call through"
+python3 -c 'import sys; sys.stdout.write("{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"ls\"},\"x\":" + "[" * 100000 + "]" * 100000 + "}")' > f9.json
+[ "$(g9 f9.json)" = "2" ] && ok "#99 JSON nested past the parser's depth blocks" \
+                          || no "#99 JSON nested past the parser's depth let the call through"
+# A failing python3 keeps the text fallback (the Windows Store stub case, v8.3.25): a
+# dangerous command still blocks there, and a safe one still runs (rows in 1e).
+printf '{"tool_name":"Bash","tool_input":{"command":"git push --force"}}' > f9.json
+[ "$(g9s f9.json)" = "2" ] && ok "#99 a failing python3: the text fallback still blocks a forced push" \
+                           || no "#99 a failing python3 let a forced push through"
+# Once OUR parser runs, its own crash blocks (CRASH): an unencodable path in a BLOCK line.
+printf '{"tool_name":"Bash","tool_input":{"command":"git add .env.\\ud800"}}' > f9.json
+out9="$(bash "$G9" < f9.json 2>&1 >/dev/null)"; rc=$?
+[ "$rc" = "2" ] && case "$out9" in *"parser failed"*) true ;; *) false ;; esac \
+  && ok "#99 a crash in the guard's own parser blocks with its own message (CRASH)" \
+  || no "#99 a parser crash did not reach the CRASH block (rc=$rc: $out9)"
+# Board line 10: an unexpected guard error exits 2, never 1 (Claude Code runs the call on 1).
+mkdir -p t9/scripts && cp "$G9" t9/scripts/guard.sh && printf 'false\n' > t9/scripts/secret-patterns.sh
+printf '{"tool_name":"Write","tool_input":{"content":"hello"}}' > f9.json
+rc="$(bash t9/scripts/guard.sh < f9.json >/dev/null 2>&1; echo $?)"
+[ "$rc" = "2" ] && ok "an unexpected guard error (a sourced file fails under set -e) exits 2" \
+                || no "an unexpected guard error exits $rc, so the call runs"
+# A check that cannot run blocks: grep failing (status 2) is not "no match".
+rc="$(PATH="$s9/nogrep:$PATH" bash "$G9" < f9.json >/dev/null 2>&1; echo $?)"
+[ "$rc" = "2" ] && ok "a rule check that cannot run (grep exits 2) blocks" \
+                || no "a failing grep read as 'no match' (rc=$rc)"
+# A project-root json.py must not replace the module the guard parses with (python3 -I).
+printf 'raise SystemExit(0)\n' > json.py
+printf '{"tool_name":"Bash","tool_input":{"command":"git push \\"--force\\""}}' > f9.json
+[ "$(g9 f9.json)" = "2" ] && ok "a json.py in the working directory does not replace the guard's parser" \
+                          || no "a json.py in the working directory changed the guard's verdict"
+# A python3 that prints a verdict-looking line and exits non-zero gave no verdict: only the
+# guard's own CRASH line survives a non-zero exit (security review, v8.3.32).
+mkdir -p okpy && printf '#!/bin/sh\necho OK\nexit 1\n' > okpy/python3 && chmod +x okpy/python3
+printf '{"tool_name":"Bash","tool_input":{"command":"git add x/.env"}}' > f9.json
+rc="$(PATH="$s9/okpy:$PATH" bash "$G9" < f9.json >/dev/null 2>&1; echo $?)"
+[ "$rc" = "2" ] && ok "a python3 that prints OK and exits 1 is no verdict: the text rules still decide" \
+                || no "a python3 that printed OK and exited 1 passed as a verdict (rc=$rc)"
+# A verdict line ends in LF only: Windows python would write CRLF, and a bash that keeps the CR
+# (Git Bash strips it) reads "BADJSON\r" as no verdict (sheriff, v8.3.32). The wrapper makes a CR
+# visible, as such a bash would keep it.
+mkdir -p crpy && printf '#!/bin/sh\n"%s" "$@" | sed "s/\\r$/<CR>/"\n' "$(command -v python3)" > crpy/python3 && chmod +x crpy/python3
+printf '{"tool_name":"Bash","tool_input":{"command":"ls"},}' > f9.json
+rc="$(PATH="$s9/crpy:$PATH" bash "$G9" < f9.json >/dev/null 2>&1; echo $?)"
+[ "$rc" = "2" ] && ok "a verdict line carries no CR: BADJSON still blocks where bash keeps the CR" \
+                || no "a verdict line ends in CR: BADJSON read as no verdict (rc=$rc)"
+rm -f json.py f9.json
+# #113 L1: the gate's staged-.env check reads the name list whole (2,000 staged names, ~150 KB).
+mkfx q9
+git -C q9 hash-object -w --stdin < /dev/null >/dev/null
+python3 -c 'import sys; e="e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"; sys.stdout.buffer.write("".join("100644 %s 0\tx/.env.%04d%s\n" % (e, i, "a" * 60) for i in range(2000)).encode())' \
+  | git -C q9 update-index --add --index-info
+qx="$(gx q9 --trivial)"
+case "$qx" in
+  *".env is staged"*) ok "#113 L1 gate: 2,000 staged .env names are named, not read as none" ;;
+  *) no "#113 L1 gate: a large staged .env list read as 'no real .env staged'" ;;
+esac
+cd "$ROOT" || true
 # ── temp containment, closing assertions (v8.3.27, #11) ──
 th_cleanup
 TMP_AFTER="$(tmp_snapshot)"

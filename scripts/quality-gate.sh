@@ -68,7 +68,10 @@ fi
 
 # 2) no .env staged
 if git rev-parse --git-dir >/dev/null 2>&1; then
-  if git diff --cached --name-only 2>/dev/null | grep -E '(^|/)\.env($|\.)' | grep -qv '\.env\.example'; then
+  # The list is read whole: a `grep -q` mid-pipe exits early, and under pipefail the writer's
+  # SIGPIPE read as "none staged" (v8.3.32, #113 L1).
+  staged_env="$(git diff --cached --name-only 2>/dev/null | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example' || true)"
+  if [ -n "$staged_env" ]; then
     bad ".env is staged — unstage it"
   else ok "no real .env staged"; fi
 fi

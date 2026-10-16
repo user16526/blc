@@ -1,5 +1,39 @@
 # Template Changelog
 
+## v8.3.32 — the guard fails closed (2026-10-16)
+A guard-only release. CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are
+byte-identical to v8.3.31. Three scripts change: `scripts/guard.sh`,
+`scripts/quality-gate.sh` (one check) and the suite (`scripts/test-hooks.sh`, 19 rows).
+
+Claude Code blocks a tool call ONLY when a PreToolUse hook exits 2. Any other exit is a
+non-blocking error, and the call runs. Before this release the guard let calls through
+in four ways:
+- **An unexpected error exited 1.** A `set -e` death or a crash anywhere in `guard.sh`
+  exited 1, so the call ran. An EXIT trap now turns every exit that is not 0 or 2 into 2.
+  The header said "Exit !=0 = block"; it now states the real contract.
+- **A large input read a hit as a miss** (#113). Six rules piped the text into
+  `grep -q` under `pipefail`: grep stopped at the first match, the writer died of
+  SIGPIPE, and the pipeline status turned the hit into "no match". With a match on
+  line 1 of a 1.6 MB input, all six missed: both destructive lists, the PowerShell
+  destructive rule, and the three no-python git rules (.env staging, a forced whole-tree
+  add, `merge -F -`). Every rule check now reads a here-string through one helper, and a
+  check that cannot run (grep exits 2, a here-string bash cannot write) blocks. The
+  gate's staged-.env check reads the name list whole for the same reason.
+- **A broken input went to the fallbacks** (#99, from the Radion comparison). A UTF-8
+  BOM, a truncated or an empty input, malformed JSON and JSON nested past the parser's
+  depth now block. Claude Code always sends one JSON object, so none of these blocks a
+  real call. Once the guard's own parser runs, its own crash blocks too (CRASH). A
+  missing or stub `python3` (the Windows Store alias) keeps the text fallback, as before:
+  a dangerous command still blocks there, and a safe one still runs.
+- **A `json.py` or `shlex.py` in the project directory replaced the modules the guard
+  parses with**, because `python3 -c` puts the working directory first on its path. The
+  guard now runs `python3 -I`, and its parsers read and write bytes as UTF-8, so the
+  result does not depend on the host's code page.
+
+Proven live, not changed (it is Claude Code's behaviour): a PreToolUse hook that TIMES OUT
+does not block either (2026-10-16, Claude Code 2.1.301). The guard header names it as a
+known limit; the guard must stay a few fast local checks.
+
 ## v8.3.31 — agents run on the model you pick; scratch stays out of the system temp folder (2026-10-15)
 CORE, `AGENTS.md`, `CLAUDE.md` and `.claude/settings.json` are byte-identical to v8.3.30.
 No hook changes. Three scripts change, for #95 only: `scripts/sheriff-review.sh`,
