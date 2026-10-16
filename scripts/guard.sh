@@ -1,9 +1,39 @@
 #!/usr/bin/env bash
 # PreToolUse guard: blocks secrets being written + destructive SHELL commands.
-# Exit !=0 = block. Inspects the Bash tool and (v8.3.27) the PowerShell tool a Windows
+# Exit 2 = block, exit 0 = allow. Claude Code blocks a tool call ONLY on exit 2; any other
+# exit is a non-blocking error and the call RUNS. So the EXIT trap below turns every other
+# exit (a `set -e` death, a crash) into 2: the guard fails closed (v8.3.32).
+# KNOWN LIMIT: a hook that TIMES OUT does not block either — proven live 2026-10-16 on Claude
+# Code 2.1.301 (a hook still running at its timeout: the call ran). Nothing here may wait on a
+# network, a lock or a prompt; the guard stays a few fast local checks.
+# Inspects the Bash tool and (v8.3.27) the PowerShell tool a Windows
 # host exposes: same git rules for both, plus a PowerShell-native destructive list.
 set -euo pipefail
+trap 'rc=$?; if [ "$rc" != 0 ] && [ "$rc" != 2 ]; then echo "BLOCKED: guard.sh failed (exit $rc), so this call was not checked. Fix the guard, or run the command yourself." >&2; exit 2; fi' EXIT
 p="$(cat || true)"
+
+# Not a JSON object (a UTF-8 BOM, a truncated or an empty input): Claude Code always sends one
+# object, so anything else is a fault, and a fault blocks (v8.3.32, backlog #99 — Radion's
+# guard crashed on a BOM and let everything through). Only the two ends are tested: the
+# input can be megabytes.
+p_head="${p:0:64}"; p_tail="$p"; [ "${#p}" -le 64 ] || p_tail="${p: -64}"
+if ! [[ $p_head =~ ^[[:space:]]*\{ && $p_tail =~ \}[[:space:]]*$ ]]; then
+  echo "BLOCKED: the hook input is not a JSON object (a BOM, truncated or empty input), so this call was not checked." >&2; exit 2
+fi
+
+# hit ERE TEXT [-i]: 0 = TEXT matches, 1 = it does not (v8.3.32, #113). TEXT goes in through a
+# here-string, never `echo "$x" | grep -q`: under pipefail grep's early exit kills the writer,
+# and the pipeline status turned a hit into "no match" on any input over ~64 KB (probe: 5 of 5
+# misses at 70 KB). Any other outcome — a grep error, a bad pattern, a here-string bash could
+# not write — leaves rc at 9: a check that did not run blocks.
+hit() {
+  local rc=9
+  { grep -Eq ${3:-} -- "$1" && rc=0 || rc=$?; } <<< "$2"
+  if [ "$rc" -gt 1 ]; then
+    echo "BLOCKED: a guard.sh check could not run (status $rc), so this call was not checked." >&2; exit 2
+  fi
+  return "$rc"
+}
 
 # Shared secret patterns (single source of truth). Fallback = fail SAFE, not open:
 # if the pattern file is missing, block writes that even smell like a credential.
@@ -28,7 +58,7 @@ esac
 
 # Secrets being written into the repo (all tools). A here-string, not `echo |`: under
 # pipefail a writer killed by an early `grep -q` exit turned a hit into "no match".
-if grep -Eq "$SECRET_REGEX" <<< "$p"; then
+if hit "$SECRET_REGEX" "$p"; then
   echo "BLOCKED: looks like a hardcoded secret. Use an env var (.env / process.env)." >&2; exit 2
 fi
 
@@ -56,8 +86,8 @@ fi
 # The secret check above always reads the full input: a secret in a message is a secret.
 GUARD_MSG_PY="$(cat <<'PY'
 import json, re, sys
-try:
-    d = json.load(sys.stdin)
+try:   # bytes in, UTF-8 out: the result must not depend on the host's code page
+    d = json.loads(sys.stdin.buffer.read().decode("utf-8", "surrogateescape"))
 except Exception:
     sys.exit(1)
 ti = d.get("tool_input") if isinstance(d.get("tool_input"), dict) else d
@@ -81,13 +111,13 @@ for i, line in enumerate(lines[1:], 1):
     if line.lstrip("\t") == tag:      # never ends LATER than bash would
         kept += lines[i + 1:]
         break
-print(" ".join(kept))
+sys.stdout.buffer.write(" ".join(kept).encode("utf-8", "surrogateescape"))
 PY
 )"
 scan="$p"
-if printf '%s' "$p" | grep -q '<<' && printf '%s' "$p" | grep -Eq 'git[[:space:]]+(commit|tag)' \
+if hit '<<' "$p" && hit 'git[[:space:]]+(commit|tag)' "$p" \
    && command -v python3 >/dev/null 2>&1; then
-  if s="$(printf '%s' "$p" | python3 -c "$GUARD_MSG_PY" 2>/dev/null)" && [ -n "$s" ]; then scan="$s"; fi
+  if s="$(printf '%s' "$p" | python3 -I -c "$GUARD_MSG_PY" 2>/dev/null)" && [ -n "$s" ]; then scan="$s"; fi
 fi
 
 # Any git global options before a subcommand (v8.3.26): `-C <dir>`, `-c <k=v>`,
@@ -122,6 +152,10 @@ GITPFX='git( -(C|c|-git-dir|-work-tree|-namespace|-config-env) '"$GITW"'| -'"$GI
 # led by a dot, a forced directory (`git add -f config/`), a git alias. A commit message
 # quoting "git add .env" inline is still blocked.
 # Without python3 (or with a broken one) a text rule runs instead: fail closed, never open.
+# v8.3.32: once OUR code runs, its own failure is a fault and blocks — invalid JSON prints
+# BADJSON, any uncaught error prints CRASH (sys.excepthook). A stub python3 (missing, or the
+# Windows Store alias) never runs it and keeps the text fallback. `python3 -I`: a json.py or
+# shlex.py in the project directory must not replace the modules this guard reads with.
 # v8.3.27: the same tokenizer decides two more subcommands (BACKLOG-v8.3.27 #8, #19).
 #   push  — a force flag (`-f` in any cluster, `--force`, `--force-with-lease[=…]`) before
 #           `--`, or a `+refspec` anywhere, is BLOCK-PUSH. Two sheriff rounds on v8.3.26
@@ -135,14 +169,22 @@ GITPFX='git( -(C|c|-git-dir|-work-tree|-namespace|-config-env) '"$GITW"'| -'"$GI
 #           git merge reads no message from stdin, the merge dies AFTER the branch switch
 #           (2026-09-14, field). Sessions typed it live despite the prose; a rule it is.
 GUARD_ENV_PY="$(cat <<'PY'
-import fnmatch, json, posixpath, re, shlex, sys
-raw = sys.stdin.read()
+import io, sys
+sys.excepthook = lambda typ, val, tb: print("CRASH " + typ.__name__, flush=True)
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="surrogateescape", newline="\n", line_buffering=True)
+import fnmatch, json, posixpath, re, shlex
+raw = sys.stdin.buffer.read().decode("utf-8", "surrogateescape")
 if sys.argv[1] == "json":
-    d = json.loads(raw)
+    try:
+        d = json.loads(raw)
+    except Exception:   # not JSON, or nested deeper than the parser goes
+        print("BADJSON")
+        sys.exit(0)
     t = d.get("tool_input") if isinstance(d.get("tool_input"), dict) else d
     c = t.get("command") if isinstance(t, dict) else None
     if not isinstance(c, str):
-        sys.exit(1)
+        print("NOCMD")   # no command string: the text rules below decide, as before
+        sys.exit(0)
 else:
     c = raw
 c = c.replace("\\\r\n", " ").replace("\\\n", " ")
@@ -279,11 +321,14 @@ print("OK")
 PY
 )"
 envv=""
+# A python3 that exits non-zero gave no verdict: keep only our own CRASH line (the excepthook
+# exits 1), never other stdout — a stub that prints "OK" must not pass as a verdict.
+crash_only(){ case "$1" in "CRASH "*) printf '%s' "$1" ;; esac; }
 if command -v python3 >/dev/null 2>&1; then
   if [ "$scan" != "$p" ]; then   # already decoded, quoted-delimiter commit message dropped
-    envv="$(printf '%s' "$scan" | python3 -c "$GUARD_ENV_PY" text 2>/dev/null)" || envv=""
+    envv="$(printf '%s' "$scan" | python3 -I -c "$GUARD_ENV_PY" text 2>/dev/null)" || envv="$(crash_only "$envv")"
   else
-    envv="$(printf '%s' "$p" | python3 -c "$GUARD_ENV_PY" json 2>/dev/null)" || envv=""
+    envv="$(printf '%s' "$p" | python3 -I -c "$GUARD_ENV_PY" json 2>/dev/null)" || envv="$(crash_only "$envv")"
   fi
 fi
 case "$envv" in
@@ -293,23 +338,28 @@ case "$envv" in
     echo "BLOCKED: forced push (${envv#BLOCK-PUSH }) overwrites published work. Needs explicit approval; run it manually." >&2; exit 2 ;;
   "BLOCK-MERGE "*)
     echo "BLOCKED: git merge does not read a message from stdin (${envv#BLOCK-MERGE }) — the merge dies after the branch switch. Use: git merge -m '<message>' <branch>." >&2; exit 2 ;;
+  BADJSON)
+    echo "BLOCKED: the hook input is not valid JSON, so this call was not checked." >&2; exit 2 ;;
+  "CRASH "*)
+    echo "BLOCKED: guard.sh's command parser failed (${envv#CRASH }), so this call was not checked." >&2; exit 2 ;;
   OK) ;;
   *)
-    # No verdict (python3 missing or broken): the text rule, with .env.example REMOVED
+    # No verdict (python3 missing or broken, or NOCMD): the text rule, with .env.example REMOVED
     # before the test rather than clearing the whole command (v8.3.25 let
     # `git add .env.example .env` through here). Coarse on purpose: any .env text beside a
     # git add/stage blocks (.env.production included), and so does a forced whole-tree add.
-    if echo "$scan" | grep -Eiq 'git[^;&|]* (add|stage) '; then
-      if echo "$scan" | sed -E 's/\.env\.example//Ig' | grep -Eiq '\.env'; then
+    if hit 'git[^;&|]* (add|stage) ' "$scan" -i; then
+      noex="$(sed -E 's/\.env\.example//Ig' <<< "$scan")"
+      if hit '\.env' "$noex" -i; then
         echo "BLOCKED: refusing to stage a real .env. It must stay gitignored; commit .env.example instead." >&2; exit 2
       fi
-      if echo "$scan" | grep -Eq 'git[^;&|]* (add|stage) [^;&|]*(-[A-Za-z]*f|--force)' \
-         && echo "$scan" | grep -Eq 'git[^;&|]* (add|stage) [^;&|]*( -[A-Za-z]*A| --all| \.[./]*| :/| \*| :[!^]| :\(exclude)( |$|[;&|"a-z])'; then
+      if hit 'git[^;&|]* (add|stage) [^;&|]*(-[A-Za-z]*f|--force)' "$scan" \
+         && hit 'git[^;&|]* (add|stage) [^;&|]*( -[A-Za-z]*A| --all| \.[./]*| :/| \*| :[!^]| :\(exclude)( |$|[;&|"a-z])' "$scan"; then
         echo "BLOCKED: refusing to force-add the whole tree past .gitignore." >&2; exit 2
       fi
     fi
     # No-python answer for the merge rule (#19); the forced-push text rules below stay.
-    if echo "$scan" | grep -Eq 'git[^;&|]* merge [^;&|]*(-F ?-|--file[= ]-)( |$|[;&|<])'; then
+    if hit 'git[^;&|]* merge [^;&|]*(-F ?-|--file[= ]-)( |$|[;&|<])' "$scan"; then
       echo "BLOCKED: git merge does not read a message from stdin (-F -). Use: git merge -m '<message>' <branch>." >&2; exit 2
     fi ;;
 esac
@@ -388,7 +438,7 @@ DESTRUCTIVE_CI='rm -rf|mkfs|DROP DATABASE|TRUNCATE |docker volume rm|docker syst
 # would count as a boundary, so an ordinary word ending in "dd " ("Add ") would match.
 DESTRUCTIVE_CS='git branch[^;&|]* -[A-Za-z]*D[A-Za-z]*( |$)|'"$GITPFX"' push[^;&|]* -[A-Za-z]*f|git clean -[A-Za-z]*f|(^|[^a-zA-Z])dd |iptables -F|chmod -R 777'
 
-if echo "$scan" | grep -Eiq "$DESTRUCTIVE_CI" || echo "$scan" | grep -Eq "$DESTRUCTIVE_CS"; then
+if hit "$DESTRUCTIVE_CI" "$scan" -i || hit "$DESTRUCTIVE_CS" "$scan"; then
   echo "BLOCKED: destructive/work-erasing command. Needs a backup/commit + explicit approval; run it manually." >&2; exit 2
 fi
 
@@ -439,10 +489,10 @@ PY
 )"
 ps_scan=""
 if [ "$is_ps" = "1" ] && command -v python3 >/dev/null 2>&1; then
-  ps_scan="$(printf '%s' "$p" | python3 -c "$GUARD_PS_PY" 2>/dev/null)" || ps_scan=""
+  ps_scan="$(printf '%s' "$p" | python3 -I -c "$GUARD_PS_PY" 2>/dev/null)" || ps_scan=""
 fi
 [ -n "$ps_scan" ] || ps_scan="$(printf '%s' "$scan" | sed 's/`\\r\\n/ /g; s/`\\n/ /g; s/\\[nr]/;/g; s/\\t/ /g')"
-if [ "$is_ps" = "1" ] && echo "$ps_scan" | grep -Eiq "$PS_DESTRUCTIVE"; then
+if [ "$is_ps" = "1" ] && hit "$PS_DESTRUCTIVE" "$ps_scan" -i; then
   echo "BLOCKED: destructive/work-erasing PowerShell command. Needs a backup/commit + explicit approval; run it manually." >&2; exit 2
 fi
 
